@@ -16,8 +16,13 @@ const prisma = new PrismaClient();
 // - latestdeals.co.uk: returns an explicit AWS WAF bot challenge
 //   (x-amzn-waf-action: challenge) — we don't defeat anti-bot measures.
 // - freestuff.co.uk / latestfreestuff.co.uk: same publisher, mirrored
-//   content — only one kept to avoid duplicate discovery work. Both mix in
-//   plain deals/discount posts alongside real giveaways/free samples.
+//   content. Checked freestuff.co.uk's actual items: alongside real
+//   giveaways/samples it mixes in generic deals ("Pillows From £7"),
+//   unrelated content ("Free NHS Prescription To Your Door"), and online
+//   casino free-spins/no-deposit promos — that last category we actively
+//   don't want to auto-fill personal details into (a different, more
+//   sensitive kind of signup than a chocolate hamper giveaway). Dropped
+//   both for this and the mirroring.
 // - heyitsfree.net, gg.deals: real feeds, but mostly discount codes / free
 //   game keys rather than forms this app can actually fill in.
 // - ozbargain.com.au/freebies/feed (not /competition/feed, which IS
@@ -32,8 +37,14 @@ const prisma = new PrismaClient();
 //   posts (UV safety, movie trailers, home decor) with the word
 //   "giveaway" only in the site's own branding/nav — real giveaways are a
 //   small minority. Low enough precision it's not worth the wasted
-//   resolution attempts. (Was seeded briefly; REMOVED_FEEDS below cleans
-//   up anyone who already ran db:seed with it.)
+//   resolution attempts.
+// - joannedewberry.co.uk/giveaway/feed/: looked fine at a glance (valid
+//   RSS, 200 OK) but the channel title is "Comments on: " and
+//   /giveaway/ (no feed) 404s — this is a WordPress comments feed for a
+//   single (now-gone) post, not the giveaway category at all. No working
+//   URL for this site's giveaway content found; not worth guessing paths.
+// (Both were seeded briefly; REMOVED_FEEDS below cleans up anyone who
+// already ran db:seed with them.)
 const SEED_FEEDS = [
   { name: "ThePrizeFinder — New Competitions", url: "https://www.theprizefinder.com/feed/new-competitions" },
   { name: "ThePrizeFinder — Top Prizes", url: "https://www.theprizefinder.com/feed/top-prizes" },
@@ -43,8 +54,6 @@ const SEED_FEEDS = [
   { name: "Dragon Blogger — Contests", url: "https://www.dragonblogger.com/category/contests/feed/" },
   { name: "Contest Corner", url: "https://www.contest-corner.com/feed/" },
   { name: "Free Samples — Free Competitions", url: "https://www.freesamples.co.uk/category/free-competitions/feed/" },
-  { name: "Joanne Dewberry — Giveaways", url: "https://joannedewberry.co.uk/giveaway/feed/" },
-  { name: "Free Stuff UK", url: "https://freestuff.co.uk/feed/" },
   { name: "OzBargain — Competitions", url: "https://www.ozbargain.com.au/competition/feed" },
   // Mixes free-to-enter giveaways with paid lottery/raffle promotions (e.g.
   // charity home lotteries) — the latter have no simple free-entry form and
@@ -71,7 +80,11 @@ const SEED_HTML_SOURCES = [
 // Feeds seeded in the past that turned out to be low quality — removed
 // from SEED_FEEDS above, and deleted here too for anyone re-running seed
 // on a database that already has them.
-const REMOVED_FEEDS = ["https://giveawaybandit.com/category/giveaways/feed/"];
+const REMOVED_FEEDS = [
+  "https://giveawaybandit.com/category/giveaways/feed/",
+  "https://joannedewberry.co.uk/giveaway/feed/",
+  "https://freestuff.co.uk/feed/",
+];
 
 async function main() {
   const removed = await prisma.feedSource.deleteMany({ where: { url: { in: REMOVED_FEEDS } } });
