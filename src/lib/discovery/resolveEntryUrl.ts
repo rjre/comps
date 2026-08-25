@@ -1,5 +1,6 @@
 import { DISCOVERY_USER_AGENT } from "@/lib/net/fetchHtml";
 import { politeDelay, isAllowedByRobots } from "@/lib/net/politeness";
+import { isSafeExternalUrl } from "@/lib/net/ssrf";
 
 /**
  * Listing sites (comping aggregators) publish an item per competition, but
@@ -24,14 +25,23 @@ function sameSite(hostA: string, hostB: string): boolean {
   return stripWww(hostA) === stripWww(hostB);
 }
 
+// Discovery follows links found inside third-party feed/page content — a
+// malicious or compromised source could point one at this app's own host
+// or another device on the same network instead of a real sponsor site.
+// Every candidate is checked against isSafeExternalUrl before it's fetched
+// and again on whatever a fetch's redirect chain actually landed on,
+// since "follow redirects" can land somewhere the original URL didn't
+// suggest. A resolved URL that fails this is never returned, stored, or
+// (later, at entry time) opened with the user's real profile data.
 export async function resolveEntryUrl(listingUrl: string): Promise<string | null> {
+  if (!isSafeExternalUrl(listingUrl)) return null;
   if (!(await isAllowedByRobots(listingUrl))) return null;
   await politeDelay(listingUrl);
 
   const listingHost = new URL(listingUrl).host;
 
   let finalUrl = await followRedirects(listingUrl);
-  if (!finalUrl) return null;
+  if (!finalUrl || !isSafeExternalUrl(finalUrl)) return null;
 
   if (!sameSite(new URL(finalUrl).host, listingHost)) {
     return finalUrl;
@@ -40,11 +50,11 @@ export async function resolveEntryUrl(listingUrl: string): Promise<string | null
   // Same host after following redirects: the listing page itself is what we
   // landed on. Look inside it for the actual outbound "enter"/tracking link.
   const outboundLink = await findOutboundLink(finalUrl, listingHost);
-  if (!outboundLink) return null;
+  if (!outboundLink || !isSafeExternalUrl(outboundLink)) return null;
 
   await politeDelay(outboundLink);
   finalUrl = await followRedirects(outboundLink);
-  if (!finalUrl || sameSite(new URL(finalUrl).host, listingHost)) return null;
+  if (!finalUrl || !isSafeExternalUrl(finalUrl) || sameSite(new URL(finalUrl).host, listingHost)) return null;
 
   return finalUrl;
 }
@@ -131,6 +141,7 @@ async function findOutboundLink(pageUrl: string, sourceHost: string): Promise<st
       continue;
     }
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") continue; // skip mailto:, tel:, etc.
+    if (!isSafeExternalUrl(href)) continue;
 
     const hrefHost = parsed.host;
     const isOffsite = !sameSite(hrefHost, sourceHost);
@@ -172,8 +183,9 @@ function findEmbeddedUrlProp(html: string, sourceHost: string): string | null {
   let match: RegExpExecArray | null;
   while ((match = propRegex.exec(decoded))) {
     try {
-      const host = new URL(match[1]!).host;
-      if (!sameSite(host, sourceHost) && !isNonEntryDomain(host)) return match[1]!;
+      const candidate = match[1]!;
+      const host = new URL(candidate).host;
+      if (!sameSite(host, sourceHost) && !isNonEntryDomain(host) && isSafeExternalUrl(candidate)) return candidate;
     } catch {
       continue;
     }

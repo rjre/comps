@@ -4,6 +4,7 @@ import { resolveEntryUrl } from "./resolveEntryUrl";
 import { getScraper } from "./scrapers/registry";
 import type { ListingItem } from "./scrapers/types";
 import { politeDelay, isAllowedByRobots } from "@/lib/net/politeness";
+import { isSafeExternalUrl } from "@/lib/net/ssrf";
 import type { FeedSource } from "@prisma/client";
 
 const parser = new Parser();
@@ -104,6 +105,14 @@ async function processListingItem(item: ListingItem, source: FeedSource): Promis
   const entryUrl = await resolveEntryUrl(item.link);
   if (!entryUrl) {
     console.log(`Could not resolve an off-site entry URL for "${item.title}", skipping`);
+    return false;
+  }
+  // resolveEntryUrl already rejects private/local hosts — this is a second
+  // gate right at the boundary before anything gets stored as a
+  // Competition.url that the entry pass will later navigate to with the
+  // user's real profile data.
+  if (!isSafeExternalUrl(entryUrl)) {
+    console.log(`"${item.title}" resolved to a private/local address (${entryUrl}), refusing to track it`);
     return false;
   }
 
