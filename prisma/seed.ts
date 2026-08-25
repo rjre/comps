@@ -11,6 +11,14 @@ const prisma = new PrismaClient();
 //   (/.well-known/sgcaptcha/...) — we don't defeat anti-bot measures.
 // - freetvcompetitions.com: TLS cert doesn't match the hostname
 //   (cert is for a different domain) — not safe to trust.
+// - allfreestuff.co.uk, simplyprizes.com, competitions.ie, latestdeals.co.uk:
+//   no working feed found (no /feed, no <link rel=alternate> autodiscovery).
+// - freestuff.co.uk / latestfreestuff.co.uk: same publisher, mirrored
+//   content — only one kept to avoid duplicate discovery work. Both mix in
+//   plain deals/discount posts alongside real giveaways/free samples.
+// - heyitsfree.net, ozbargain.com.au, gg.deals: real feeds, but mostly
+//   discount codes / free game keys / US-only deals rather than
+//   forms this app can actually fill in.
 const SEED_FEEDS = [
   { name: "ThePrizeFinder — New Competitions", url: "https://www.theprizefinder.com/feed/new-competitions" },
   { name: "ThePrizeFinder — Top Prizes", url: "https://www.theprizefinder.com/feed/top-prizes" },
@@ -20,6 +28,9 @@ const SEED_FEEDS = [
   { name: "Giveaway Bandit", url: "https://giveawaybandit.com/category/giveaways/feed/" },
   { name: "Dragon Blogger — Contests", url: "https://www.dragonblogger.com/category/contests/feed/" },
   { name: "Contest Corner", url: "https://www.contest-corner.com/feed/" },
+  { name: "Free Samples — Free Competitions", url: "https://www.freesamples.co.uk/category/free-competitions/feed/" },
+  { name: "Joanne Dewberry — Giveaways", url: "https://joannedewberry.co.uk/giveaway/feed/" },
+  { name: "Free Stuff UK", url: "https://freestuff.co.uk/feed/" },
 ];
 
 async function main() {

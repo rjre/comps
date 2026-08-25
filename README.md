@@ -44,11 +44,13 @@ chain to resolve the actual off-site form before adding it as a tracked
 a site needs a JS click to leave its own domain, that item is skipped rather
 than guessed at.
 
-`npm run db:seed` (part of `deploy/install-pi.sh`) seeds 8 feeds I found and
+`npm run db:seed` (part of `deploy/install-pi.sh`) seeds 11 feeds I found and
 verified as live, valid RSS as of Aug 2026 — see `prisma/seed.ts` for the
-list and for two I checked and deliberately excluded (one sits behind a
-bot-challenge redirect, the other has a mismatched TLS cert). Add more at
-`/sources` any time.
+list and for the ones I checked and deliberately excluded (bot-challenge
+redirects, mismatched TLS certs, no working feed, mirrored/duplicate
+content, or real feeds that turned out to be mostly discount codes/free
+game keys rather than fillable entry forms). Add more at `/sources` any
+time.
 
 I didn't wire up a fully automatic "search the web for new feeds" pipeline,
 since that needs a paid search-API key to run unattended on the Pi itself —
