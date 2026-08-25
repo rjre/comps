@@ -40,7 +40,7 @@ export default async function CompetitionsPage() {
         </label>
         <label>
           Adapter
-          <select name="adapterKey" required>
+          <select name="adapterKey" required defaultValue="generic">
             {adapterKeys.map((key) => (
               <option key={key} value={key}>
                 {key}

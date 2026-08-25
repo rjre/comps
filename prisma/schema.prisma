@@ -32,18 +32,32 @@ model Profile {
 // constrained by the TypeScript union types in src/lib/automation/types.ts
 // and src/lib/status.ts — validate against those, not free-form values.
 
+model FeedSource {
+  id            String   @id @default(cuid())
+  name          String
+  url           String   @unique // RSS/Atom feed URL
+  enabled       Boolean  @default(true)
+  lastFetchedAt DateTime?
+  lastError     String?
+  createdAt     DateTime @default(now())
+  competitions  Competition[]
+}
+
 model Competition {
-  id          String   @id @default(cuid())
-  name        String
-  url         String   @unique
-  adapterKey  String   // which adapter in src/lib/automation/adapters handles this site
-  opensAt     DateTime?
-  closesAt    DateTime?
-  maxEntries  Int      @default(1) // entries allowed per person, per the competition's own rules
-  status      String   @default("PENDING") // PENDING | ENTERED | SKIPPED | FAILED | CLOSED
-  notes       String?
-  createdAt   DateTime @default(now())
-  entries     Entry[]
+  id              String   @id @default(cuid())
+  name            String
+  url             String   @unique // resolved off-site entry form URL
+  adapterKey      String   @default("generic") // which adapter in src/lib/automation/adapters handles this site; "generic" = heuristic form-fill
+  opensAt         DateTime?
+  closesAt        DateTime?
+  maxEntries      Int      @default(1) // entries allowed per person, per the competition's own rules
+  status          String   @default("PENDING") // PENDING | ENTERED | SKIPPED | FAILED | CLOSED
+  notes           String?
+  feedSourceId    String?
+  feedSource      FeedSource? @relation(fields: [feedSourceId], references: [id])
+  sourceListingUrl String? // the discovery listing page this was resolved from, for debugging
+  createdAt       DateTime @default(now())
+  entries         Entry[]
 }
 
 model Entry {
@@ -53,4 +67,17 @@ model Entry {
   status         String   // SUCCESS | FAILED | SKIPPED_ALREADY_ENTERED | SKIPPED_RULES
   message        String?
   attemptedAt    DateTime @default(now())
+}
+
+// Read-only surface of possible "you've won" emails, for a human to check —
+// the mail scanner never replies, deletes, marks read, or clicks anything.
+model PotentialWin {
+  id              String   @id @default(cuid())
+  gmailMessageId  String   @unique
+  from            String
+  subject         String
+  snippet         String
+  receivedAt      DateTime
+  reviewed        Boolean  @default(false)
+  createdAt       DateTime @default(now())
 }

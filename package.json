@@ -11,14 +11,21 @@
     "lint": "eslint .",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "run:entries": "tsx src/lib/scheduler/runOnce.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "run:entries": "tsx src/lib/scheduler/runOnce.ts",
+    "run:discovery": "tsx src/lib/discovery/runDiscovery.ts",
+    "run:mail-scan": "tsx src/lib/gmail/scanForWins.ts",
+    "gmail:auth": "tsx scripts/gmail-auth.ts",
+    "worker": "tsx src/worker/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
+    "googleapis": "^144.0.0",
     "next": "^14.2.5",
     "playwright": "^1.47.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "rss-parser": "^3.13.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
