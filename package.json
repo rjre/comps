@@ -4,7 +4,7 @@
   "private": true,
   "description": "Automated entry assistant for public giveaways/sweepstakes, using a single profile and per-site adapters.",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",

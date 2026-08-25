@@ -5,3 +5,7 @@
 export type CompetitionStatus = "PENDING" | "ENTERED" | "SKIPPED" | "FAILED" | "CLOSED";
 
 export type EntryStatus = "SUCCESS" | "FAILED" | "SKIPPED_ALREADY_ENTERED" | "SKIPPED_RULES";
+
+export type RunStatus = "RUNNING" | "COMPLETED" | "FAILED";
+
+export type LogLevel = "INFO" | "WARN" | "ERROR";

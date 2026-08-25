@@ -21,6 +21,10 @@ export default async function Dashboard() {
       )}
       <p>{competitionCount} competition(s) tracked.</p>
 
+      <p>
+        <a href="/runs">View run history &amp; logs</a>
+      </p>
+
       <h2>Recent entry attempts</h2>
       {recentEntries.length === 0 ? (
         <p>None yet. Add competitions and run the entry job.</p>
