@@ -68,6 +68,22 @@ describe("resolveEntryUrl", () => {
     await expect(resolveEntryUrl(listingUrl)).resolves.toBe(sponsorUrl);
   });
 
+  it("follows a same-host /go-<slug>/ redirector with unhinted anchor text (freesamples.co.uk pattern)", async () => {
+    const listingUrl = "https://www.freesamples.co.uk/free-example-giveaway/";
+    const trackingUrl = "https://www.freesamples.co.uk/go-example-giveaway/";
+    const sponsorUrl = "https://sponsor.example.com/";
+
+    global.fetch = mockFetchRouter({
+      [listingUrl]: htmlResponse(
+        listingUrl,
+        `<a href="${trackingUrl}" target="_blank" class="get singlebtn">Get Freebie</a>`,
+      ),
+      [trackingUrl]: htmlResponse(trackingUrl, "", sponsorUrl),
+    });
+
+    await expect(resolveEntryUrl(listingUrl)).resolves.toBe(sponsorUrl);
+  });
+
   it("extracts a URL embedded in JS-framework hydration props (competitions.ie/Astro pattern)", async () => {
     const listingUrl = "https://competitions.ie/competition/example";
     const sponsorUrl = "https://sponsor.example.ie/win";

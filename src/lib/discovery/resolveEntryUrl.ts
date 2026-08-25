@@ -75,6 +75,12 @@ async function followRedirects(url: string): Promise<string | null> {
 const OUTBOUND_LINK_HINTS = [
   "link-track",
   "go/",
+  // freesamples.co.uk uses more than one redirector path prefix across
+  // posts ("/go-<slug>/", "/claim-<slug>/") — the leading slash matters on
+  // both: a bare "go-"/"claim-" would false-match slugs like
+  // "lego-competition" or "reclaim-your-prize".
+  "/go-",
+  "/claim-",
   "/out/",
   "redirect",
   "enter-now",
@@ -82,6 +88,7 @@ const OUTBOUND_LINK_HINTS = [
   "enter competition",
   "view competition",
   "visit site",
+  "get freebie", // the anchor text is consistent across freesamples.co.uk's path variants
 ];
 
 // Infrastructure/social domains a competition detail page routinely links

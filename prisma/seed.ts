@@ -69,6 +69,14 @@ const prisma = new PrismaClient();
 //   (523, origin unreachable) and free-photo-contests.com/magicfreebiesuk.co.uk
 //   (no working feed found) also checked. Photography contests skew
 //   paid-entry anyway, a different category from free giveaways.
+// - loquax.co.uk: no RSS feed found for its competition listings (forum-based,
+//   community-curated, but no feed).
+// - sweepstakes.com, mummyinthecity.co.uk: unreachable (connection failed
+//   repeatedly, including the homepage) — not a policy block, just down or
+//   blocking this network; revisit later.
+// - amumreviews.co.uk, themummybubble.co.uk: real feeds, but general
+//   lifestyle/parenting content (baby names, cake ideas) with giveaways as
+//   a small minority — same low-precision problem as giveawaybandit.com.
 const SEED_FEEDS = [
   { name: "ThePrizeFinder — New Competitions", url: "https://www.theprizefinder.com/feed/new-competitions" },
   { name: "ThePrizeFinder — Top Prizes", url: "https://www.theprizefinder.com/feed/top-prizes" },
@@ -78,6 +86,7 @@ const SEED_FEEDS = [
   { name: "Dragon Blogger — Contests", url: "https://www.dragonblogger.com/category/contests/feed/" },
   { name: "Contest Corner", url: "https://www.contest-corner.com/feed/" },
   { name: "Free Samples — Free Competitions", url: "https://www.freesamples.co.uk/category/free-competitions/feed/" },
+  { name: "Free Samples — Free Samples", url: "https://www.freesamples.co.uk/category/free-samples/feed/" },
   { name: "OzBargain — Competitions", url: "https://www.ozbargain.com.au/competition/feed" },
   // Mixes free-to-enter giveaways with paid lottery/raffle promotions (e.g.
   // charity home lotteries) — the latter have no simple free-entry form and
