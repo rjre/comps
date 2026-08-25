@@ -56,7 +56,7 @@ model Competition {
   status          String   @default("PENDING") // PENDING | ENTERED | SKIPPED | FAILED | CLOSED
   notes           String?
   feedSourceId    String?
-  feedSource      FeedSource? @relation(fields: [feedSourceId], references: [id])
+  feedSource      FeedSource? @relation(fields: [feedSourceId], references: [id], onDelete: SetNull)
   sourceListingUrl String? // the discovery listing page this was resolved from, for debugging
   createdAt       DateTime @default(now())
   entries         Entry[]

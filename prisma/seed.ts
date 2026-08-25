@@ -27,13 +27,19 @@ const prisma = new PrismaClient();
 //   scraping outside their official API — not worth fighting.
 // - aussiecomps.com: no RSS/autodiscovery found; would need an HTML
 //   scraper like competitions.ie/allfreestuff — not built yet.
+// - giveawaybandit.com/category/giveaways/feed/: valid RSS, "giveaways" in
+//   the URL, but checked several items and most are unrelated lifestyle
+//   posts (UV safety, movie trailers, home decor) with the word
+//   "giveaway" only in the site's own branding/nav — real giveaways are a
+//   small minority. Low enough precision it's not worth the wasted
+//   resolution attempts. (Was seeded briefly; REMOVED_FEEDS below cleans
+//   up anyone who already ran db:seed with it.)
 const SEED_FEEDS = [
   { name: "ThePrizeFinder — New Competitions", url: "https://www.theprizefinder.com/feed/new-competitions" },
   { name: "ThePrizeFinder — Top Prizes", url: "https://www.theprizefinder.com/feed/top-prizes" },
   { name: "ThePrizeFinder — Closing Soon", url: "https://www.theprizefinder.com/feed/closing-soon" },
   { name: "GiveawayBase", url: "https://giveawaybase.com/feed/" },
   { name: "The Review Wire — Current Giveaways", url: "https://thereviewwire.com/category/current-giveaways/feed/" },
-  { name: "Giveaway Bandit", url: "https://giveawaybandit.com/category/giveaways/feed/" },
   { name: "Dragon Blogger — Contests", url: "https://www.dragonblogger.com/category/contests/feed/" },
   { name: "Contest Corner", url: "https://www.contest-corner.com/feed/" },
   { name: "Free Samples — Free Competitions", url: "https://www.freesamples.co.uk/category/free-competitions/feed/" },
@@ -62,7 +68,15 @@ const SEED_HTML_SOURCES = [
   },
 ];
 
+// Feeds seeded in the past that turned out to be low quality — removed
+// from SEED_FEEDS above, and deleted here too for anyone re-running seed
+// on a database that already has them.
+const REMOVED_FEEDS = ["https://giveawaybandit.com/category/giveaways/feed/"];
+
 async function main() {
+  const removed = await prisma.feedSource.deleteMany({ where: { url: { in: REMOVED_FEEDS } } });
+  if (removed.count > 0) console.log(`Removed ${removed.count} deprecated feed source(s).`);
+
   for (const feed of SEED_FEEDS) {
     await prisma.feedSource.upsert({
       where: { url: feed.url },

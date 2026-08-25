@@ -8,6 +8,30 @@ import type { FeedSource } from "@prisma/client";
 
 const parser = new Parser();
 
+// Resolved entry URLs on these hosts can't actually be entered by this app:
+// social platforms require logged-in like/follow/comment actions (a
+// deliberately separate, riskier undertaking than filling a web form — see
+// README), and these are plain marketing signups, not competition entries.
+// Recorded as SKIPPED (not re-attempted, not re-resolved every pass) rather
+// than silently dropped, so /competitions still shows what was found.
+const NON_ENTERABLE_HOSTS = [
+  "facebook.com",
+  "instagram.com",
+  "twitter.com",
+  "x.com",
+  "tiktok.com",
+  "pinterest.com",
+  "youtube.com",
+  "linkedin.com",
+  "mailchi.mp",
+  "campaign-archive.com",
+  "linktr.ee",
+];
+
+function isNonEnterableHost(host: string): boolean {
+  return NON_ENTERABLE_HOSTS.some((d) => host === d || host.endsWith(`.${d}`));
+}
+
 /**
  * One discovery pass: fetch every enabled FeedSource (RSS feed, or an
  * HTML listing page for sites with no feed — see src/lib/discovery/scrapers),
@@ -46,7 +70,7 @@ export async function runDiscovery() {
     }
   }
 
-  console.log(`Discovery pass complete: ${added} new competition(s) added.`);
+  console.log(`Discovery pass complete: ${added} new fillable competition(s) added.`);
   return added;
 }
 
@@ -86,6 +110,12 @@ async function processListingItem(item: ListingItem, source: FeedSource): Promis
   const existingByUrl = await prisma.competition.findUnique({ where: { url: entryUrl } });
   if (existingByUrl) return false;
 
+  const host = new URL(entryUrl).host;
+  const nonEnterable = isNonEnterableHost(host);
+  if (nonEnterable) {
+    console.log(`"${item.title}" resolves to ${host} — not a fillable form, recording as skipped`);
+  }
+
   await prisma.competition.create({
     data: {
       name: item.title || entryUrl,
@@ -93,9 +123,11 @@ async function processListingItem(item: ListingItem, source: FeedSource): Promis
       sourceListingUrl: item.link,
       feedSourceId: source.id,
       adapterKey: "generic",
+      status: nonEnterable ? "SKIPPED" : "PENDING",
+      notes: nonEnterable ? `Entry lives on ${host} — requires a social-account action, not a form.` : undefined,
     },
   });
-  return true;
+  return !nonEnterable;
 }
 
 if (require.main === module) {
