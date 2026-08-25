@@ -12,6 +12,18 @@ import { politeDelay, isAllowedByRobots } from "@/lib/net/politeness";
  * (beyond the two patterns handled below) won't resolve here, and the
  * competition is skipped rather than guessed at.
  */
+// "www.example.com" and "example.com" are the same site for our purposes —
+// without this, a plain apex-domain link back to the listing site itself
+// (e.g. a logo link) reads as a distinct "off-site" candidate and breaks
+// the single-candidate fallback below.
+function stripWww(host: string): string {
+  return host.startsWith("www.") ? host.slice(4) : host;
+}
+
+function sameSite(hostA: string, hostB: string): boolean {
+  return stripWww(hostA) === stripWww(hostB);
+}
+
 export async function resolveEntryUrl(listingUrl: string): Promise<string | null> {
   if (!(await isAllowedByRobots(listingUrl))) return null;
   await politeDelay(listingUrl);
@@ -21,7 +33,7 @@ export async function resolveEntryUrl(listingUrl: string): Promise<string | null
   let finalUrl = await followRedirects(listingUrl);
   if (!finalUrl) return null;
 
-  if (new URL(finalUrl).host !== listingHost) {
+  if (!sameSite(new URL(finalUrl).host, listingHost)) {
     return finalUrl;
   }
 
@@ -32,7 +44,7 @@ export async function resolveEntryUrl(listingUrl: string): Promise<string | null
 
   await politeDelay(outboundLink);
   finalUrl = await followRedirects(outboundLink);
-  if (!finalUrl || new URL(finalUrl).host === listingHost) return null;
+  if (!finalUrl || sameSite(new URL(finalUrl).host, listingHost)) return null;
 
   return finalUrl;
 }
@@ -81,6 +93,9 @@ const NON_ENTRY_DOMAINS = [
   "google.com",
   "googleapis.com",
   "gstatic.com",
+  "play.google.com",
+  "apps.apple.com",
+  "landingmail.com", // email-subscribe widget, not an entry form
 ];
 
 function isNonEntryDomain(host: string): boolean {
@@ -118,7 +133,7 @@ async function findOutboundLink(pageUrl: string, sourceHost: string): Promise<st
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") continue; // skip mailto:, tel:, etc.
 
     const hrefHost = parsed.host;
-    const isOffsite = hrefHost !== sourceHost;
+    const isOffsite = !sameSite(hrefHost, sourceHost);
     if (isOffsite && isNonEntryDomain(hrefHost)) continue;
 
     const isTrackingPath = OUTBOUND_LINK_HINTS.some((hint) => href.toLowerCase().includes(hint));
@@ -158,7 +173,7 @@ function findEmbeddedUrlProp(html: string, sourceHost: string): string | null {
   while ((match = propRegex.exec(decoded))) {
     try {
       const host = new URL(match[1]!).host;
-      if (host !== sourceHost && !isNonEntryDomain(host)) return match[1]!;
+      if (!sameSite(host, sourceHost) && !isNonEntryDomain(host)) return match[1]!;
     } catch {
       continue;
     }

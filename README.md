@@ -54,7 +54,7 @@ sites (e.g. Astro islands) server-render the real off-site URL into a
 component's hydration props rather than a visible link — it sniffs those
 too, still with no JS execution.
 
-`npm run db:seed` (part of `deploy/install-pi.sh`) seeds 11 RSS feeds and 2
+`npm run db:seed` (part of `deploy/install-pi.sh`) seeds 12 RSS feeds and 2
 HTML-scraped listing sources I found and verified live as of Aug 2026 — see
 `prisma/seed.ts` for the full list and for everything I checked and
 deliberately excluded, with the specific reason (bot-challenge redirects,

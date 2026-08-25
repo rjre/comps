@@ -36,9 +36,13 @@ const prisma = new PrismaClient();
 //   hash-fragment client-side router (fragments aren't sent to the
 //   server), so this needs a Playwright-based scraper, not a plain-HTTP
 //   one like competitions.ie/allfreestuff. Not built this round.
-// - sweepstakesfanatics.com: /feed/ returns a Cloudflare "Just a
-//   moment..." challenge — we don't defeat anti-bot measures.
-// - sweepsadvantage.com: no /feed/, no autodiscovery link found.
+// - sweepstakesfanatics.com, contest.co.nz, contestscoop.com: bot-challenge
+//   pages (Cloudflare/sgcaptcha) on their feed — we don't defeat anti-bot
+//   measures.
+// - sweepsadvantage.com, competitions.co.nz (autodiscovery found, but
+//   turned out to mirror competitions.com.au's exact content — same
+//   platform, different domain), freehub.co.za, winstuff.co.nz: no working,
+//   non-duplicate feed found.
 // - giveawaybandit.com/category/giveaways/feed/: valid RSS, "giveaways" in
 //   the URL, but checked several items and most are unrelated lifestyle
 //   posts (UV safety, movie trailers, home decor) with the word
@@ -68,6 +72,7 @@ const SEED_FEEDS = [
   // the feed.
   { name: "Competitions.com.au", url: "https://www.competitions.com.au/rss.cfm" },
   { name: "Online Sweepstakes", url: "https://online-sweepstakes.com/feed/" },
+  { name: "Contest Canada", url: "https://www.contestcanada.net/feed/" },
 ];
 
 // Sites with no RSS feed but a scrapable static-HTML listing page — see
