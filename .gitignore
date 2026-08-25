@@ -9,3 +9,4 @@ prisma/dev.db-journal
 .DS_Store
 playwright-report/
 test-results/
+data/screenshots/

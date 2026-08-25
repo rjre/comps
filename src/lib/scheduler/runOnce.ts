@@ -1,7 +1,11 @@
 import { chromium } from "playwright";
+import { mkdir } from "fs/promises";
+import path from "path";
 import { prisma } from "@/lib/db";
 import { getAdapter } from "@/lib/automation/registry";
 import { createRunLogger } from "@/lib/logger";
+
+const SCREENSHOT_DIR = path.join(process.cwd(), "data", "screenshots");
 
 /**
  * Runs one pass over eligible competitions: open, not already at their own
@@ -47,6 +51,7 @@ async function runOnce() {
     }
 
     await log.info(`${candidates.length} eligible competition(s) found.`);
+    await mkdir(SCREENSHOT_DIR, { recursive: true });
 
     const browser = await chromium.launch();
     try {
@@ -66,8 +71,30 @@ async function runOnce() {
           continue;
         }
 
-        await log.info(`Entering "${competition.name}" via adapter "${adapter.key}"`, competition.id);
+        await log.info(`Entering "${competition.name}" via adapter "${adapter.key}" (${competition.url})`, competition.id);
         const page = await browser.newPage();
+        page.on("console", (msg) => {
+          if (msg.type() === "error") {
+            log.warn(`Page console error: ${msg.text()}`, competition.id).catch(() => {});
+          }
+        });
+        page.on("pageerror", (err) => {
+          log.warn(`Page error: ${err.message}`, competition.id).catch(() => {});
+        });
+
+        const captureScreenshot = async (reason: string) => {
+          const file = path.join(SCREENSHOT_DIR, `${run.id}_${competition.id}_${reason}.png`);
+          try {
+            await page.screenshot({ path: file, fullPage: true });
+            await log.info(`Saved screenshot: ${file}`, competition.id);
+          } catch (shotErr) {
+            await log.warn(
+              `Could not capture screenshot: ${shotErr instanceof Error ? shotErr.message : String(shotErr)}`,
+              competition.id,
+            );
+          }
+        };
+
         try {
           const outcome = await adapter.enterCompetition({
             page,
@@ -76,6 +103,7 @@ async function runOnce() {
             log,
             dryRun,
           });
+          await log.info(`Landed on ${page.url()} ("${await page.title().catch(() => "")}") after adapter ran`, competition.id);
           await prisma.entry.create({
             data: {
               competitionId: competition.id,
@@ -88,6 +116,7 @@ async function runOnce() {
             await log.info(`Entered: ${competition.name}`, competition.id);
           } else {
             await log.warn(`${outcome.status}: ${competition.name} — ${outcome.message ?? ""}`, competition.id);
+            await captureScreenshot(outcome.status.toLowerCase());
           }
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
@@ -95,6 +124,7 @@ async function runOnce() {
             data: { competitionId: competition.id, runId: run.id, status: "FAILED", message },
           });
           await log.error(`Failed: ${competition.name} — ${message}`, competition.id);
+          await captureScreenshot("exception");
         } finally {
           await page.close();
         }

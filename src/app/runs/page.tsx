@@ -1,4 +1,17 @@
+import { readdir } from "fs/promises";
+import path from "path";
 import { prisma } from "@/lib/db";
+
+const SCREENSHOT_DIR = path.join(process.cwd(), "data", "screenshots");
+
+async function screenshotsForRun(runId: string): Promise<string[]> {
+  try {
+    const files = await readdir(SCREENSHOT_DIR);
+    return files.filter((f) => f.startsWith(`${runId}_`));
+  } catch {
+    return [];
+  }
+}
 
 const levelColor: Record<string, string> = {
   INFO: "inherit",
@@ -15,6 +28,9 @@ export default async function RunsPage() {
       entries: { include: { competition: true } },
     },
   });
+  const screenshotsByRun = Object.fromEntries(
+    await Promise.all(runs.map(async (run) => [run.id, await screenshotsForRun(run.id)] as const)),
+  );
 
   return (
     <main>
@@ -27,7 +43,9 @@ export default async function RunsPage() {
       {runs.length === 0 ? (
         <p>No runs yet. Run `npm run run:entries` (optionally with `DRY_RUN=1`) to see one here.</p>
       ) : (
-        runs.map((run) => (
+        runs.map((run) => {
+          const shots = screenshotsByRun[run.id] ?? [];
+          return (
           <details key={run.id} style={{ marginBottom: "1rem" }} open={run === runs[0]}>
             <summary>
               <strong>{run.startedAt.toLocaleString()}</strong> — {run.status}
@@ -53,8 +71,23 @@ export default async function RunsPage() {
                 ))}
               </tbody>
             </table>
+            {shots.length > 0 && (
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                {shots.map((file) => (
+                  <a key={file} href={`/api/screenshots/${file}`} target="_blank" rel="noreferrer">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/api/screenshots/${file}`}
+                      alt={file}
+                      style={{ height: "120px", border: "1px solid #8884" }}
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
           </details>
-        ))
+          );
+        })
       )}
     </main>
   );
