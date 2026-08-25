@@ -87,11 +87,19 @@ const SEED_FEEDS = [
   { name: "Contest Corner", url: "https://www.contest-corner.com/feed/" },
   { name: "Free Samples — Free Competitions", url: "https://www.freesamples.co.uk/category/free-competitions/feed/" },
   { name: "Free Samples — Free Samples", url: "https://www.freesamples.co.uk/category/free-samples/feed/" },
+  // Forum-thread items sometimes have several unrelated off-site links
+  // (community discussion, not a single sponsor page), so expect a lower
+  // resolution rate here than blog-post-style sources — that's the
+  // resolver correctly declining to guess among genuine candidates, not a
+  // defect.
   { name: "OzBargain — Competitions", url: "https://www.ozbargain.com.au/competition/feed" },
   // Mixes free-to-enter giveaways with paid lottery/raffle promotions (e.g.
   // charity home lotteries) — the latter have no simple free-entry form and
   // the adapter should just fail cleanly on those, not a reason to exclude
-  // the feed.
+  // the feed. Separately: as of Aug 2026 its own /exit/ redirect mechanism
+  // is returning 502s for every item checked — a bug on their end, not
+  // ours (items just fail to resolve/skip in the meantime); worth
+  // rechecking later in case they fix it.
   { name: "Competitions.com.au", url: "https://www.competitions.com.au/rss.cfm" },
   { name: "Online Sweepstakes", url: "https://online-sweepstakes.com/feed/" },
   { name: "Contest Canada", url: "https://www.contestcanada.net/feed/" },

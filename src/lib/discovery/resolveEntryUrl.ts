@@ -119,6 +119,31 @@ function isNonEntryDomain(host: string): boolean {
   return NON_ENTRY_DOMAINS.some((d) => host === d || host.endsWith(`.${d}`));
 }
 
+// Third-party widget platforms many blog/small-site giveaways embed
+// instead of building their own form — a link to one of these is a much
+// stronger "this is the entry" signal than hint text/path matching, and
+// crucially lets us pick it out even when the surrounding page is full of
+// unrelated off-site links (ad/referral/social widgets) that would
+// otherwise make the page look ambiguous. Found via giveawaybase.com: a
+// real gleam.io entry link was being drowned out by sidebar crypto/
+// referral links, so the plain-single-candidate fallback correctly (but
+// unhelpfully) bailed as ambiguous.
+const KNOWN_WIDGET_HOSTS = [
+  "gleam.io",
+  "rafflecopter.com",
+  "kingsumo.com",
+  "woobox.com",
+  "punchtab.com",
+  "viralsweep.com",
+  "shortstack.com",
+  "sweepwidget.com",
+  "upviral.com",
+];
+
+function isKnownWidgetHost(host: string): boolean {
+  return KNOWN_WIDGET_HOSTS.some((d) => host === d || host.endsWith(`.${d}`));
+}
+
 async function findOutboundLink(pageUrl: string, sourceHost: string): Promise<string | null> {
   // Already past the robots/rate-limit check for this URL's host at the
   // call site (politeDelay/isAllowedByRobots run in resolveEntryUrl before
@@ -129,8 +154,12 @@ async function findOutboundLink(pageUrl: string, sourceHost: string): Promise<st
   const embedded = findEmbeddedUrlProp(html, sourceHost);
   if (embedded) return embedded;
 
+  const labeled = findLabeledUrl(html, sourceHost);
+  if (labeled) return labeled;
+
   const hrefRegex = /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   let match: RegExpExecArray | null;
+  const widgetLinks = new Set<string>();
   const hinted: { href: string; score: number }[] = [];
   const plainOffsite = new Set<string>();
 
@@ -154,6 +183,11 @@ async function findOutboundLink(pageUrl: string, sourceHost: string): Promise<st
     const isOffsite = !sameSite(hrefHost, sourceHost);
     if (isOffsite && isNonEntryDomain(hrefHost)) continue;
 
+    if (isOffsite && isKnownWidgetHost(hrefHost)) {
+      widgetLinks.add(href);
+      continue;
+    }
+
     const isTrackingPath = OUTBOUND_LINK_HINTS.some((hint) => href.toLowerCase().includes(hint));
     const isHintedText = OUTBOUND_LINK_HINTS.some((hint) => text.includes(hint));
 
@@ -165,6 +199,14 @@ async function findOutboundLink(pageUrl: string, sourceHost: string): Promise<st
     } else if (isOffsite) {
       plainOffsite.add(href);
     }
+  }
+
+  // A known widget platform is a strong enough signal to trust even when
+  // multiple appear (rare) — unlike the plain-off-site fallback below,
+  // where an unrecognized domain being merely singular is the only signal
+  // we have.
+  if (widgetLinks.size > 0) {
+    return [...widgetLinks][0]!;
   }
 
   if (hinted.length > 0) {
@@ -189,6 +231,26 @@ function findEmbeddedUrlProp(html: string, sourceHost: string): string | null {
   const propRegex = /"[a-zA-Z]*url[a-zA-Z]*"\s*:\s*\[[^,\]]*,\s*"(https?:\/\/[^"]+)"/gi;
   let match: RegExpExecArray | null;
   while ((match = propRegex.exec(decoded))) {
+    try {
+      const candidate = match[1]!;
+      const host = new URL(candidate).host;
+      if (!sameSite(host, sourceHost) && !isNonEntryDomain(host) && isSafeExternalUrl(candidate)) return candidate;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+// Some sites publish the real entry URL as plain labeled text (found in an
+// og:description meta tag on contest-corner.com: `Giveaway URL:
+// https://...`) — a much more explicit signal than inferring one from
+// anchor structure, when it's there.
+function findLabeledUrl(html: string, sourceHost: string): string | null {
+  const decoded = html.replace(/&amp;/g, "&");
+  const labeledUrlRegex = /(?:giveaway|contest|entry|competition)\s*url\s*:?\s*(https?:\/\/[^\s"'<>&]+)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = labeledUrlRegex.exec(decoded))) {
     try {
       const candidate = match[1]!;
       const host = new URL(candidate).host;

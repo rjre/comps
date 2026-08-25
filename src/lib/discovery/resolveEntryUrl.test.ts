@@ -99,6 +99,40 @@ describe("resolveEntryUrl", () => {
     await expect(resolveEntryUrl(listingUrl)).resolves.toBe(sponsorUrl);
   });
 
+  it("picks a known widget-platform link even when other unrelated off-site links make the page ambiguous (giveawaybase.com/gleam.io pattern)", async () => {
+    const listingUrl = "https://giveawaybase.com/example-giveaway/";
+    const sponsorUrl = "https://gleam.io/AbCdE/example-giveaway";
+
+    global.fetch = mockFetchRouter({
+      [listingUrl]: htmlResponse(
+        listingUrl,
+        `
+        <a href="https://t.me/somechannel">Join our Telegram</a>
+        <a href="https://r.honeygain.me/REF123">Passive income app</a>
+        <a href="${sponsorUrl}" target="_blank" rel="noopener">Example Giveaway</a>
+        `,
+      ),
+      [sponsorUrl]: htmlResponse(sponsorUrl, ""),
+    });
+
+    await expect(resolveEntryUrl(listingUrl)).resolves.toBe(sponsorUrl);
+  });
+
+  it("extracts a URL published as plain labeled text, e.g. an og:description meta tag (contest-corner.com pattern)", async () => {
+    const listingUrl = "https://www.contest-corner.com/example-giveaway/";
+    const sponsorUrl = "https://sponsor.example.com/example-giveaway/";
+
+    global.fetch = mockFetchRouter({
+      [listingUrl]: htmlResponse(
+        listingUrl,
+        `<meta property="og:description" content="Giveaway URL: ${sponsorUrl} Giveaway details: $100 Cash 18+ Open" />`,
+      ),
+      [sponsorUrl]: htmlResponse(sponsorUrl, ""),
+    });
+
+    await expect(resolveEntryUrl(listingUrl)).resolves.toBe(sponsorUrl);
+  });
+
   it("treats www and apex domain as the same site (Contest Canada regression)", async () => {
     const listingUrl = "https://www.contestcanada.net/2026/example/";
     const sponsorUrl = "https://nbacontest.com/jerseys";
