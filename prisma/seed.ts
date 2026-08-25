@@ -30,8 +30,15 @@ const prisma = new PrismaClient();
 // - reddit.com (r/sweepstakes etc.): real .rss endpoints exist, but Reddit
 //   aggressively rate-limits (429s seen) and its ToS restricts automated
 //   scraping outside their official API — not worth fighting.
-// - aussiecomps.com: no RSS/autodiscovery found; would need an HTML
-//   scraper like competitions.ie/allfreestuff — not built yet.
+// - aussiecomps.com: no RSS/autodiscovery found, and its competition
+//   "detail" URLs (index.php?id=...#onads) return generic/unrelated
+//   content when fetched directly — the real content is behind a
+//   hash-fragment client-side router (fragments aren't sent to the
+//   server), so this needs a Playwright-based scraper, not a plain-HTTP
+//   one like competitions.ie/allfreestuff. Not built this round.
+// - sweepstakesfanatics.com: /feed/ returns a Cloudflare "Just a
+//   moment..." challenge — we don't defeat anti-bot measures.
+// - sweepsadvantage.com: no /feed/, no autodiscovery link found.
 // - giveawaybandit.com/category/giveaways/feed/: valid RSS, "giveaways" in
 //   the URL, but checked several items and most are unrelated lifestyle
 //   posts (UV safety, movie trailers, home decor) with the word
@@ -60,6 +67,7 @@ const SEED_FEEDS = [
   // the adapter should just fail cleanly on those, not a reason to exclude
   // the feed.
   { name: "Competitions.com.au", url: "https://www.competitions.com.au/rss.cfm" },
+  { name: "Online Sweepstakes", url: "https://online-sweepstakes.com/feed/" },
 ];
 
 // Sites with no RSS feed but a scrapable static-HTML listing page — see
