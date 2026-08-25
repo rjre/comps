@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "sync:competitions": "tsx scripts/syncCompetitions.ts",
     "run:entries": "tsx src/lib/scheduler/runOnce.ts"
   },
   "dependencies": {
