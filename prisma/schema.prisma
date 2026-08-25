@@ -35,7 +35,9 @@ model Profile {
 model FeedSource {
   id            String   @id @default(cuid())
   name          String
-  url           String   @unique // RSS/Atom feed URL
+  url           String   @unique // feed URL, or the listing page URL for kind = "html"
+  kind          String   @default("rss") // "rss" | "html"
+  scraperKey    String?  // which scraper in src/lib/discovery/scrapers handles this, when kind = "html"
   enabled       Boolean  @default(true)
   lastFetchedAt DateTime?
   lastError     String?

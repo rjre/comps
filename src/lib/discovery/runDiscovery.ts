@@ -1,15 +1,20 @@
 import Parser from "rss-parser";
 import { prisma } from "@/lib/db";
 import { resolveEntryUrl } from "./resolveEntryUrl";
+import { getScraper } from "./scrapers/registry";
+import type { ListingItem } from "./scrapers/types";
 import { politeDelay, isAllowedByRobots } from "@/lib/net/politeness";
+import type { FeedSource } from "@prisma/client";
 
 const parser = new Parser();
 
 /**
- * One discovery pass: fetch every enabled FeedSource, resolve each new
- * item to its real off-site entry URL, and add it as a PENDING Competition
- * for the entry runner to pick up. Safe to call repeatedly — resolution
- * dedupes on Competition.url, and re-adding an existing item is a no-op.
+ * One discovery pass: fetch every enabled FeedSource (RSS feed, or an
+ * HTML listing page for sites with no feed — see src/lib/discovery/scrapers),
+ * resolve each new item to its real off-site entry URL, and add it as a
+ * PENDING Competition for the entry runner to pick up. Safe to call
+ * repeatedly — resolution dedupes on Competition.url, and re-adding an
+ * existing item is a no-op.
  */
 export async function runDiscovery() {
   const sources = await prisma.feedSource.findMany({ where: { enabled: true } });
@@ -21,40 +26,10 @@ export async function runDiscovery() {
   let added = 0;
   for (const source of sources) {
     try {
-      if (!(await isAllowedByRobots(source.url))) {
-        console.warn(`robots.txt disallows fetching feed ${source.url}, skipping`);
-        continue;
-      }
-      await politeDelay(source.url);
+      const items = source.kind === "html" ? await fetchHtmlListingItems(source) : await fetchRssItems(source);
 
-      const feed = await parser.parseURL(source.url);
-      for (const item of feed.items) {
-        if (!item.link) continue;
-
-        const alreadySeen = await prisma.competition.findFirst({
-          where: { sourceListingUrl: item.link },
-        });
-        if (alreadySeen) continue;
-
-        const entryUrl = await resolveEntryUrl(item.link);
-        if (!entryUrl) {
-          console.log(`Could not resolve an off-site entry URL for "${item.title}", skipping`);
-          continue;
-        }
-
-        const existingByUrl = await prisma.competition.findUnique({ where: { url: entryUrl } });
-        if (existingByUrl) continue;
-
-        await prisma.competition.create({
-          data: {
-            name: item.title ?? entryUrl,
-            url: entryUrl,
-            sourceListingUrl: item.link,
-            feedSourceId: source.id,
-            adapterKey: "generic",
-          },
-        });
-        added++;
+      for (const item of items) {
+        added += (await processListingItem(item, source)) ? 1 : 0;
       }
 
       await prisma.feedSource.update({
@@ -63,7 +38,7 @@ export async function runDiscovery() {
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error(`Failed to fetch feed "${source.name}" (${source.url}): ${message}`);
+      console.error(`Failed to fetch source "${source.name}" (${source.url}): ${message}`);
       await prisma.feedSource.update({
         where: { id: source.id },
         data: { lastFetchedAt: new Date(), lastError: message },
@@ -73,6 +48,54 @@ export async function runDiscovery() {
 
   console.log(`Discovery pass complete: ${added} new competition(s) added.`);
   return added;
+}
+
+async function fetchRssItems(source: FeedSource): Promise<ListingItem[]> {
+  if (!(await isAllowedByRobots(source.url))) {
+    console.warn(`robots.txt disallows fetching feed ${source.url}, skipping`);
+    return [];
+  }
+  await politeDelay(source.url);
+
+  const feed = await parser.parseURL(source.url);
+  return feed.items
+    .filter((item): item is typeof item & { link: string } => Boolean(item.link))
+    .map((item) => ({ title: item.title ?? item.link, link: item.link }));
+}
+
+async function fetchHtmlListingItems(source: FeedSource): Promise<ListingItem[]> {
+  const scraper = source.scraperKey ? getScraper(source.scraperKey) : undefined;
+  if (!scraper) {
+    console.warn(`No scraper registered for "${source.scraperKey}" (source "${source.name}"), skipping`);
+    return [];
+  }
+  return scraper.fetchItems(source.url);
+}
+
+/** Returns true if a new Competition was created. */
+async function processListingItem(item: ListingItem, source: FeedSource): Promise<boolean> {
+  const alreadySeen = await prisma.competition.findFirst({ where: { sourceListingUrl: item.link } });
+  if (alreadySeen) return false;
+
+  const entryUrl = await resolveEntryUrl(item.link);
+  if (!entryUrl) {
+    console.log(`Could not resolve an off-site entry URL for "${item.title}", skipping`);
+    return false;
+  }
+
+  const existingByUrl = await prisma.competition.findUnique({ where: { url: entryUrl } });
+  if (existingByUrl) return false;
+
+  await prisma.competition.create({
+    data: {
+      name: item.title || entryUrl,
+      url: entryUrl,
+      sourceListingUrl: item.link,
+      feedSourceId: source.id,
+      adapterKey: "generic",
+    },
+  });
+  return true;
 }
 
 if (require.main === module) {

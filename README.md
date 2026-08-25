@@ -44,18 +44,36 @@ chain to resolve the actual off-site form before adding it as a tracked
 a site needs a JS click to leave its own domain, that item is skipped rather
 than guessed at.
 
-`npm run db:seed` (part of `deploy/install-pi.sh`) seeds 11 feeds I found and
-verified as live, valid RSS as of Aug 2026 — see `prisma/seed.ts` for the
-list and for the ones I checked and deliberately excluded (bot-challenge
-redirects, mismatched TLS certs, no working feed, mirrored/duplicate
-content, or real feeds that turned out to be mostly discount codes/free
-game keys rather than fillable entry forms). Add more at `/sources` any
-time.
+Some sites have no RSS feed at all — for those, a scraper under
+`src/lib/discovery/scrapers/*.ts` parses their static-HTML listing page
+instead (pagination and all), producing the same shape of item that RSS
+parsing does, so everything downstream (URL resolution, dedup, Competition
+creation) is identical either way. `resolveEntryUrl` also understands a
+second pattern beyond plain `<a href>` outbound links: some JS-framework
+sites (e.g. Astro islands) server-render the real off-site URL into a
+component's hydration props rather than a visible link — it sniffs those
+too, still with no JS execution.
+
+`npm run db:seed` (part of `deploy/install-pi.sh`) seeds 13 RSS feeds and 2
+HTML-scraped listing sources I found and verified live as of Aug 2026 — see
+`prisma/seed.ts` for the full list and for everything I checked and
+deliberately excluded, with the specific reason (bot-challenge redirects,
+mismatched TLS certs, no working feed, mirrored/duplicate content, dynamic
+JS-loaded content not worth scraping yet, Reddit's anti-scraping ToS, or
+real feeds that turned out to be mostly discount codes/free game keys
+rather than fillable entry forms). Add more at `/sources` any time.
 
 I didn't wire up a fully automatic "search the web for new feeds" pipeline,
 since that needs a paid search-API key to run unattended on the Pi itself —
-today, growing the feed list means asking me to find and verify more (which
-I can do anytime), or adding one yourself at `/sources`.
+today, growing the source list means asking me to find and verify more
+(which I can do anytime), or adding one yourself at `/sources`.
+
+Throughput note: with the default 4s per-host politeness delay and most
+items needing 2 fetches to resolve (the listing page, then its outbound
+link's redirect target), a full discovery pass across all seeded sources
+takes on the order of tens of minutes, not seconds — that's deliberate
+(see "Polite by default" above), and is why discovery and entries run on
+independent loops rather than one blocking the other.
 
 ## Checking for wins (Gmail)
 
@@ -135,9 +153,11 @@ Both services restart automatically on failure and start on boot.
 
 ## Status
 
-Profile management, feed-based discovery with entry-URL resolution, the
-generic + per-site adapter system, the continuous worker, and read-only
-Gmail win-scanning are all in place. Next: your profile details (email,
-address, etc. — not yet provided), the Gmail OAuth setup above if you want
-`/wins` active, and any specific sites you want a hand-written adapter for
-instead of relying on the generic fallback.
+Profile management, feed- and scraper-based discovery with entry-URL
+resolution, the generic + per-site adapter system, the continuous worker,
+read-only Gmail win-scanning, and dashboard visibility (competition/entry
+counts by status, yield per source) are all in place. Expired competitions
+are auto-marked CLOSED on each entry pass. Next: your profile details
+(email, address, etc. — not yet provided), the Gmail OAuth setup above if
+you want `/wins` active, and any specific sites you want a hand-written
+adapter for instead of relying on the generic fallback.

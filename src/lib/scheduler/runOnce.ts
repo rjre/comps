@@ -2,6 +2,7 @@ import { chromium } from "playwright";
 import { prisma } from "@/lib/db";
 import { getAdapter } from "@/lib/automation/registry";
 import { politeDelay } from "@/lib/net/politeness";
+import { closeExpiredCompetitions } from "./closeExpired";
 
 const ENTRY_CONCURRENCY = Number(process.env.ENTRY_CONCURRENCY ?? 2);
 
@@ -19,6 +20,9 @@ export async function runEntryPass(): Promise<{ processed: number }> {
     return { processed: 0 };
   }
   const profile = profileOrNull;
+
+  const { closed } = await closeExpiredCompetitions();
+  if (closed > 0) console.log(`Closed ${closed} expired competition(s).`);
 
   const now = new Date();
   const candidates = await prisma.competition.findMany({
