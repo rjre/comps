@@ -39,7 +39,7 @@ async function runOnce() {
         status: "PENDING",
         OR: [{ closesAt: null }, { closesAt: { gt: now } }],
       },
-      include: { entries: true },
+      include: { entries: { include: { run: true } } },
     });
 
     await prisma.run.update({ where: { id: run.id }, data: { candidateCount: candidates.length } });
@@ -56,7 +56,9 @@ async function runOnce() {
     const browser = await chromium.launch();
     try {
       for (const competition of candidates) {
-        const alreadyEntered = competition.entries.filter((e) => e.status === "SUCCESS").length;
+        // Dry-run entries are logged for review but never count against the
+        // competition's real (limited) entry cap.
+        const alreadyEntered = competition.entries.filter((e) => e.status === "SUCCESS" && !e.run?.dryRun).length;
         if (alreadyEntered >= competition.maxEntries) {
           await log.info(`Already at entry cap (${alreadyEntered}/${competition.maxEntries}), skipping`, competition.id);
           await prisma.entry.create({
