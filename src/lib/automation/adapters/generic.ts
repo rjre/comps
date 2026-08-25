@@ -8,8 +8,12 @@ import type { CompetitionAdapter, EntryOutcome } from "../types";
  * covering many unknown sites instead of a hand-maintained list.
  *
  * What it deliberately does NOT do: solve CAPTCHAs, work around login
- * walls, or tick marketing/data-sharing consent boxes on the user's
- * behalf. Any of those => a clean skip, not a workaround.
+ * walls, or tick *optional* marketing/data-sharing consent boxes on the
+ * user's behalf. Any of those => a clean skip, not a workaround. It does
+ * check a checkbox the form marks `required` (age verification, "I
+ * accept the rules") — entering at all already implies accepting that
+ * competition's own rules, so leaving those unchecked would just block
+ * submission rather than protect the user from anything.
  */
 export const genericAdapter: CompetitionAdapter = {
   key: "generic",
@@ -65,7 +69,7 @@ export const genericAdapter: CompetitionAdapter = {
       return { status: "FAILED", message: "Could not confidently match any form fields" };
     }
 
-    await declineOptionalConsentCheckboxes(form);
+    await handleCheckboxes(form);
 
     const submit = form.locator('button[type="submit"], input[type="submit"]').first();
     if ((await submit.count()) === 0) {
@@ -87,10 +91,16 @@ function combine(selectors: readonly string[]): string {
   return selectors.join(", ");
 }
 
-// Required consent (e.g. "I agree to the rules") is left to the site's
-// default; only checkboxes clearly labelled as optional marketing/sharing
-// opt-ins are actively left unchecked when the site defaults them to on.
-async function declineOptionalConsentCheckboxes(form: import("playwright").Locator) {
+// Two passes, both conservative:
+// - Marketing/data-sharing opt-ins the site defaulted to checked get
+//   unchecked, regardless of `required` — auto-entering a competition
+//   never implies auto-consenting to marketing.
+// - A checkbox the site's own markup marks `required` (age verification,
+//   "I accept the rules") gets checked if it isn't marketing — entering
+//   at all already implies accepting that competition's rules, and
+//   leaving a required box unchecked would just block submission.
+// Anything not `required` and not marketing-hinted is left as-is.
+async function handleCheckboxes(form: import("playwright").Locator) {
   const checkboxes = form.locator('input[type="checkbox"]');
   const count = await checkboxes.count();
   for (let i = 0; i < count; i++) {
@@ -98,8 +108,13 @@ async function declineOptionalConsentCheckboxes(form: import("playwright").Locat
     const name = ((await box.getAttribute("name")) ?? "").toLowerCase();
     const id = ((await box.getAttribute("id")) ?? "").toLowerCase();
     const isMarketing = MARKETING_HINTS.some((hint) => name.includes(hint) || id.includes(hint));
-    if (isMarketing && (await box.isChecked().catch(() => false))) {
+    const isRequired = (await box.getAttribute("required")) !== null;
+    const checked = await box.isChecked().catch(() => false);
+
+    if (isMarketing && checked) {
       await box.uncheck().catch(() => {});
+    } else if (isRequired && !isMarketing && !checked) {
+      await box.check().catch(() => {});
     }
   }
 }
