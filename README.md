@@ -133,6 +133,7 @@ Run everything by hand while testing:
 npm run run:discovery   # one discovery pass
 npm run run:entries     # one entry pass
 npm run worker          # both, continuously, on the intervals in .env
+npm run test            # regression tests for the URL-resolution heuristics — no network needed
 ```
 
 ## Deploying to a Raspberry Pi
