@@ -1,0 +1,23 @@
+import "./globals.css";
+import type { ReactNode } from "react";
+import Link from "next/link";
+
+export const metadata = {
+  title: "Comps — Automated Giveaway Entry Assistant",
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <nav>
+          <Link href="/dashboard">Dashboard</Link>
+          <Link href="/profile">Profile</Link>
+          <Link href="/competitions">Competitions</Link>
+        </nav>
+        <hr />
+        {children}
+      </body>
+    </html>
+  );
+}

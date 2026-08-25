@@ -1,0 +1,56 @@
+// Single-user entry assistant: one Profile drives every automated entry.
+// Deliberately no support for multiple identities per competition —
+// that crosses from "assistant" into sweepstakes fraud.
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  addressLine1 String?
+  addressLine2 String?
+  city        String?
+  region      String?
+  postalCode  String?
+  country     String?
+  dateOfBirth DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// SQLite has no native enum type, so status fields below are plain strings
+// constrained by the TypeScript union types in src/lib/automation/types.ts
+// and src/lib/status.ts — validate against those, not free-form values.
+
+model Competition {
+  id          String   @id @default(cuid())
+  name        String
+  url         String   @unique
+  adapterKey  String   // which adapter in src/lib/automation/adapters handles this site
+  opensAt     DateTime?
+  closesAt    DateTime?
+  maxEntries  Int      @default(1) // entries allowed per person, per the competition's own rules
+  status      String   @default("PENDING") // PENDING | ENTERED | SKIPPED | FAILED | CLOSED
+  notes       String?
+  createdAt   DateTime @default(now())
+  entries     Entry[]
+}
+
+model Entry {
+  id             String   @id @default(cuid())
+  competitionId  String
+  competition    Competition @relation(fields: [competitionId], references: [id])
+  status         String   // SUCCESS | FAILED | SKIPPED_ALREADY_ENTERED | SKIPPED_RULES
+  message        String?
+  attemptedAt    DateTime @default(now())
+}
