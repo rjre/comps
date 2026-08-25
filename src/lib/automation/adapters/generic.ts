@@ -40,6 +40,12 @@ export const genericAdapter: CompetitionAdapter = {
       [combine(FIELD_MATCHERS.region), profile.region],
       [combine(FIELD_MATCHERS.postalCode), profile.postalCode],
       [combine(FIELD_MATCHERS.country), profile.country],
+      // Only input[type=date]/autocomplete=bday — both expect an
+      // unambiguous YYYY-MM-DD value per the HTML spec. A freeform text
+      // "date of birth" field's expected format can't be known reliably
+      // (DD/MM/YYYY vs MM/DD/YYYY etc.), so those are left unfilled rather
+      // than risking a wrong date going in.
+      [combine(FIELD_MATCHERS.dateOfBirth), profile.dateOfBirth?.toISOString().slice(0, 10)],
     ];
 
     let filledCount = 0;
@@ -132,4 +138,5 @@ const FIELD_MATCHERS = {
     'input[autocomplete="postal-code"]',
   ],
   country: ['input[name*="country" i]', 'input[autocomplete="country-name"]'],
+  dateOfBirth: ['input[type="date"]', 'input[autocomplete="bday"]'],
 } as const;

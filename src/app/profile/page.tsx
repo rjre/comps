@@ -14,6 +14,10 @@ async function saveProfile(formData: FormData) {
     region: String(formData.get("region") ?? "") || null,
     postalCode: String(formData.get("postalCode") ?? "") || null,
     country: String(formData.get("country") ?? "") || null,
+    dateOfBirth: (() => {
+      const raw = String(formData.get("dateOfBirth") ?? "");
+      return raw ? new Date(raw) : null;
+    })(),
   };
 
   const existing = await prisma.profile.findFirst();
@@ -73,6 +77,14 @@ export default async function ProfilePage() {
         <label>
           Country
           <input name="country" defaultValue={profile?.country ?? ""} />
+        </label>
+        <label>
+          Date of birth (some competitions require age verification)
+          <input
+            name="dateOfBirth"
+            type="date"
+            defaultValue={profile?.dateOfBirth ? profile.dateOfBirth.toISOString().slice(0, 10) : ""}
+          />
         </label>
         <button type="submit">Save</button>
       </form>
