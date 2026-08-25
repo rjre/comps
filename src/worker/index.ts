@@ -11,8 +11,8 @@ const MAIL_SCAN_INTERVAL_MS = Number(process.env.MAIL_SCAN_INTERVAL_MINUTES ?? 6
 /**
  * Single long-running process meant to be the whole app on a Pi: no
  * external cron needed, no dependency on Claude or any other service.
- * Two independent loops so a slow/broken feed source never blocks entries
- * from running, and vice versa.
+ * Independent loops (discovery, entries, and mail-scan if configured) so
+ * a slow/broken one never blocks the others.
  */
 async function loop(name: string, intervalMs: number, fn: () => Promise<unknown>) {
   while (true) {

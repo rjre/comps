@@ -124,7 +124,7 @@ async function processListingItem(item: ListingItem, source: FeedSource): Promis
       feedSourceId: source.id,
       adapterKey: "generic",
       status: nonEnterable ? "SKIPPED" : "PENDING",
-      notes: nonEnterable ? `Entry lives on ${host} — requires a social-account action, not a form.` : undefined,
+      notes: nonEnterable ? `Entry lives on ${host} — a social-account action or newsletter signup, not a fillable form.` : undefined,
     },
   });
   return !nonEnterable;
