@@ -56,6 +56,19 @@ const prisma = new PrismaClient();
 //   URL for this site's giveaway content found; not worth guessing paths.
 // (Both were seeded briefly; REMOVED_FEEDS below cleans up anyone who
 // already ran db:seed with them.)
+// - forums.moneysavingexpert.com (Competitions Time): real, active, on-topic
+//   feed — but its own robots.txt explicitly disallows `/*.rss$` for
+//   generic crawlers (allowing only named AI-assistant user-agents this
+//   app doesn't identify as), so isAllowedByRobots correctly refuses it.
+//   Also, forum threads link to multiple things (the actual sponsor, MSE's
+//   own site, social nav) with no clear single candidate — a poor fit for
+//   this resolver even setting robots.txt aside.
+// - deartline.com, forphotographersonly.com/blog-feed.xml: real feeds, but
+//   deartline's items are "contest winners announced" news, not open
+//   entries; forphotographersonly's feed came back empty. photocontestinsider.com
+//   (523, origin unreachable) and free-photo-contests.com/magicfreebiesuk.co.uk
+//   (no working feed found) also checked. Photography contests skew
+//   paid-entry anyway, a different category from free giveaways.
 const SEED_FEEDS = [
   { name: "ThePrizeFinder — New Competitions", url: "https://www.theprizefinder.com/feed/new-competitions" },
   { name: "ThePrizeFinder — Top Prizes", url: "https://www.theprizefinder.com/feed/top-prizes" },

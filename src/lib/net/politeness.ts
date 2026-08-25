@@ -60,8 +60,19 @@ function parseRobotsDisallowForAllAgents(text: string): string[] {
   return disallow;
 }
 
+// robots.txt Disallow rules support `*` (any sequence of characters) and a
+// trailing `$` (end of path) per the de facto extension most sites/crawlers
+// follow (e.g. Google's) — treating a rule as a plain string prefix, as an
+// earlier version of this function did, misses any rule using either,
+// silently ignoring real site policy (found via forums.moneysavingexpert.com,
+// whose robots.txt disallows `/*.rss$` for generic crawlers).
+function disallowRuleToRegExp(rule: string): RegExp {
+  const escaped = rule.replace(/[.+?^{}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
+  return new RegExp(`^${escaped}`);
+}
+
 export async function isAllowedByRobots(url: string): Promise<boolean> {
   const parsed = new URL(url);
   const disallow = await getRobotsDisallow(parsed.origin);
-  return !disallow.some((rule) => parsed.pathname.startsWith(rule));
+  return !disallow.some((rule) => disallowRuleToRegExp(rule).test(parsed.pathname));
 }
