@@ -40,6 +40,7 @@ export const genericAdapter: CompetitionAdapter = {
       [combine(FIELD_MATCHERS.fullName), `${profile.firstName} ${profile.lastName}`],
       [combine(FIELD_MATCHERS.phone), profile.phone],
       [combine(FIELD_MATCHERS.addressLine1), profile.addressLine1],
+      [combine(FIELD_MATCHERS.addressLine2), profile.addressLine2],
       [combine(FIELD_MATCHERS.city), profile.city],
       [combine(FIELD_MATCHERS.region), profile.region],
       [combine(FIELD_MATCHERS.postalCode), profile.postalCode],
@@ -63,6 +64,10 @@ export const genericAdapter: CompetitionAdapter = {
       } catch {
         // Not a fillable text input (e.g. a <select>) — skip rather than guess.
       }
+    }
+
+    if (profile.country) {
+      filledCount += await selectMatchingOption(form, FIELD_MATCHERS.countrySelect, profile.country);
     }
 
     if (filledCount === 0) {
@@ -89,6 +94,26 @@ async function hasAny(page: import("playwright").Page, selector: string): Promis
 
 function combine(selectors: readonly string[]): string {
   return selectors.join(", ");
+}
+
+// selectOption matches by exact value or exact visible label — no fuzzy
+// guessing ("United Kingdom" vs "UK" vs "GB" won't cross-match), so this
+// only succeeds when the option text is an exact match. Returns 1 if it
+// filled something, 0 otherwise — folds into the same filledCount total
+// as the text-field loop.
+async function selectMatchingOption(
+  form: import("playwright").Locator,
+  selectors: readonly string[],
+  value: string,
+): Promise<number> {
+  const select = form.locator(selectors.join(", ")).first();
+  if ((await select.count()) === 0) return 0;
+  try {
+    await select.selectOption({ label: value });
+    return 1;
+  } catch {
+    return 0;
+  }
 }
 
 // Two passes, both conservative:
@@ -144,6 +169,14 @@ const FIELD_MATCHERS = {
     'input[autocomplete="address-line1"]',
     'input[placeholder*="address" i]',
   ],
+  // Specific "line 2" patterns only — must not overlap addressLine1's
+  // broad "address" match, or both would target the same first field.
+  addressLine2: [
+    'input[name*="address2" i]',
+    'input[name*="address_2" i]',
+    'input[name*="addressline2" i]',
+    'input[autocomplete="address-line2"]',
+  ],
   city: ['input[name*="city" i]', 'input[name*="town" i]', 'input[autocomplete="address-level2"]'],
   region: ['input[name*="county" i]', 'input[name*="state" i]', 'input[autocomplete="address-level1"]'],
   postalCode: [
@@ -153,5 +186,6 @@ const FIELD_MATCHERS = {
     'input[autocomplete="postal-code"]',
   ],
   country: ['input[name*="country" i]', 'input[autocomplete="country-name"]'],
+  countrySelect: ['select[name*="country" i]', 'select[autocomplete="country-name"]'],
   dateOfBirth: ['input[type="date"]', 'input[autocomplete="bday"]'],
 } as const;

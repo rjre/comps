@@ -10,6 +10,7 @@ async function saveProfile(formData: FormData) {
     email: String(formData.get("email") ?? ""),
     phone: String(formData.get("phone") ?? "") || null,
     addressLine1: String(formData.get("addressLine1") ?? "") || null,
+    addressLine2: String(formData.get("addressLine2") ?? "") || null,
     city: String(formData.get("city") ?? "") || null,
     region: String(formData.get("region") ?? "") || null,
     postalCode: String(formData.get("postalCode") ?? "") || null,
@@ -61,6 +62,10 @@ export default async function ProfilePage() {
         <label>
           Address line 1
           <input name="addressLine1" defaultValue={profile?.addressLine1 ?? ""} />
+        </label>
+        <label>
+          Address line 2
+          <input name="addressLine2" defaultValue={profile?.addressLine2 ?? ""} />
         </label>
         <label>
           City
