@@ -46,5 +46,17 @@
     "url": "https://www.jet2holidays.com/email",
     "adapterKey": "jet2holidays-newsletter",
     "notes": "Official Jet2holidays (jet2holidays.com) email sign-up page, first-party, no purchase/account necessary. Single email field (input[name=email]) + Sign up button (#btn-email), standard OneTrust cookie banner. No genuine open no-purchase-necessary Jet2holidays competition found at time of writing (the ones that turned up in search had already closed). easyJet Holidays checked and skipped: easyjet.com returns a persistent 403 on a plain page load (confirmed twice), not just at submit — genuine bot-protection block, not evaded."
+  },
+  {
+    "name": "Colchester Zoo",
+    "url": "https://colchesterzoo.us18.list-manage.com/subscribe?u=2324e9250a901bf14e9d86e9d&id=ec216d1f40",
+    "adapterKey": "colchester-zoo-newsletter",
+    "notes": "Colchester Zoo (Colchester Zoological Society), Essex — genuine Mailchimp hosted signup page, linked from the zoo's own official site. First name, last name, and email all required by this form (verified directly against each field's own 'This field is required' text). GDPR contact-channel checkboxes (Email/Direct Mail) present — only 'Email' ticked, same as devons-top-attractions-newsletter. No currently open first-party competition found on the zoo's own domain (past ones ran via Facebook or third-party blogs, not a web form) — newsletter only. Uses the same list-manage.com hosted-subscribe-page pattern already documented as connection-blocked for devons-top-attractions-newsletter (different Mailchimp shard, us18 vs us9, so worth checking directly rather than assuming the same result)."
+  },
+  {
+    "name": "Adventure Island",
+    "url": "https://adventureisland.co.uk/",
+    "adapterKey": "adventure-island-newsletter",
+    "notes": "Adventure Island, Southend-on-Sea's own theme park (adventureisland.co.uk) — genuine first-party newsletter, a simple Elementor Pro footer form on the homepage (optional Name + required Email). CookieYes cookie banner (.cky-btn-reject). No currently open no-purchase-necessary competition found on this org's own domain at time of writing (a past c2c-run Adventure Island annual-pass giveaway on c2c-online.co.uk, already tracked separately via c2c-blowout-company, is stale/closed from 2024) — newsletter only."
   }
 ]
