@@ -10,3 +10,4 @@ prisma/dev.db-journal
 playwright-report/
 test-results/
 data/screenshots/
+.claude/
