@@ -9,6 +9,7 @@ import { coastMagazineSuffolkCoastAdapter } from "./adapters/coastMagazineSuffol
 import { devonsTopAttractionsAdapter } from "./adapters/devonsTopAttractions";
 import { c2cBlowoutCompanyAdapter } from "./adapters/c2cBlowoutCompany";
 import { tuiMonthlyGiveawayAdapter } from "./adapters/tuiMonthlyGiveaway";
+import { solmarVillasBritishTravelAwardsAdapter } from "./adapters/solmarVillasBritishTravelAwards";
 
 const adapters: CompetitionAdapter[] = [
   exampleAdapter,
@@ -21,6 +22,7 @@ const adapters: CompetitionAdapter[] = [
   devonsTopAttractionsAdapter,
   c2cBlowoutCompanyAdapter,
   tuiMonthlyGiveawayAdapter,
+  solmarVillasBritishTravelAwardsAdapter,
 ];
 
 export const adapterRegistry = new Map(adapters.map((a) => [a.key, a]));

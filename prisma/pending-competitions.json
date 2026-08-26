@@ -54,5 +54,13 @@
     "closesAt": "2026-08-31T23:59:00.000Z",
     "maxEntries": 1,
     "notes": "Official TUI UK Limited (tui.co.uk) monthly prize draw, no purchase necessary. Prize: £500 off a TUI holiday (min spend £500). Recurs every calendar month with a new countdown/draw — modelled as one Competition row per month reusing the tui-monthly-giveaway adapter; register a fresh 'TUI Monthly Giveaway — <Month> <Year>' row (closesAt = end of that month) once this one closes, rather than expecting this row to re-enter itself. Doubles as TUI's own newsletter signup — entering inherently opts into TUI Group marketing emails, stated plainly on the page with no separate optional checkbox to decline (fine here: that's the point of this project's newsletter side, and it's TUI's own first-party marketing, not third-party sharing). WPForms form (id 93) that lazy-loads its real fields 15-20s after the page settles — confirmed directly, 0 form elements present at 8s, 13 present at 15-20s."
+  },
+  {
+    "name": "British Travel Awards — Win a £5,000 Villa Holiday (vote for Solmar Villas)",
+    "url": "https://britishtravelawards.com/vote/?nominee=solmar-villas",
+    "adapterKey": "solmar-villas-british-travel-awards",
+    "closesAt": "2026-09-01T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Solmar Villas (solmarvillas.com) is nominated in 9 British Travel Awards categories; voting for them on the awards' own official site enters a draw for a £5,000 villa holiday, no purchase necessary. The vote URL pre-selects all 9 categories via its ?nominee= query param — a genuine mechanical company selection, not a fabricated opinion. Three-page Gravity Forms wizard (category review → Confirm Vote → Name/Email/Phone, phone required 'to verify your vote'). That phrasing is a deliberate flag: if it turns out to mean an SMS/call one-time-code step, the adapter fails loudly rather than attempting it (same rule as CAPTCHAs) — confirmed the form's fields exist via curl'd HTML, but not that the post-submit flow is fully automatable end-to-end, so the first live run needs a human's eyes on the resulting screenshot either way. Closes 1 Sept 2026 (tight — one day after this was added)."
   }
 ]
