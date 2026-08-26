@@ -43,6 +43,9 @@ model Competition {
   maxEntries  Int      @default(1) // entries allowed per person, per the competition's own rules
   status      String   @default("PENDING") // PENDING | ENTERED | SKIPPED | FAILED | CLOSED
   notes       String?
+  // Set only for sites that require a real account to enter — JSON string,
+  // e.g. {"username","password"}. Same pattern as NewsletterSource.credentials.
+  credentials String?
   createdAt   DateTime @default(now())
   entries     Entry[]
 }

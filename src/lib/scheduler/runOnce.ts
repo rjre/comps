@@ -116,6 +116,13 @@ async function runOnce() {
           });
           if (outcome.status === "SUCCESS") {
             await log.info(`Entered: ${competition.name}`, competition.id);
+            if (!dryRun && "credentials" in outcome && outcome.credentials) {
+              await prisma.competition.update({
+                where: { id: competition.id },
+                data: { credentials: JSON.stringify(outcome.credentials) },
+              });
+              await log.info("Account credentials stored on the record, not logged", competition.id);
+            }
           } else {
             await log.warn(`${outcome.status}: ${competition.name} — ${outcome.message ?? ""}`, competition.id);
             await captureScreenshot(outcome.status.toLowerCase());

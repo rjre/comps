@@ -4,7 +4,7 @@ import type { EntryStatus } from "@/lib/status";
 import type { RunLogger } from "@/lib/logger";
 
 export type EntryOutcome =
-  | { status: Extract<EntryStatus, "SUCCESS">; message?: string }
+  | { status: Extract<EntryStatus, "SUCCESS">; message?: string; credentials?: { username?: string; password?: string } }
   | { status: Extract<EntryStatus, "FAILED">; message: string }
   | { status: Extract<EntryStatus, "SKIPPED_ALREADY_ENTERED">; message?: string }
   | { status: Extract<EntryStatus, "SKIPPED_RULES">; message: string };
