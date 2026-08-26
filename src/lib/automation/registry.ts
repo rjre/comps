@@ -6,6 +6,8 @@ import { visitEssexGardenersWorldAdapter } from "./adapters/visitEssexGardenersW
 import { northNorfolkAttractionsAdapter } from "./adapters/northNorfolkAttractions";
 import { villagePeopleBanhamZooAdapter } from "./adapters/villagePeopleBanhamZoo";
 import { coastMagazineSuffolkCoastAdapter } from "./adapters/coastMagazineSuffolkCoast";
+import { devonsTopAttractionsAdapter } from "./adapters/devonsTopAttractions";
+import { c2cBlowoutCompanyAdapter } from "./adapters/c2cBlowoutCompany";
 
 const adapters: CompetitionAdapter[] = [
   exampleAdapter,
@@ -15,6 +17,8 @@ const adapters: CompetitionAdapter[] = [
   northNorfolkAttractionsAdapter,
   villagePeopleBanhamZooAdapter,
   coastMagazineSuffolkCoastAdapter,
+  devonsTopAttractionsAdapter,
+  c2cBlowoutCompanyAdapter,
 ];
 
 export const adapterRegistry = new Map(adapters.map((a) => [a.key, a]));

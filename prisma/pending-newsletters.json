@@ -22,5 +22,11 @@
     "url": "https://www.coastmagazine.co.uk/newsletter/",
     "adapterKey": "coast-magazine-newsletter",
     "notes": "Standalone newsletter signup (dotdigital/Kelsey landing page, different URL from the coast-magazine-suffolk-coast competition's own entry form, though same underlying platform). Requires name/email; opts into 'Beachcomber' (Coast's general newsletter) only, not the separate 'Coast Property' one or the broader 'Kelsey Publishing promotional emails' checkbox. Org already tracked via the coast-magazine-suffolk-coast competition adapter."
+  },
+  {
+    "name": "Devon's Top Attractions",
+    "url": "https://devonstopattractions.us9.list-manage.com/subscribe?u=54b21fa2a27ffb0374b2e6ff4&id=95e84f5ee1",
+    "adapterKey": "devons-top-attractions-newsletter",
+    "notes": "Standalone Mailchimp hosted signup page (linked from a 'Newsletter Sign up' panel on the same page as the devons-top-attractions competition, but a genuinely separate submission — different platform, Mailchimp vs that page's own Gravity Forms). Requires email; name/phone/county optional. Three GDPR contact-channel checkboxes present (Email/Direct Mail/Customized online advertising) — only 'Email' ticked, since that's this newsletter's own delivery channel, not third-party sharing. Org already tracked via the devons-top-attractions competition adapter."
   }
 ]

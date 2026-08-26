@@ -30,5 +30,21 @@
     "closesAt": "2026-08-31T23:00:00.000Z",
     "maxEntries": 1,
     "notes": "Coast Magazine (Kelsey Media), created with The Suffolk Coast tourism board, no purchase necessary. Prize: 2-night stay at The Crown and Castle, Orford, private Orford Ness tour, £100 Snape Maltings voucher. Closes midnight 31 Aug 2026. Entry is on a separate domain (coast.kelseydirect.com) behind Cloudflare bot-management — the adapter navigates straight there and fails loudly if a Cloudflare challenge page appears instead of the form; worth checking the first real run for that. Quiz question ('who looks after Orford Ness') answered National Trust — verified independently, not guessed. Only fields required are firstName/lastName/email/postalCode, all already set; phone is optional."
+  },
+  {
+    "name": "Devon's Top Attractions — Win A Devon Holiday, Free Days Out & other Prizes 2026",
+    "url": "https://www.devonstopattractions.co.uk/win-a-devon-holiday-free-days-out-and-other-prizes-2026/",
+    "adapterKey": "devons-top-attractions",
+    "closesAt": "2026-08-31T23:00:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Devon's Top Attractions (devonstopattractions.co.uk) competition, run by the Association of Devon Attractions — a genuine regional tourism consortium of real Devon attractions (Bovey Castle, Buckfast Abbey, Crealy, etc), same kind of organisation as the already-tracked north-norfolk-attractions. No purchase necessary. Prize: one of nine Devon prizes (camping trip, lodge break, castle stay, spa day, tram driving lesson, theme park passes, coastal cruise, etc). Closes 31 Aug 2026. Gravity Forms with invisible reCAPTCHA v3 (not solved/evaded, just submitted normally) — only name/email required, county/phone optional. Note: this session's own sandbox couldn't complete a live Playwright render of this domain (Chromium got net::ERR_CONNECTION_RESET even on already-working sites like thesuffolkcoast.co.uk once routed through this environment's mandatory egress proxy) — that's a sandbox networking artifact, not a site-side bot block; curl fetched the real page and its Gravity Forms markup cleanly with no anti-automation JS. Worth double-checking the very first live run actually reaches the form rather than assuming this is fine."
+  },
+  {
+    "name": "c2c — The Blowout Company: Win a stylish makeover",
+    "url": "https://www.c2c-online.co.uk/destinations-offers/competitions/the-blowout-company/",
+    "adapterKey": "c2c-blowout-company",
+    "closesAt": "2026-09-09T10:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official c2c (Trenitalia c2c Limited, c2c-online.co.uk) competition — c2c is the train operator running Essex Thameside services (London Fenchurch Street to Southend/Shoeburyness), i.e. directly relevant to this profile's location. No purchase necessary — entry is via the form alone; a c2c account only doubles the entry (not required). Prize: a blow-dry, glass of Prosecco, manicure, plus complimentary c2c travel. Closes 11:59am 9 Sept 2026 (converted from the site's displayed 11:59am BST). Minimal Gravity Forms form: first/last name + email only, no marketing checkbox on the form itself. Same 'sandbox couldn't render live, curl confirmed the real form is clean' caveat as devons-top-attractions above — same underlying environment issue, not evidence of a genuine site block."
   }
 ]
