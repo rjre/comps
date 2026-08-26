@@ -47,15 +47,14 @@ export const coastMagazineSuffolkCoastAdapter: CompetitionAdapter = {
     await page.locator('input[name="1"]').fill(profile.firstName);
     await page.locator('input[name="5"]').fill(profile.lastName);
     await page.locator('input[name="3"]').fill(profile.email);
-    if (profile.phone) {
-      await page.locator('input[name="4"]').fill(profile.phone);
-    }
     if (!profile.postalCode) {
       await log.warn("Profile is missing postalCode, required by this form");
       return { status: "FAILED", message: "Profile missing postalCode required by this form" };
     }
     await page.locator('input[name="2"]').fill(profile.postalCode);
-    await log.info("Filled first name, surname, email, phone (if set), postcode");
+    await log.info("Filled first name, surname, email, postcode");
+    // No phone field exists on this form (checked directly against the
+    // real page) — field name "4" doesn't appear anywhere in it.
 
     await page.locator('input[name="32"][value="1"]').check();
     await log.info("Answered 'Are you aged 18 or over?': Yes");
@@ -76,9 +75,15 @@ export const coastMagazineSuffolkCoastAdapter: CompetitionAdapter = {
     await termsCheckbox.check();
     await log.info("Ticked 'I have read the Terms & Conditions' — required to enter, not a marketing consent");
 
-    const submit = page.locator('input.paging-button-submit[type="submit"]');
+    // This dotdigital page engine's submit control is only made visible
+    // once the visible required fields are filled, and different pages on
+    // the same engine render it as either a <button> or an
+    // <input type="submit"> with the same class (same engine as
+    // coastMagazine.ts) — :visible picks out whichever is actually the
+    // real, clickable control right now.
+    const submit = page.locator(".paging-button-submit:visible");
     if ((await submit.count()) === 0) {
-      await log.warn("Submit button not found");
+      await log.warn("Submit button not found or not yet visible");
       return { status: "FAILED", message: "Submit control not found" };
     }
 

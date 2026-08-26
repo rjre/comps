@@ -19,13 +19,20 @@ export const northNorfolkAttractionsAdapter: CompetitionAdapter = {
     await log.info(`Navigating to ${competitionUrl}`);
     await page.goto(competitionUrl, { waitUntil: "domcontentloaded" });
 
-    // NewMind's own cookie-warning bar (not a third-party CMP like the
-    // CookieScript one on visitessex.com) — renders asynchronously, so this
-    // is called again right before the question radio click below too.
+    // This site actually uses the CookieScript CMP (same as
+    // visitessex.com), not NewMind's own native cookie bar — checked
+    // directly against the real page. Renders asynchronously, so this is
+    // called again right before the question radio click below too.
     const dismissCookieBanner = async (timeout: number) => {
-      const hide = page.locator("div.ctl_CookieWarning a.CookieWarningHide");
-      if (await hide.first().isVisible({ timeout }).catch(() => false)) {
-        await hide.first().click();
+      const cookieScriptReject = page.locator("#cookiescript_reject");
+      if (await cookieScriptReject.isVisible({ timeout }).catch(() => false)) {
+        await cookieScriptReject.click();
+        await log.info("Dismissed cookie banner (rejected non-essential cookies)");
+        return;
+      }
+      const nativeHide = page.locator("div.ctl_CookieWarning a.CookieWarningHide");
+      if (await nativeHide.first().isVisible({ timeout: 1000 }).catch(() => false)) {
+        await nativeHide.first().click();
         await log.info("Dismissed cookie warning bar");
       }
     };

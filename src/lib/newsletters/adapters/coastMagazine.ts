@@ -45,9 +45,14 @@ export const coastMagazineNewsletterAdapter: NewsletterAdapter = {
     // deliberately left unticked — broader publisher marketing, not this
     // newsletter itself.
 
-    const submit = page.locator('input.paging-button-submit[type="submit"]');
+    // This dotdigital page engine's submit control is only made visible
+    // once the visible required fields are filled, and different pages on
+    // the same engine render it as either a <button> or an
+    // <input type="submit"> with the same class — :visible picks out
+    // whichever one is actually the real, clickable control right now.
+    const submit = page.locator(".paging-button-submit:visible");
     if ((await submit.count()) === 0) {
-      await log.warn("Submit button not found");
+      await log.warn("Submit button not found or not yet visible");
       return { status: "FAILED", message: "Submit control not found" };
     }
 
@@ -59,23 +64,28 @@ export const coastMagazineNewsletterAdapter: NewsletterAdapter = {
     await submit.click();
 
     // Same dotdigital landing-page engine as coastMagazineSuffolkCoast.ts —
-    // confirmation is injected client-side, not present in the static
-    // page, so matched by wording rather than a guessed selector.
+    // that one navigates to a separate "thank-you" page on success rather
+    // than showing inline text, so check for that too, not just inline
+    // wording. This page's domain also runs a Cloudflare bot-management
+    // script (visible as a challenge-platform request on load); if
+    // neither signal appears, that's the most likely explanation — we
+    // don't attempt to solve or evade that, just fail loudly.
     const success = page.getByText(/thank you|you're subscribed|you have been added|successfully subscribed/i);
     const error = page.getByText(/already subscribed|invalid|error|something went wrong|please answer/i);
     try {
       await Promise.race([
         success.first().waitFor({ state: "visible", timeout: 15000 }),
         error.first().waitFor({ state: "visible", timeout: 15000 }),
+        page.waitForURL(/thank-you/i, { timeout: 15000 }),
       ]);
     } catch {
-      await log.warn("Neither a success nor error message appeared within 15s after submit");
+      await log.warn("Neither a confirmation page/message nor an error appeared within 15s after submit — possibly blocked by this domain's Cloudflare bot-management, which we don't attempt to evade");
       return { status: "FAILED", message: "No confirmation or error appeared after submit — outcome unclear" };
     }
 
-    if (await success.first().isVisible().catch(() => false)) {
-      const text = (await success.first().innerText().catch(() => "")).trim();
-      await log.info(`Subscribed: ${text}`);
+    if (/thank-you/i.test(page.url()) || (await success.first().isVisible().catch(() => false))) {
+      const text = (await page.locator("body").innerText().catch(() => "")).trim().split("\n")[0];
+      await log.info(`Confirmation: ${text} (${page.url()})`);
       return { status: "SUCCESS", message: text || undefined };
     }
 
