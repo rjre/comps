@@ -2,8 +2,14 @@ import type { CompetitionAdapter } from "./types";
 import { exampleAdapter } from "./adapters/example";
 import { nationalLobsterHatcheryAdapter } from "./adapters/nationalLobsterHatchery";
 import { suffolkCoastAdapter } from "./adapters/suffolkCoast";
+import { visitEssexGardenersWorldAdapter } from "./adapters/visitEssexGardenersWorld";
 
-const adapters: CompetitionAdapter[] = [exampleAdapter, nationalLobsterHatcheryAdapter, suffolkCoastAdapter];
+const adapters: CompetitionAdapter[] = [
+  exampleAdapter,
+  nationalLobsterHatcheryAdapter,
+  suffolkCoastAdapter,
+  visitEssexGardenersWorldAdapter,
+];
 
 export const adapterRegistry = new Map(adapters.map((a) => [a.key, a]));
 
