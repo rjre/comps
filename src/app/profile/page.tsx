@@ -5,6 +5,7 @@ async function saveProfile(formData: FormData) {
   "use server";
 
   const data = {
+    title: String(formData.get("title") ?? "") || null,
     firstName: String(formData.get("firstName") ?? ""),
     lastName: String(formData.get("lastName") ?? ""),
     email: String(formData.get("email") ?? ""),
@@ -38,6 +39,18 @@ export default async function ProfilePage() {
         under multiple identities is not supported here, by design.
       </p>
       <form action={saveProfile}>
+        <label>
+          Title
+          <select name="title" defaultValue={profile?.title ?? ""}>
+            <option value="">(none)</option>
+            <option value="Mr">Mr</option>
+            <option value="Mrs">Mrs</option>
+            <option value="Ms">Ms</option>
+            <option value="Miss">Miss</option>
+            <option value="Mx">Mx</option>
+            <option value="Dr">Dr</option>
+          </select>
+        </label>
         <label>
           First name
           <input name="firstName" defaultValue={profile?.firstName} required />

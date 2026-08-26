@@ -57,9 +57,18 @@ export const suffolkCoastAdapter: CompetitionAdapter = {
       return { status: "FAILED", message: "Profile missing phone/address fields required by this form" };
     }
 
-    // Title (Mr/Mrs/Ms/...) has no equivalent field in our Profile model —
-    // left as whatever the form defaults to rather than guessed.
-    await log.info("Profile has no title field — leaving the form's default Title selection as-is");
+    if (profile.title) {
+      const titleSelect = page.locator("#ctl00_contentBody_txtTitle");
+      const hasOption = (await titleSelect.locator(`option[value="${profile.title}"]`).count()) > 0;
+      if (hasOption) {
+        await titleSelect.selectOption(profile.title);
+        await log.info(`Selected title: ${profile.title}`);
+      } else {
+        await log.warn(`Profile title "${profile.title}" isn't one of this form's options — leaving the default`);
+      }
+    } else {
+      await log.info("Profile has no title set — leaving the form's default Title selection as-is");
+    }
 
     await page.locator("#ctl00_contentBody_txtName").fill(profile.firstName);
     await page.locator("#ctl00_contentBody_txtSName").fill(profile.lastName);
