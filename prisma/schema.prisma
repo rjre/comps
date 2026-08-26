@@ -13,6 +13,7 @@ generator client {
 
 model Profile {
   id          String   @id @default(cuid())
+  title       String?  // Mr/Mrs/Ms/Miss/Dr/Mx/... — some entry forms require this, most don't
   firstName   String
   lastName    String
   email       String

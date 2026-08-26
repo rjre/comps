@@ -32,10 +32,22 @@ export const visitEssexNewsletterAdapter: NewsletterAdapter = {
       return { status: "FAILED", message: "Profile missing address fields required by this form" };
     }
 
-    // Title has no equivalent in our Profile model, but this select
-    // defaults to a blank option and isn't marked required — same as
-    // suffolkCoast.ts's Title dropdown, leave it at its default.
-    await log.info("Profile has no title field — leaving the form's default (blank) Title selection as-is");
+    // This select isn't required and defaults to a blank option, so a
+    // title that doesn't match one of its fixed options (Mr/Mrs/Ms/Miss/
+    // Dr/Mx) is left at that default rather than guessed or failed on.
+    if (profile.title) {
+      const titleSelect = page.locator("#title_66803");
+      const matchingOption = titleSelect.locator("option", { hasText: new RegExp(`^${profile.title}$`, "i") });
+      if ((await matchingOption.count()) > 0) {
+        const value = await matchingOption.first().getAttribute("value");
+        if (value) {
+          await titleSelect.selectOption(value);
+          await log.info(`Selected Title: ${profile.title}`);
+        }
+      } else {
+        await log.info(`Profile title "${profile.title}" doesn't match this form's fixed options — leaving default (blank) Title selection as-is`);
+      }
+    }
 
     await page.locator("#forename_66803").fill(profile.firstName);
     await page.locator("#surname_66803").fill(profile.lastName);
