@@ -1,8 +1,15 @@
 import type { NewsletterAdapter } from "./types";
 import { nationalLobsterHatcheryNewsletterAdapter } from "./adapters/nationalLobsterHatchery";
 import { muddyStilettosEssexAdapter } from "./adapters/muddyStilettosEssex";
+import { theSuffolkCoastNewsletterAdapter } from "./adapters/theSuffolkCoast";
+import { visitEssexNewsletterAdapter } from "./adapters/visitEssex";
 
-const adapters: NewsletterAdapter[] = [nationalLobsterHatcheryNewsletterAdapter, muddyStilettosEssexAdapter];
+const adapters: NewsletterAdapter[] = [
+  nationalLobsterHatcheryNewsletterAdapter,
+  muddyStilettosEssexAdapter,
+  theSuffolkCoastNewsletterAdapter,
+  visitEssexNewsletterAdapter,
+];
 
 export const newsletterAdapterRegistry = new Map(adapters.map((a) => [a.key, a]));
 

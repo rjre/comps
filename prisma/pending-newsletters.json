@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "name": "The Suffolk Coast",
+    "url": "https://www.thesuffolkcoast.co.uk/",
+    "adapterKey": "the-suffolk-coast-newsletter",
+    "notes": "Site-wide header newsletter signup (single email field, ASP.NET WebForms postback), distinct from the 'competition-entry-2' prize draw form already tracked as a competition. Org already tracked via the suffolk-coast competition adapter."
+  },
+  {
+    "name": "Visit Essex",
+    "url": "https://www.visitessex.com/inspire-me/enewsletter-sign-up",
+    "adapterKey": "visit-essex-newsletter",
+    "notes": "Standalone e-newsletter sign-up page, separate from the visit-essex-gardeners-world competition entry form found in the same run. Requires name/email/address fields; the newsletter consent checkbox is this page's sole purpose and is ticked deliberately."
+  }
+]
