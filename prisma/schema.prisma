@@ -69,14 +69,44 @@ model Run {
   errorMessage   String?
   logLines       LogLine[]
   entries        Entry[]
+  subscriptionAttempts SubscriptionAttempt[]
 }
 
 model LogLine {
-  id            String   @id @default(cuid())
-  runId         String
-  run           Run      @relation(fields: [runId], references: [id])
-  level         String   // INFO | WARN | ERROR
-  message       String
-  competitionId String?
-  createdAt     DateTime @default(now())
+  id                 String   @id @default(cuid())
+  runId              String
+  run                Run      @relation(fields: [runId], references: [id])
+  level              String   // INFO | WARN | ERROR
+  message            String
+  competitionId      String?
+  newsletterSourceId String?
+  createdAt          DateTime @default(now())
+}
+
+// A first-party newsletter from an organisation we're also tracking
+// competitions from — signed up deliberately at the user's explicit
+// request, not ticked incidentally on a competition entry form (that
+// stays opt-out by default, see the adapter docs). Scoped to the
+// organisation's own newsletter, not broader "share my data with our
+// partners" consent.
+model NewsletterSource {
+  id         String                @id @default(cuid())
+  name       String
+  url        String                @unique
+  adapterKey String                // which adapter in src/lib/newsletters/adapters handles this site
+  status     String                @default("PENDING") // PENDING | SUBSCRIBED | FAILED | SKIPPED
+  notes      String?
+  createdAt  DateTime              @default(now())
+  attempts   SubscriptionAttempt[]
+}
+
+model SubscriptionAttempt {
+  id                 String           @id @default(cuid())
+  newsletterSourceId String
+  newsletterSource   NewsletterSource @relation(fields: [newsletterSourceId], references: [id])
+  runId              String?
+  run                Run?             @relation(fields: [runId], references: [id])
+  status             String           // SUCCESS | FAILED
+  message            String?
+  attemptedAt        DateTime         @default(now())
 }

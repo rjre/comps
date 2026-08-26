@@ -12,7 +12,9 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "sync:competitions": "tsx scripts/syncCompetitions.ts",
-    "run:entries": "tsx src/lib/scheduler/runOnce.ts"
+    "sync:newsletters": "tsx scripts/syncNewsletters.ts",
+    "run:entries": "tsx src/lib/scheduler/runOnce.ts",
+    "subscribe:newsletters": "tsx src/lib/scheduler/subscribeNewsletters.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
