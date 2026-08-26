@@ -58,5 +58,11 @@
     "url": "https://adventureisland.co.uk/",
     "adapterKey": "adventure-island-newsletter",
     "notes": "Adventure Island, Southend-on-Sea's own theme park (adventureisland.co.uk) — genuine first-party newsletter, a simple Elementor Pro footer form on the homepage (optional Name + required Email). CookieYes cookie banner (.cky-btn-reject). No currently open no-purchase-necessary competition found on this org's own domain at time of writing (a past c2c-run Adventure Island annual-pass giveaway on c2c-online.co.uk, already tracked separately via c2c-blowout-company, is stale/closed from 2024) — newsletter only."
+  },
+  {
+    "name": "Visit Lake District",
+    "url": "https://www.visitlakedistrict.com/offers/sign-up-to-newsletter",
+    "adapterKey": "visit-lake-district-newsletter",
+    "notes": "Official Visit Lake District (run by Cumbria Tourism) newsletter, standard Mailchimp classic embed. Required: Email, First Name, Last Name, Country of residence (UK selected). Optional: Title, Postcode, a 'What holiday interests you?' checkbox group (left untouched). Only the organiser's own GDPR consent checkbox is ticked. Org already tracked via the visit-lake-district-prize-draw competition adapter."
   }
 ]

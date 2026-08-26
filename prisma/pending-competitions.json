@@ -62,5 +62,29 @@
     "closesAt": "2026-09-01T23:59:00.000Z",
     "maxEntries": 1,
     "notes": "Solmar Villas (solmarvillas.com) is nominated in 9 British Travel Awards categories; voting for them on the awards' own official site enters a draw for a £5,000 villa holiday, no purchase necessary. The vote URL pre-selects all 9 categories via its ?nominee= query param — a genuine mechanical company selection, not a fabricated opinion. Three-page Gravity Forms wizard (category review → Confirm Vote → Name/Email/Phone, phone required 'to verify your vote'). That phrasing is a deliberate flag: if it turns out to mean an SMS/call one-time-code step, the adapter fails loudly rather than attempting it (same rule as CAPTCHAs) — confirmed the form's fields exist via curl'd HTML, but not that the post-submit flow is fully automatable end-to-end, so the first live run needs a human's eyes on the resulting screenshot either way. Closes 1 Sept 2026 (tight — one day after this was added)."
+  },
+  {
+    "name": "Visit Lake District — Win a First Class Afternoon Tea for Two at Ravenglass & Eskdale Railway",
+    "url": "https://www.visitlakedistrict.com/offers/prize-draws/win-a-first-class-afternoon-tea-for-two-at-ravenglass-and-eskdale-railway",
+    "adapterKey": "visit-lake-district-prize-draw",
+    "closesAt": "2026-08-31T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Visit Lake District (visitlakedistrict.com, run by Cumbria Tourism) prize draw, no purchase necessary. Same NewMind/eCMS engine as visit-essex-gardeners-world and north-norfolk-attractions — shares the visit-lake-district-prize-draw adapter with two sibling competitions added alongside this one. Closes 31 Aug 2026 (tight — 5 days after this was added)."
+  },
+  {
+    "name": "Visit Lake District — Win a Beatrix Potter-Themed Lake District Visit",
+    "url": "https://www.visitlakedistrict.com/offers/prize-draws/win-a-beatrix-potter-themed-lake-district-visit",
+    "adapterKey": "visit-lake-district-prize-draw",
+    "closesAt": "2026-08-31T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Sibling prize draw to the Ravenglass & Eskdale Railway one above — same site, same adapter, same form structure. Closes 31 Aug 2026 (tight)."
+  },
+  {
+    "name": "Visit Lake District — Win a Short Break for up to 4 People at Windermere Marina Village",
+    "url": "https://www.visitlakedistrict.com/offers/prize-draws/win-a-short-break-for-up-to-4-people-at-windermere-marina-village",
+    "adapterKey": "visit-lake-district-prize-draw",
+    "closesAt": "2026-09-30T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Sibling prize draw to the two above — same site, same adapter, same form structure. Longer runway, closes 30 Sept 2026."
   }
 ]
