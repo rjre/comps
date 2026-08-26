@@ -11,6 +11,7 @@ import { c2cBlowoutCompanyAdapter } from "./adapters/c2cBlowoutCompany";
 import { tuiMonthlyGiveawayAdapter } from "./adapters/tuiMonthlyGiveaway";
 import { solmarVillasBritishTravelAwardsAdapter } from "./adapters/solmarVillasBritishTravelAwards";
 import { visitLakeDistrictAdapter } from "./adapters/visitLakeDistrict";
+import { muddyStilettosReaderTreatsAdapter } from "./adapters/muddyStilettosReaderTreats";
 
 const adapters: CompetitionAdapter[] = [
   exampleAdapter,
@@ -25,6 +26,7 @@ const adapters: CompetitionAdapter[] = [
   tuiMonthlyGiveawayAdapter,
   solmarVillasBritishTravelAwardsAdapter,
   visitLakeDistrictAdapter,
+  muddyStilettosReaderTreatsAdapter,
 ];
 
 export const adapterRegistry = new Map(adapters.map((a) => [a.key, a]));
