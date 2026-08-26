@@ -28,5 +28,17 @@
     "url": "https://devonstopattractions.us9.list-manage.com/subscribe?u=54b21fa2a27ffb0374b2e6ff4&id=95e84f5ee1",
     "adapterKey": "devons-top-attractions-newsletter",
     "notes": "Standalone Mailchimp hosted signup page (linked from a 'Newsletter Sign up' panel on the same page as the devons-top-attractions competition, but a genuinely separate submission — different platform, Mailchimp vs that page's own Gravity Forms). Requires email; name/phone/county optional. Three GDPR contact-channel checkboxes present (Email/Direct Mail/Customized online advertising) — only 'Email' ticked, since that's this newsletter's own delivery channel, not third-party sharing. Org already tracked via the devons-top-attractions competition adapter."
+  },
+  {
+    "name": "Virgin Atlantic Holidays",
+    "url": "https://www.virginholidays.co.uk/sign-up",
+    "adapterKey": "virgin-atlantic-holidays-newsletter",
+    "notes": "Official Virgin Atlantic Holidays (virginatlantic.com/holidays, redirects from virginholidays.co.uk) newsletter signup, first-party, no purchase/account necessary. AngularJS form: first name + email only. No genuine open no-purchase-necessary competition found for Virgin Holidays at time of writing (only a paid/Ireland-specific holiday competitions site and unrelated Virgin Money/Virgin Media promos turned up) — newsletter only for now; worth re-checking for a competition later."
+  },
+  {
+    "name": "Emirates",
+    "url": "https://www.emirates.com/english/special-offers/subscribe-to-offers/",
+    "adapterKey": "emirates-newsletter",
+    "notes": "Official Emirates (emirates.com) 'Subscribe to special offers' page, first-party. The page shows a flashy 'STEP 1 OF 2' wizard, but that's a full account/preferences flow — targets the simpler standalone footer widget instead, a genuine <form action=\"/english/special-offers/subscribe-to-offers/\"> with just email + Subscribe. Confirmed directly: the top wizard's own email field and this footer form's share the literal id \"email\" (a real duplicate-id bug on Emirates' own markup) — every selector is scoped to the footer form specifically to avoid resolving to the wrong one. OneTrust cookie banner; its dark backdrop lingers after the reject click, so the adapter waits for #onetrust-consent-sdk to fully detach before interacting further. No genuine open no-purchase-necessary Emirates Holidays UK competition found at time of writing."
   }
 ]
