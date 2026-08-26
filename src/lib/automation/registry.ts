@@ -3,12 +3,18 @@ import { exampleAdapter } from "./adapters/example";
 import { nationalLobsterHatcheryAdapter } from "./adapters/nationalLobsterHatchery";
 import { suffolkCoastAdapter } from "./adapters/suffolkCoast";
 import { visitEssexGardenersWorldAdapter } from "./adapters/visitEssexGardenersWorld";
+import { northNorfolkAttractionsAdapter } from "./adapters/northNorfolkAttractions";
+import { villagePeopleBanhamZooAdapter } from "./adapters/villagePeopleBanhamZoo";
+import { coastMagazineSuffolkCoastAdapter } from "./adapters/coastMagazineSuffolkCoast";
 
 const adapters: CompetitionAdapter[] = [
   exampleAdapter,
   nationalLobsterHatcheryAdapter,
   suffolkCoastAdapter,
   visitEssexGardenersWorldAdapter,
+  northNorfolkAttractionsAdapter,
+  villagePeopleBanhamZooAdapter,
+  coastMagazineSuffolkCoastAdapter,
 ];
 
 export const adapterRegistry = new Map(adapters.map((a) => [a.key, a]));

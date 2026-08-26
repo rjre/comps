@@ -10,5 +10,17 @@
     "url": "https://www.visitessex.com/inspire-me/enewsletter-sign-up",
     "adapterKey": "visit-essex-newsletter",
     "notes": "Standalone e-newsletter sign-up page, separate from the visit-essex-gardeners-world competition entry form found in the same run. Requires name/email/address fields; the newsletter consent checkbox is this page's sole purpose and is ticked deliberately."
+  },
+  {
+    "name": "Visit North Norfolk",
+    "url": "https://www.visitnorthnorfolk.com/information/enewsletter-sign-up",
+    "adapterKey": "visit-north-norfolk-newsletter",
+    "notes": "Standalone Mailchimp e-newsletter signup, separate from the north-norfolk-attractions competition entry form found in the same run (different page/engine — this one's Mailchimp, that one's NewMind/eCMS). Requires email + name; the 'Yes, from yourselves' dropdown and GDPR email-channel checkbox are this page's sole purpose and are set deliberately. Org already tracked via the north-norfolk-attractions competition adapter."
+  },
+  {
+    "name": "Coast Magazine",
+    "url": "https://www.coastmagazine.co.uk/newsletter/",
+    "adapterKey": "coast-magazine-newsletter",
+    "notes": "Standalone newsletter signup (dotdigital/Kelsey landing page, different URL from the coast-magazine-suffolk-coast competition's own entry form, though same underlying platform). Requires name/email; opts into 'Beachcomber' (Coast's general newsletter) only, not the separate 'Coast Property' one or the broader 'Kelsey Publishing promotional emails' checkbox. Org already tracked via the coast-magazine-suffolk-coast competition adapter."
   }
 ]

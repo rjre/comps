@@ -6,5 +6,29 @@
     "closesAt": "2026-08-31T16:00:00.000Z",
     "maxEntries": 1,
     "notes": "Official Visit Essex (visitessex.com) competition, no purchase necessary. Prize: 2x VIP tickets for the winner + a guest to BBC Gardeners' World Autumn Fair, Sun 13 Sept 2026 at Audley End House and Gardens. Closes Mon 31 Aug 2026, 5pm BST. Entry form has a required free-text 'Title' field, now filled from Profile.title (added this run) — make sure that's set before this syncs, or the adapter will fail loudly on it."
+  },
+  {
+    "name": "Visit North Norfolk — Win Passes to North Norfolk Attractions",
+    "url": "https://www.visitnorthnorfolk.com/win-passes-to-north-norfolk-attractions",
+    "adapterKey": "north-norfolk-attractions",
+    "closesAt": "2026-08-31T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Visit North Norfolk (visitnorthnorfolk.com) competition, no purchase necessary. Prize: family day passes (2 adults + 2 children) to 18 North Norfolk attractions (Holkham Hall, Pensthorpe, North Norfolk Railway, Amazona Zoo, etc), usable Sept 2026 to 31 Oct 2027. Closes 11:59pm 31 Aug 2026. Simple form (forename/surname/email + a Yes/No 'have you visited before' question, no researched answer needed). Same NewMind/eCMS engine as visit-essex-gardeners-world. Only fields required are firstName/lastName/email, all already set."
+  },
+  {
+    "name": "Village People Magazine — Win a wild family adventure (Banham Zoo & Africa Alive)",
+    "url": "https://www.village-people.info/enter-our-competition/",
+    "adapterKey": "village-people-banham-zoo",
+    "closesAt": "2026-09-03T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Village People Magazine (village-people.info), a genuine Norfolk/Suffolk regional print magazine, no purchase necessary. Prize: family tickets (2 adults + 3 children) to Banham Zoo (Norfolk) or Africa Alive (Suffolk). Closes 3 Sept 2026. Contact Form 7 form requires full name, a single free-text address, phone, and email — profile needs addressLine1/city/postalCode and phone set, or the adapter will fail loudly. The page hosts several unrelated Village People competitions on separate forms; this adapter targets only the Banham Zoo/Africa Alive form specifically (wpcf7 id 103083)."
+  },
+  {
+    "name": "Coast Magazine — Win a Unique Break on the Suffolk Coast",
+    "url": "https://www.coastmagazine.co.uk/competitions/win-a-unique-break-on-the-suffolk-coast/",
+    "adapterKey": "coast-magazine-suffolk-coast",
+    "closesAt": "2026-08-31T23:00:00.000Z",
+    "maxEntries": 1,
+    "notes": "Coast Magazine (Kelsey Media), created with The Suffolk Coast tourism board, no purchase necessary. Prize: 2-night stay at The Crown and Castle, Orford, private Orford Ness tour, £100 Snape Maltings voucher. Closes midnight 31 Aug 2026. Entry is on a separate domain (coast.kelseydirect.com) behind Cloudflare bot-management — the adapter navigates straight there and fails loudly if a Cloudflare challenge page appears instead of the form; worth checking the first real run for that. Quiz question ('who looks after Orford Ness') answered National Trust — verified independently, not guessed. Only fields required are firstName/lastName/email/postalCode, all already set; phone is optional."
   }
 ]
