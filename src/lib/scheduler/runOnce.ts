@@ -116,12 +116,25 @@ async function runOnce() {
           });
           if (outcome.status === "SUCCESS") {
             await log.info(`Entered: ${competition.name}`, competition.id);
-            if (!dryRun && "credentials" in outcome && outcome.credentials) {
-              await prisma.competition.update({
-                where: { id: competition.id },
-                data: { credentials: JSON.stringify(outcome.credentials) },
-              });
-              await log.info("Account credentials stored on the record, not logged", competition.id);
+            if (!dryRun) {
+              const credentialsUpdate =
+                "credentials" in outcome && outcome.credentials
+                  ? { credentials: JSON.stringify(outcome.credentials) }
+                  : {};
+              if ("credentials" in outcome && outcome.credentials) {
+                await log.info("Account credentials stored on the record, not logged", competition.id);
+              }
+              // A real (non-dry-run) success reaching the cap is the
+              // competition's final state — mark it ENTERED so future runs
+              // stop re-querying it as a PENDING candidate every cycle.
+              if (alreadyEntered + 1 >= competition.maxEntries) {
+                await prisma.competition.update({
+                  where: { id: competition.id },
+                  data: { status: "ENTERED", ...credentialsUpdate },
+                });
+              } else if (Object.keys(credentialsUpdate).length > 0) {
+                await prisma.competition.update({ where: { id: competition.id }, data: credentialsUpdate });
+              }
             }
           } else {
             await log.warn(`${outcome.status}: ${competition.name} — ${outcome.message ?? ""}`, competition.id);
