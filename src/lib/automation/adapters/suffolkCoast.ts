@@ -14,14 +14,33 @@ export const suffolkCoastAdapter: CompetitionAdapter = {
   key: "suffolk-coast",
   siteName: "The Suffolk Coast",
   async enterCompetition({ page, competitionUrl, profile, log, dryRun }: AdapterContext): Promise<EntryOutcome> {
+    // A separate newsletter-signup widget elsewhere on this page (not the
+    // competition form itself) submits a real top-level POST to Mailchimp
+    // immediately after the competition postback reloads — for every
+    // entrant, not just us. On this site that request reliably fails and
+    // takes the whole tab to a browser network-error page before the
+    // competition's own confirmation can be read. We don't want that
+    // subscription to actually fire anyway (never opting this profile into
+    // marketing), so respond 204 No Content — standard way to make a
+    // browser quietly stay on the current page instead of navigating,
+    // rather than aborting (which itself produces a nav error) or letting
+    // the real broken request through.
+    await page.route("**://*.list-manage.com/**", (route) => route.fulfill({ status: 204, body: "" }));
+
     await log.info(`Navigating to ${competitionUrl}`);
     await page.goto(competitionUrl, { waitUntil: "domcontentloaded" });
 
-    const cookieDecline = page.locator("#CybotCookiebotDialogBodyButtonDecline");
-    if (await cookieDecline.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await cookieDecline.click();
-      await log.info("Dismissed cookie banner (declined non-essential cookies)");
-    }
+    // Cookiebot loads and renders its dialog asynchronously — it can still
+    // appear after our first check and intercept a later click, so this is
+    // called again right before the checkbox interaction below too.
+    const dismissCookieBanner = async (timeout: number) => {
+      const cookieDecline = page.locator("#CybotCookiebotDialogBodyButtonDecline");
+      if (await cookieDecline.isVisible({ timeout }).catch(() => false)) {
+        await cookieDecline.click();
+        await log.info("Dismissed cookie banner (declined non-essential cookies)");
+      }
+    };
+    await dismissCookieBanner(10000);
 
     const form = page.locator("#ctl00_contentBody_panelFormFoodDrink");
     if ((await form.count()) === 0) {
@@ -57,8 +76,21 @@ export const suffolkCoastAdapter: CompetitionAdapter = {
     await page.locator("#ctl00_contentBody_txtPhone").fill(profile.phone);
     await log.info("Filled name, email, address, year of birth, and phone");
 
-    // Required to enter at all — accepting the competition's own rules, not marketing.
-    await page.locator("#ctl00_contentBody_chkAgree").check();
+    // Belt-and-suspenders: the cookie dialog can render mid-way through
+    // filling the form and sit on top of the checkbox below.
+    await dismissCookieBanner(3000);
+
+    // The real <input type=checkbox> is visually hidden (custom-styled via
+    // its <label>), so Playwright's actionability check on the input itself
+    // times out — click the associated label instead, same as a real user
+    // would. Required to enter at all — accepting the competition's own
+    // rules, not marketing.
+    await page.locator('label[for="ctl00_contentBody_chkAgree"]').first().click();
+    const agreeChecked = await page.locator("#ctl00_contentBody_chkAgree").isChecked();
+    if (!agreeChecked) {
+      await log.warn("Clicking the 'I agree' label did not check the underlying checkbox");
+      return { status: "FAILED", message: "Could not tick the required 'I agree to terms' checkbox" };
+    }
     // Both left unchecked deliberately: #chkTheSuffolkCoastoffers, #chkPrizeproviderOffers
 
     const submit = page.locator("#ctl00_contentBody_btEstablishmentSend");
@@ -72,21 +104,43 @@ export const suffolkCoastAdapter: CompetitionAdapter = {
       return { status: "SUCCESS", message: "Dry run: would have submitted" };
     }
 
-    await submit.click();
-    await page.waitForLoadState("networkidle").catch(() => {});
+    // This site shows no client-visible "thank you" text at all after a
+    // successful entry (checked directly against the raw server response —
+    // there's just no confirmation copy anywhere), so we read the actual
+    // HTTP response to the form POST instead of scraping the live DOM. That
+    // also sidesteps the unrelated newsletter widget below, which drags the
+    // tab to a Chrome error page shortly after the postback completes.
+    const [response] = await Promise.all([
+      page
+        .waitForResponse(
+          (r) => r.request().method() === "POST" && r.url().split("#")[0] === competitionUrl.split("#")[0],
+          { timeout: 15000 },
+        )
+        .catch(() => null),
+      submit.click(),
+    ]);
 
-    const bodyText = await page.locator("body").innerText().catch(() => "");
-    const lower = bodyText.toLowerCase();
-    if (lower.includes("thank you") || lower.includes("good luck") || lower.includes("entered")) {
-      await log.info("Confirmation text found after submit");
-      return { status: "SUCCESS" };
+    if (!response) {
+      await log.warn("Never observed a POST response for the entry form submission");
+      return { status: "FAILED", message: "No response observed for the form submission" };
     }
-    if (lower.includes("this field is required") || lower.includes("please enter") || lower.includes("invalid")) {
-      await log.warn("Validation error text found after submit");
-      return { status: "FAILED", message: "Form appears to have rejected the submission (validation error text present)" };
+    if (!response.ok()) {
+      await log.warn(`Form POST returned HTTP ${response.status()}`);
+      return { status: "FAILED", message: `Form submission returned HTTP ${response.status()}` };
     }
 
-    await log.warn("No confirmation or error text recognised after submit — outcome unclear");
-    return { status: "FAILED", message: "No confirmation or error appeared after submit — outcome unclear" };
+    const html = await response.text();
+    const activeValidatorErrors = [...html.matchAll(/<span id="[^"]*(?:RequiredFieldValidator|RegularExpressionValidator|ValidationSummary)[^"]*"[^>]*style="([^"]*)"[^>]*>([^<]*)</g)]
+      .map((m) => ({ style: m[1] ?? "", text: (m[2] ?? "").trim() }))
+      .filter(({ style, text }) => !/display:\s*none/i.test(style) && text.length > 0);
+
+    if (activeValidatorErrors.length > 0) {
+      const messages = activeValidatorErrors.map(({ text }) => text).join("; ");
+      await log.warn(`Server-side validation error(s) after submit: ${messages}`);
+      return { status: "FAILED", message: `Form rejected submission: ${messages}` };
+    }
+
+    await log.info("Form POST returned 200 with no active validation errors — treating as accepted (this site shows no explicit confirmation text)");
+    return { status: "SUCCESS", message: "HTTP 200, no validation errors present after submit" };
   },
 };
