@@ -41,6 +41,16 @@ export const theSuffolkCoastNewsletterAdapter: NewsletterAdapter = {
 
     await dismissCookieBanner(3000);
 
+    // A separate site-run "WIN A 2 NIGHT STAY!" survey popup
+    // (competition-popup.js) auto-opens on this page after a delay — its
+    // own excludedPaths list covers the competition pages but not the
+    // homepage, so it shows here and blocks the submit click below.
+    const surveyPopupClose = page.locator("#tsc-competition-popup .tsc-competition-popup__close");
+    if (await surveyPopupClose.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await surveyPopupClose.click();
+      await log.info("Dismissed a separate survey/competition popup that appeared on the page");
+    }
+
     const submit = page.locator("#ctl00_btSendSignup");
     if ((await submit.count()) === 0) {
       await log.warn("Send link (#ctl00_btSendSignup) not found");
@@ -54,11 +64,15 @@ export const theSuffolkCoastNewsletterAdapter: NewsletterAdapter = {
 
     // Same as the competition form on this site: no client-visible
     // confirmation text after a successful postback, so read the raw HTTP
-    // response for server-side validation errors instead of scraping the DOM.
+    // response for server-side validation errors instead of scraping the
+    // DOM. This form's postback target is a URL-rewritten alias of the
+    // page ("/" actually posts to "/default"), so match on hostname +
+    // method rather than the exact URL, which never matched.
+    const sourceHost = new URL(sourceUrl).hostname;
     const [response] = await Promise.all([
       page
         .waitForResponse(
-          (r) => r.request().method() === "POST" && r.url().split("#")[0] === sourceUrl.split("#")[0],
+          (r) => r.request().method() === "POST" && new URL(r.url()).hostname === sourceHost,
           { timeout: 15000 },
         )
         .catch(() => null),
@@ -69,12 +83,23 @@ export const theSuffolkCoastNewsletterAdapter: NewsletterAdapter = {
       await log.warn("Never observed a POST response for the newsletter signup submission");
       return { status: "FAILED", message: "No response observed for the form submission" };
     }
-    if (!response.ok()) {
+
+    let html: string;
+    if (response.status() >= 300 && response.status() < 400) {
+      // Post/Redirect/Get — confirmed by direct testing as this form's
+      // normal completion path (posts to "/default", 301s back to "/"),
+      // not an error. The redirect response itself carries no useful body,
+      // so check validators on the page the browser lands on afterward.
+      await log.info(`Form POST redirected (HTTP ${response.status()}) — expected completion path for this form`);
+      await page.waitForLoadState("domcontentloaded").catch(() => {});
+      html = await page.content().catch(() => "");
+    } else if (!response.ok()) {
       await log.warn(`Form POST returned HTTP ${response.status()}`);
       return { status: "FAILED", message: `Form submission returned HTTP ${response.status()}` };
+    } else {
+      html = await response.text();
     }
 
-    const html = await response.text();
     const activeValidatorErrors = [...html.matchAll(/<span id="[^"]*(?:reqEmail|regEmail|valSIGNUPTOP)[^"]*"[^>]*style="([^"]*)"[^>]*>([^<]*)</g)]
       .map((m) => ({ style: m[1] ?? "", text: (m[2] ?? "").trim() }))
       .filter(({ style, text }) => !/display:\s*none/i.test(style) && text.length > 0);

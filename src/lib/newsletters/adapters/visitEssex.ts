@@ -21,6 +21,18 @@ export const visitEssexNewsletterAdapter: NewsletterAdapter = {
     await log.info(`Navigating to ${sourceUrl}`);
     await page.goto(sourceUrl, { waitUntil: "domcontentloaded" });
 
+    // CookieScript CMP — same site as visitEssexGardenersWorld.ts, same
+    // fix. Checked again right before the consent checkbox below in case
+    // it renders after this first check.
+    const dismissCookieBanner = async (timeout: number) => {
+      const reject = page.locator("#cookiescript_reject");
+      if (await reject.isVisible({ timeout }).catch(() => false)) {
+        await reject.click();
+        await log.info("Dismissed cookie banner (rejected non-essential cookies)");
+      }
+    };
+    await dismissCookieBanner(10000);
+
     const form = page.locator("form.form66803");
     if ((await form.count()) === 0) {
       await log.warn("Expected newsletter sign-up form (form.form66803) not found — page may have changed");
@@ -62,6 +74,8 @@ export const visitEssexNewsletterAdapter: NewsletterAdapter = {
     await page.locator("#postcode_66803").fill(profile.postalCode);
     // Country select already defaults to "United Kingdom" — left as-is.
     await log.info("Filled name, email, address, postcode");
+
+    await dismissCookieBanner(3000);
 
     const consentCheckbox = page.locator('input[name="consentstatementsaccepted"][value="8081"]');
     if ((await consentCheckbox.count()) === 0) {

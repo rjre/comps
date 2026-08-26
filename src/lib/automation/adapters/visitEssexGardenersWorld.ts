@@ -23,6 +23,19 @@ export const visitEssexGardenersWorldAdapter: CompetitionAdapter = {
     await log.info(`Navigating to ${competitionUrl}`);
     await page.goto(competitionUrl, { waitUntil: "domcontentloaded" });
 
+    // CookieScript CMP — same kind of timing issue seen on other sites in
+    // this project (suffolkCoast.ts, muddyStilettosEssex.ts): can render
+    // after an initial check, so this gets called again right before the
+    // quiz-answer radio click below too.
+    const dismissCookieBanner = async (timeout: number) => {
+      const reject = page.locator("#cookiescript_reject");
+      if (await reject.isVisible({ timeout }).catch(() => false)) {
+        await reject.click();
+        await log.info("Dismissed cookie banner (rejected non-essential cookies)");
+      }
+    };
+    await dismissCookieBanner(10000);
+
     const form = page.locator("#quesionaireform");
     if ((await form.count()) === 0) {
       await log.warn("Expected entry form (#quesionaireform) not found — page may have changed");
@@ -50,6 +63,8 @@ export const visitEssexGardenersWorldAdapter: CompetitionAdapter = {
     await page.locator("#questionpostcode").fill(profile.postalCode);
     await page.locator("#questionemail").fill(profile.email);
     await log.info("Filled title, forename, surname, county, postcode, email");
+
+    await dismissCookieBanner(3000);
 
     // The question's radio group id suffix (e.g. "question-29101") isn't
     // guaranteed stable across page loads, so match the answer by its
