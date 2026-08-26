@@ -94,9 +94,14 @@ model NewsletterSource {
   name       String
   url        String                @unique
   adapterKey String                // which adapter in src/lib/newsletters/adapters handles this site
-  status     String                @default("PENDING") // PENDING | SUBSCRIBED | FAILED | SKIPPED
-  notes      String?
-  createdAt  DateTime              @default(now())
+  status      String                @default("PENDING") // PENDING | SUBSCRIBED | FAILED | SKIPPED
+  notes       String?
+  // Set only for sites that require a real account (not just an email-list
+  // opt-in) to receive their newsletter — JSON string, e.g. {"username",
+  // "password"}. Generated locally, stored so the account is actually
+  // usable later; never logged in plaintext.
+  credentials String?
+  createdAt   DateTime              @default(now())
   attempts   SubscriptionAttempt[]
 }
 

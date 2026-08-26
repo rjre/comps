@@ -2,7 +2,9 @@ import type { Page } from "playwright";
 import type { Profile } from "@prisma/client";
 import type { RunLogger } from "@/lib/logger";
 
-export type SubscriptionOutcome = { status: "SUCCESS"; message?: string } | { status: "FAILED"; message: string };
+export type SubscriptionOutcome =
+  | { status: "SUCCESS"; message?: string; credentials?: { username?: string; password?: string } }
+  | { status: "FAILED"; message: string };
 
 export interface NewsletterAdapterContext {
   page: Page;

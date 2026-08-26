@@ -68,8 +68,14 @@ async function subscribeNewsletters() {
             },
           });
           if (outcome.status === "SUCCESS" && !dryRun) {
-            await prisma.newsletterSource.update({ where: { id: source.id }, data: { status: "SUBSCRIBED" } });
-            await log.info(`Subscribed: ${source.name}`);
+            await prisma.newsletterSource.update({
+              where: { id: source.id },
+              data: {
+                status: "SUBSCRIBED",
+                credentials: outcome.credentials ? JSON.stringify(outcome.credentials) : undefined,
+              },
+            });
+            await log.info(`Subscribed: ${source.name}${outcome.credentials ? " (account credentials stored on the record, not logged)" : ""}`);
           } else if (outcome.status === "SUCCESS") {
             await log.info(`Entered (dry run): ${source.name}`);
           } else {
