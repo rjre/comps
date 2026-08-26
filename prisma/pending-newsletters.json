@@ -40,5 +40,11 @@
     "url": "https://www.emirates.com/english/special-offers/subscribe-to-offers/",
     "adapterKey": "emirates-newsletter",
     "notes": "Official Emirates (emirates.com) 'Subscribe to special offers' page, first-party. The page shows a flashy 'STEP 1 OF 2' wizard, but that's a full account/preferences flow — targets the simpler standalone footer widget instead, a genuine <form action=\"/english/special-offers/subscribe-to-offers/\"> with just email + Subscribe. Confirmed directly: the top wizard's own email field and this footer form's share the literal id \"email\" (a real duplicate-id bug on Emirates' own markup) — every selector is scoped to the footer form specifically to avoid resolving to the wrong one. OneTrust cookie banner; its dark backdrop lingers after the reject click, so the adapter waits for #onetrust-consent-sdk to fully detach before interacting further. No genuine open no-purchase-necessary Emirates Holidays UK competition found at time of writing."
+  },
+  {
+    "name": "Jet2holidays",
+    "url": "https://www.jet2holidays.com/email",
+    "adapterKey": "jet2holidays-newsletter",
+    "notes": "Official Jet2holidays (jet2holidays.com) email sign-up page, first-party, no purchase/account necessary. Single email field (input[name=email]) + Sign up button (#btn-email), standard OneTrust cookie banner. No genuine open no-purchase-necessary Jet2holidays competition found at time of writing (the ones that turned up in search had already closed). easyJet Holidays checked and skipped: easyjet.com returns a persistent 403 on a plain page load (confirmed twice), not just at submit — genuine bot-protection block, not evaded."
   }
 ]
