@@ -12,6 +12,16 @@ import type { NewsletterAdapter, NewsletterAdapterContext, SubscriptionOutcome }
  * "Email" is ticked, since that's this newsletter's own delivery channel,
  * not a third-party sharing consent. Two hidden honeypot fields
  * (b_name/b_email) are deliberately left untouched.
+ *
+ * Known limitation, confirmed directly rather than assumed: the actual
+ * POST to list-manage.com/subscribe/post resets the connection at the
+ * protocol level (a raw curl POST to the same URL fails identically with
+ * an HTTP/2 error, while a plain GET to the page succeeds normally) —
+ * this looks like Mailchimp's own infrastructure protecting that
+ * submission endpoint broadly, not something specific to this list. Same
+ * "genuine connection-level block, not evaded" category as Waitrose/P&O
+ * elsewhere in this project. This adapter fails loudly and correctly; it
+ * isn't expected to succeed until/unless that changes.
  */
 export const devonsTopAttractionsNewsletterAdapter: NewsletterAdapter = {
   key: "devons-top-attractions-newsletter",

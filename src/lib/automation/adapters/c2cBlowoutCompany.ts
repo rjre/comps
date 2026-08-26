@@ -40,6 +40,27 @@ export const c2cBlowoutCompanyAdapter: CompetitionAdapter = {
     await page.locator("#input_283_2").fill(profile.email);
     await log.info("Filled first name, last name, email");
 
+    // Required to enter at all (confirmed directly — submitting without it
+    // shows "This field is required.") — agreeing to the privacy policy
+    // and the possibility of appearing on c2c's social media if selected
+    // as winner, not a marketing consent. #input_283_7_1 ("Marketing
+    // Consent (c2c)") is the actual optional marketing checkbox and stays
+    // deliberately unticked.
+    await page.locator("#input_283_3_1").check();
+    await log.info("Ticked required 'I agree to the c2c Privacy Policy' checkbox — left the separate Marketing Consent checkbox unticked");
+
+    // This form has a visible reCAPTCHA v2 "I'm not a robot" challenge, not
+    // just invisible scoring — confirmed directly via screenshot (a
+    // previous attempt showed "The reCAPTCHA was invalid. Go back and try
+    // it again."). We don't attempt to solve it — check for its presence
+    // up front and fail loudly rather than submit into a guaranteed
+    // rejection each time.
+    const recaptcha = page.frameLocator('iframe[title="reCAPTCHA"]').locator("body");
+    if (await recaptcha.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await log.warn("This form requires solving a visible reCAPTCHA challenge — not attempting to solve it");
+      return { status: "FAILED", message: "Blocked by a visible reCAPTCHA challenge — not solved or evaded" };
+    }
+
     await dismissCookieBanner(3000);
 
     const submit = page.locator("#gform_submit_button_283");
