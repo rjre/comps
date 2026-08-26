@@ -46,5 +46,13 @@
     "closesAt": "2026-09-09T10:59:00.000Z",
     "maxEntries": 1,
     "notes": "Official c2c (Trenitalia c2c Limited, c2c-online.co.uk) competition — c2c is the train operator running Essex Thameside services (London Fenchurch Street to Southend/Shoeburyness), i.e. directly relevant to this profile's location. No purchase necessary — entry is via the form alone; a c2c account only doubles the entry (not required). Prize: a blow-dry, glass of Prosecco, manicure, plus complimentary c2c travel. Closes 11:59am 9 Sept 2026 (converted from the site's displayed 11:59am BST). Minimal Gravity Forms form: first/last name + email only, no marketing checkbox on the form itself. Same 'sandbox couldn't render live, curl confirmed the real form is clean' caveat as devons-top-attractions above — same underlying environment issue, not evidence of a genuine site block."
+  },
+  {
+    "name": "TUI Monthly Giveaway — August 2026",
+    "url": "https://www.tui.co.uk/holidays/competitions/giveaway/",
+    "adapterKey": "tui-monthly-giveaway",
+    "closesAt": "2026-08-31T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official TUI UK Limited (tui.co.uk) monthly prize draw, no purchase necessary. Prize: £500 off a TUI holiday (min spend £500). Recurs every calendar month with a new countdown/draw — modelled as one Competition row per month reusing the tui-monthly-giveaway adapter; register a fresh 'TUI Monthly Giveaway — <Month> <Year>' row (closesAt = end of that month) once this one closes, rather than expecting this row to re-enter itself. Doubles as TUI's own newsletter signup — entering inherently opts into TUI Group marketing emails, stated plainly on the page with no separate optional checkbox to decline (fine here: that's the point of this project's newsletter side, and it's TUI's own first-party marketing, not third-party sharing). WPForms form (id 93) that lazy-loads its real fields 15-20s after the page settles — confirmed directly, 0 form elements present at 8s, 13 present at 15-20s."
   }
 ]
