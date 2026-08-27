@@ -102,5 +102,13 @@
     "closesAt": "2026-08-30T23:59:00.000Z",
     "maxEntries": 1,
     "notes": "Found via Gmail (Muddy Stilettos Kent newsletter). No purchase necessary, no dealership visit/test drive required despite the Toyota sponsorship — just the same name/email/county/trivia form as the wreath Reader Treat. Trivia question ('Where did Steven Eagell open its first centre?') answered 'Milton Keynes' — verified via web research (Steven Eagell Group established there in 2002). Closes 30 Aug 2026 (tight — 4 days after this was added)."
+  },
+  {
+    "name": "Official London Theatre — Win two tickets for the UK tour of Heathers The Musical",
+    "url": "https://officiallondontheatre.com/webforms/win-two-tickets-for-the-uk-tour-of-heathers-the-musical/",
+    "adapterKey": "official-london-theatre-heathers",
+    "closesAt": "2026-09-08T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Society of London Theatre (SOLT) prize draw on officiallondontheatre.com — same org already tracked for its newsletter but a genuinely separate form/URL. No purchase necessary; runs 1-8 Sept 2026 per its own T&Cs, one pair of tickets per tour venue. Real server-rendered static form (verified via curl, field names cross-checked against the page's own JSON webform-state schema) — venue radio group (Chelmsford Theatre picked, nearest tour date to this Essex-based profile), first/last name, email, optional postcode, two optional third-party marketing checkboxes left unticked, required 18+/T&Cs checkbox ticked. Submits via client-side fetch() to admin-ajax.php; adapter reads that JSON response's success flag directly. Domain runs Cloudflare bot-management (non-blocking in every observation, adapter fails loudly if a challenge page appears instead). This session's sandboxed Playwright hit a connection-reset routing through this environment's own egress proxy (documented sandbox artifact, not a site block — curl fetched the real form cleanly) — worth confirming the first live run reaches the form."
   }
 ]

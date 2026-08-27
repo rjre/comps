@@ -70,5 +70,11 @@
     "url": "https://www.solmarvillas.com/",
     "adapterKey": "solmar-villas-newsletter",
     "notes": "Official Solmar Villas (solmarvillas.com) homepage newsletter signup, a genuine Drupal Webform ('Sign up today for exclusive offers'), separate from the British Travel Awards vote-to-win competition already tracked via solmar-villas-british-travel-awards (different site, britishtravelawards.com). First name, last name, email. Confirmed directly from the served HTML: this form always renders a visible reCAPTCHA v2 image challenge (data-type=\"image\", not conditional) — adapter fills the form and fails loudly at that point rather than solving/evading it, same category as c2c-blowout-company and visit-essex-gardeners-world (submit-time reCAPTCHA, not a page-load block). Worth re-checking if Solmar ever drops the reCAPTCHA from this form."
+  },
+  {
+    "name": "Visit Colchester",
+    "url": "https://pages.comms.colchester.gov.uk/pages/visit",
+    "adapterKey": "visit-colchester-newsletter",
+    "notes": "Colchester City Council's own tourism newsletter ('What's On from Visit Colchester'), linked from visitcolchester.com's footer — genuinely distinct org from the already-tracked colchester-zoo-newsletter (council tourism board vs. the zoo itself). Standalone e-shot.net (Wired Plus) landing page, fully static HTML (verified via curl): single required email field, a text honeypot ('website', visually offscreen not type=hidden, left untouched), and a 'CapToken' hidden field wired to a silent proof-of-work anti-bot widget (cap.e-shot.net) expected to self-populate on page load — adapter waits for it and fails loudly (not solved/evaded) if it never populates. List is DoubleOptIn, so a successful submit here just triggers Colchester's own confirmation email. AJAX form swap, success read from real wording. Same sandbox-networking caveat as other adapters this run (curl-verified only) — first live run worth a human's eyes, especially the CapToken behaviour."
   }
 ]

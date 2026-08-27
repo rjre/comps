@@ -12,6 +12,7 @@ import { tuiMonthlyGiveawayAdapter } from "./adapters/tuiMonthlyGiveaway";
 import { solmarVillasBritishTravelAwardsAdapter } from "./adapters/solmarVillasBritishTravelAwards";
 import { visitLakeDistrictAdapter } from "./adapters/visitLakeDistrict";
 import { muddyStilettosReaderTreatsAdapter } from "./adapters/muddyStilettosReaderTreats";
+import { officialLondonTheatreHeathersAdapter } from "./adapters/officialLondonTheatreHeathers";
 
 const adapters: CompetitionAdapter[] = [
   exampleAdapter,
@@ -27,6 +28,7 @@ const adapters: CompetitionAdapter[] = [
   solmarVillasBritishTravelAwardsAdapter,
   visitLakeDistrictAdapter,
   muddyStilettosReaderTreatsAdapter,
+  officialLondonTheatreHeathersAdapter,
 ];
 
 export const adapterRegistry = new Map(adapters.map((a) => [a.key, a]));
