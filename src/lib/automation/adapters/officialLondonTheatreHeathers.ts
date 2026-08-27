@@ -100,12 +100,25 @@ export const officialLondonTheatreHeathersAdapter: CompetitionAdapter = {
       return { status: "FAILED", message: "Entry form not found on page" };
     }
 
+    // Confirmed directly (live): the radio input itself sits outside the
+    // viewport (a custom-styled `.webform__radio` label wraps it, same
+    // hidden-input-behind-a-label pattern seen elsewhere in this project)
+    // and Playwright's own actionability check on the raw input times out
+    // waiting for it to scroll into view. Its wrapping <label> is what's
+    // actually visible and clickable, and clicking a <label> natively
+    // toggles the radio/checkbox it wraps.
     const venueOption = form.locator(`input[name="${VENUE_RADIO_NAME}"][value="${CHOSEN_VENUE_VALUE}"]`);
     if ((await venueOption.count()) === 0) {
       await log.warn(`Expected venue option "${CHOSEN_VENUE_VALUE}" not found in the venue radio group — page may have changed`);
       return { status: "FAILED", message: "Expected venue option not found on page" };
     }
-    await venueOption.check();
+    await venueOption.locator("xpath=ancestor::label[1]").click();
+    await page.waitForTimeout(300);
+    const venueChecked = await venueOption.isChecked().catch(() => false);
+    if (!venueChecked) {
+      await log.warn("Clicking the venue option's label did not check the radio input — page may have changed");
+      return { status: "FAILED", message: "Could not select the venue option" };
+    }
     await log.info(`Selected venue: Chelmsford Chelmsford Theatre (nearest tour date to this profile's Essex base)`);
 
     await form.locator(`input[name="${FIRST_NAME_FIELD}"]`).fill(profile.firstName);
@@ -116,12 +129,26 @@ export const officialLondonTheatreHeathersAdapter: CompetitionAdapter = {
     }
     await log.info(`Filled first name, last name, email${profile.postalCode ? ", postcode" : ""}`);
 
-    const termsCheckbox = form.locator(`input[name="${OVER18_TERMS_FIELD}"]`);
+    // Same custom-styled, label-wrapped input pattern as the venue radio
+    // group above — click the wrapping label rather than the raw
+    // checkbox. Confirmed directly (live): this framework also pairs
+    // every checkbox field with a hidden `type="hidden" value="false"`
+    // input sharing the exact same name (a "default unchecked" fallback
+    // value) — a bare `input[name=...]` selector matches both and
+    // isChecked() on the ambiguous pair silently resolved to false, so
+    // this is scoped to the real checkbox specifically.
+    const termsCheckbox = form.locator(`input[type="checkbox"][name="${OVER18_TERMS_FIELD}"]`);
     if ((await termsCheckbox.count()) === 0) {
       await log.warn(`Expected required 18+/terms checkbox (name="${OVER18_TERMS_FIELD}") not found`);
       return { status: "FAILED", message: "Required 'I confirm I am 18+' checkbox not found on page" };
     }
-    await termsCheckbox.check();
+    await termsCheckbox.locator("xpath=ancestor::label[1]").click();
+    await page.waitForTimeout(300);
+    const termsChecked = await termsCheckbox.isChecked().catch(() => false);
+    if (!termsChecked) {
+      await log.warn("Clicking the T&Cs checkbox's label did not check it — page may have changed");
+      return { status: "FAILED", message: "Could not tick the required T&Cs checkbox" };
+    }
     await log.info("Ticked required 'I confirm I am 18+ and have read the prize draw Terms and Conditions' checkbox — left both third-party marketing checkboxes (Theatre Tokens, Heathers The Musical) unticked");
 
     const submit = form.locator("#olt-webform-submit");
@@ -136,9 +163,16 @@ export const officialLondonTheatreHeathersAdapter: CompetitionAdapter = {
     }
 
     // The page's own script preventDefaults the submit and does a fetch()
-    // POST to admin-ajax.php, branching on the parsed JSON's `success`
-    // flag — read that same response directly rather than guessing at a
-    // DOM confirmation.
+    // POST to admin-ajax.php, then (per the site's own script) redirects
+    // to /webforms-thank-you/ on success. Confirmed directly (live): that
+    // redirect is the reliable signal — a real run landed on
+    // "/webforms-thank-you/?compID=..." titled "We've received your
+    // entry. Good luck!" while the admin-ajax.php response's own JSON
+    // body didn't parse the way expected (this project doesn't control
+    // that endpoint's exact response shape, which may differ from what
+    // was observed via curl while building this). Checking the actual
+    // page we end up on is a more direct read of what really happened
+    // than trusting a guessed JSON field name.
     const [response] = await Promise.all([
       page
         .waitForResponse((r) => r.url() === AJAX_URL && r.request().method() === "POST", { timeout: 20000 })
@@ -153,6 +187,13 @@ export const officialLondonTheatreHeathersAdapter: CompetitionAdapter = {
     if (!response.ok()) {
       await log.warn(`admin-ajax.php POST returned HTTP ${response.status()}`);
       return { status: "FAILED", message: `Form submission returned HTTP ${response.status()}` };
+    }
+
+    await page.waitForURL(/\/webforms-thank-you\//, { timeout: 10000 }).catch(() => {});
+    if (/\/webforms-thank-you\//.test(page.url())) {
+      const pageTitle = await page.title().catch(() => "");
+      await log.info(`Redirected to the thank-you page (title: "${pageTitle}") — entry accepted`);
+      return { status: "SUCCESS", message: pageTitle || "Redirected to thank-you page" };
     }
 
     const json = await response.json().catch(() => null);

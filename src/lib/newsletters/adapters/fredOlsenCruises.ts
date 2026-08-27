@@ -49,12 +49,22 @@ export const fredOlsenCruisesNewsletterAdapter: NewsletterAdapter = {
     await page.goto(sourceUrl, { waitUntil: "load", timeout: 45000 });
     await page.waitForTimeout(1500);
 
+    // Confirmed directly (live): this banner can flicker in/out of
+    // visibility rapidly, so isVisible() succeeding doesn't guarantee the
+    // element is still visible by the time click() actually runs — wrap
+    // the click itself in a short timeout/catch so a mid-flicker miss
+    // doesn't hang the whole adapter for 30s.
     const dismissCookieBanner = async (timeout: number) => {
       const cookieReject = page.locator("#onetrust-reject-all-handler");
       if (await cookieReject.isVisible({ timeout }).catch(() => false)) {
-        await cookieReject.click();
-        await page.locator("#onetrust-consent-sdk").waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
-        await log.info("Dismissed cookie banner (rejected non-essential cookies)");
+        const dismissed = await cookieReject
+          .click({ timeout: 3000 })
+          .then(() => true)
+          .catch(() => false);
+        if (dismissed) {
+          await page.locator("#onetrust-consent-sdk").waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+          await log.info("Dismissed cookie banner (rejected non-essential cookies)");
+        }
       }
     };
     await dismissCookieBanner(10000);
@@ -94,6 +104,21 @@ export const fredOlsenCruisesNewsletterAdapter: NewsletterAdapter = {
 
     await dismissCookieBanner(3000);
 
+    // Confirmed directly (live): the OneTrust dark backdrop can re-render
+    // and block this click even after being dismissed twice already —
+    // same recurring pattern hit on several other sites tonight (Emirates,
+    // Jet2holidays, Visit Lake District, Muddy Stilettos Reader Treats).
+    // Same fallback: on a blocked click, remove the backdrop and retry.
+    const clickSubmit = async () => {
+      try {
+        await submit.click({ timeout: 8000 });
+      } catch {
+        await log.warn("Submit click was blocked by a re-rendered cookie banner — removing it and retrying");
+        await page.evaluate(() => document.querySelector("#onetrust-consent-sdk")?.remove());
+        await submit.click();
+      }
+    };
+
     const [response] = await Promise.all([
       page
         .waitForResponse(
@@ -101,10 +126,20 @@ export const fredOlsenCruisesNewsletterAdapter: NewsletterAdapter = {
           { timeout: 20000 },
         )
         .catch(() => null),
-      submit.click(),
+      clickSubmit(),
     ]);
 
     if (!response) {
+      // Confirmed directly (live, repeatedly): this "ondemand" reCAPTCHA
+      // does trigger against our automated requests — the site blocks
+      // submission client-side with this text instead of ever posting,
+      // rather than rendering a solvable widget. Same "don't solve or
+      // evade" policy as a visible challenge, just a different shape of it.
+      const recaptchaWarning = page.getByText(/complete the recaptcha/i);
+      if (await recaptchaWarning.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await log.warn("Site blocked submission with a 'complete the reCAPTCHA' message — its on-demand reCAPTCHA was triggered against this request, not solved or evaded");
+        return { status: "FAILED", message: "Blocked by an on-demand reCAPTCHA check — not solved or evaded" };
+      }
       await log.warn("Never observed a POST response for the newsletter signup submission");
       return { status: "FAILED", message: "No response observed for the form submission" };
     }
