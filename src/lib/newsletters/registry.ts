@@ -20,6 +20,7 @@ import { sagaCruisesNewsletterAdapter } from "./adapters/sagaCruises";
 import { toadHallCottagesNewsletterAdapter } from "./adapters/toadHallCottages";
 import { classicCottagesNewsletterAdapter } from "./adapters/classicCottages";
 import { anchorBayHolidaysNewsletterAdapter } from "./adapters/anchorBayHolidays";
+import { cruiseMummyNewsletterAdapter } from "./adapters/cruiseMummy";
 
 const adapters: NewsletterAdapter[] = [
   nationalLobsterHatcheryNewsletterAdapter,
@@ -43,6 +44,7 @@ const adapters: NewsletterAdapter[] = [
   toadHallCottagesNewsletterAdapter,
   classicCottagesNewsletterAdapter,
   anchorBayHolidaysNewsletterAdapter,
+  cruiseMummyNewsletterAdapter,
 ];
 
 export const newsletterAdapterRegistry = new Map(adapters.map((a) => [a.key, a]));
