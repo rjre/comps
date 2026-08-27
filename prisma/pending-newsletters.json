@@ -100,5 +100,11 @@
     "url": "https://www.classic.co.uk/",
     "adapterKey": "classic-cottages-newsletter",
     "notes": "Independent Cornwall-based (Hayle) holiday cottage agency, official first-party footer newsletter, single email field. Client-side AJAX submit toggling real .newsletter__success ('Thank you — Keep an eye out for our welcome email...') / .newsletter__error ('Sorry, an error has occurred... please call us on 01326 555555') panels, both wordings confirmed directly from the served HTML. CookieYes banner, same .cky-btn-reject selector already used by adventure-island-newsletter. No first-party competition found on classic.co.uk — the '£250/£500 Classic Cottages voucher' prizes found are run by third parties (The Good Web Guide, olive magazine) as their own promotions with Classic Cottages product as the prize, not entered on Classic Cottages' own site."
+  },
+  {
+    "name": "Anchor Bay Holidays",
+    "url": "https://www.anchorbayholidays.uk/newsletter-competitions/",
+    "adapterKey": "anchor-bay-holidays-newsletter",
+    "notes": "Official UK holiday cottage agency, first-party Sendinblue/Brevo embedded newsletter form (First Name, Last Name, Email). This page's own '£500 Voucher Competition' already closed for 2026 (a winner was announced) — but per the page's own text, every active subscriber is automatically entered into next year's draw, so the newsletter itself is worth having regardless. Invisible reCAPTCHA v2 badge present (confirmed no visible challenge box) — checked for a rendered visible challenge right before submit and fails loudly if one appears, not assumed blocking just because the badge exists."
   }
 ]

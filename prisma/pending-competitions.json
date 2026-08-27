@@ -110,5 +110,13 @@
     "closesAt": "2026-09-08T22:59:00.000Z",
     "maxEntries": 1,
     "notes": "Official Society of London Theatre (SOLT) prize draw on officiallondontheatre.com — same org already tracked for its newsletter but a genuinely separate form/URL. No purchase necessary; runs 1-8 Sept 2026 per its own T&Cs, one pair of tickets per tour venue. Real server-rendered static form (verified via curl, field names cross-checked against the page's own JSON webform-state schema) — venue radio group (Chelmsford Theatre picked, nearest tour date to this Essex-based profile), first/last name, email, optional postcode, two optional third-party marketing checkboxes left unticked, required 18+/T&Cs checkbox ticked. Submits via client-side fetch() to admin-ajax.php; adapter reads that JSON response's success flag directly. Domain runs Cloudflare bot-management (non-blocking in every observation, adapter fails loudly if a challenge page appears instead). This session's sandboxed Playwright hit a connection-reset routing through this environment's own egress proxy (documented sandbox artifact, not a site block — curl fetched the real form cleanly) — worth confirming the first live run reaches the form."
+  },
+  {
+    "name": "Park Holidays UK — Win a Holiday Home worth over £60,000",
+    "url": "https://www.parkholidays.com/caravan-holiday-homes-for-sale/win-a-holiday-home",
+    "adapterKey": "park-holidays-win-a-holiday-home",
+    "closesAt": "2026-12-31T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Park Holidays UK Limited (FCA registered) competition, no purchase necessary, long runway (closes 31 Dec 2026). Two-step modal: email only (step 1, the T&Cs text underneath is informational, not an actual checkbox — confirmed directly), then county/title/name/phone plus a required 'Looking to buy a holiday home?' radio (answered 'No, I'd just like to enter the competition') and two optional marketing-channel checkboxes left unticked (step 2). Radio/checkbox inputs have no name/id attributes at all — matched by their wrapping label's own text."
   }
 ]

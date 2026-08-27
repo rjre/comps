@@ -13,6 +13,7 @@ import { solmarVillasBritishTravelAwardsAdapter } from "./adapters/solmarVillasB
 import { visitLakeDistrictAdapter } from "./adapters/visitLakeDistrict";
 import { muddyStilettosReaderTreatsAdapter } from "./adapters/muddyStilettosReaderTreats";
 import { officialLondonTheatreHeathersAdapter } from "./adapters/officialLondonTheatreHeathers";
+import { parkHolidaysWinAHolidayHomeAdapter } from "./adapters/parkHolidaysWinAHolidayHome";
 
 const adapters: CompetitionAdapter[] = [
   exampleAdapter,
@@ -29,6 +30,7 @@ const adapters: CompetitionAdapter[] = [
   visitLakeDistrictAdapter,
   muddyStilettosReaderTreatsAdapter,
   officialLondonTheatreHeathersAdapter,
+  parkHolidaysWinAHolidayHomeAdapter,
 ];
 
 export const adapterRegistry = new Map(adapters.map((a) => [a.key, a]));
