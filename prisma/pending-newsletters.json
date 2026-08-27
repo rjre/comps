@@ -76,5 +76,29 @@
     "url": "https://pages.comms.colchester.gov.uk/pages/visit",
     "adapterKey": "visit-colchester-newsletter",
     "notes": "Colchester City Council's own tourism newsletter ('What's On from Visit Colchester'), linked from visitcolchester.com's footer — genuinely distinct org from the already-tracked colchester-zoo-newsletter (council tourism board vs. the zoo itself). Standalone e-shot.net (Wired Plus) landing page, fully static HTML (verified via curl): single required email field, a text honeypot ('website', visually offscreen not type=hidden, left untouched), and a 'CapToken' hidden field wired to a silent proof-of-work anti-bot widget (cap.e-shot.net) expected to self-populate on page load — adapter waits for it and fails loudly (not solved/evaded) if it never populates. List is DoubleOptIn, so a successful submit here just triggers Colchester's own confirmation email. AJAX form swap, success read from real wording. Same sandbox-networking caveat as other adapters this run (curl-verified only) — first live run worth a human's eyes, especially the CapToken behaviour."
+  },
+  {
+    "name": "Fred. Olsen Cruise Lines",
+    "url": "https://www.fredolsencruises.com/",
+    "adapterKey": "fred-olsen-cruises-newsletter",
+    "notes": "Official first-party homepage footer newsletter signup, first UK cruise line tried in this project (P&O Cruises and Cunard/MSC already excluded as bot-protected). Custom-built form (First_Name/Last_Name/Email) posting to /focl-email-signup/submit-email-signup, verified directly against the real served HTML (unquoted-attribute markup, e.g. name=First_Name — confirmed selectors still resolve fine, a grep quoting quirk during review, not a real issue). Honeypot field 'field1P0t' left blank. An 'ondemand' reCAPTCHA div is present but per its own naming should only render on suspicious signals rather than unconditionally — adapter checks and fails loudly if it ever appears. OneTrust cookie banner. No client-visible confirmation text found in the static HTML — treats HTTP OK with no visible error as success, same convention as suffolkCoast.ts. No open no-purchase competition found on this domain (/competition redirects to the homepage)."
+  },
+  {
+    "name": "Saga Cruises",
+    "url": "https://travel.saga.co.uk/cruises/newsletter-sign-up.aspx",
+    "adapterKey": "saga-cruises-newsletter",
+    "notes": "Official first-party newsletter banner (Saga Cruises Limited, the over-50s specialist), no purchase/account necessary. Clean ASP.NET MVC form (#email-only-form -> POST /emailonly/banner): First Name, Last Name, Email only, no marketing checkbox to leave unticked. Known real failure copy ('unable to subscribe you at this time') checked in both the POST response body and the DOM; anything else treated as success. Saga's genuine no-purchase cruise prize draws (e.g. 'Win a river cruise', 50+ only) were NOT built — they require a JS-driven postcode/address-lookup widget whose manual-entry fields don't exist in static HTML, plus consent-checkbox markup injected by further unknown JS — real selectors this project has no way to discover without live JS rendering; deliberately not guessed. Worth a future adapter attempt in an environment with working Playwright access, checking profile.dateOfBirth against the 50+ age restriction (SKIPPED_RULES, not FAILED, if too young or DOB unset) before reaching the address-widget problem."
+  },
+  {
+    "name": "Toad Hall Cottages",
+    "url": "https://www.toadhallcottages.co.uk/contact/newsletter",
+    "adapterKey": "toad-hall-cottages-newsletter",
+    "notes": "Cornwall/Devon/Dorset/Somerset/Exmoor/Dartmoor/New Forest holiday cottage agency, official first-party newsletter form (Title/first name/surname/email required; destination/holiday-type/bedroom preference checkboxes left untouched). Confirmed directly from the served HTML: this form always renders a standard Google reCAPTCHA v2 checkbox widget, unconditionally present (not conditional the way Fred Olsen's 'ondemand' one is). Adapter fills the whole form then fails loudly at the final submit once the challenge is confirmed present, same category as c2c-blowout-company and solmar-villas-newsletter (submit-time reCAPTCHA, not a page-load block). Real confirmation text captured for if/when this is ever resolved: '#postForm' -> 'Thank you for you for signing up, we look forward to emailing you soon.' No competition found on this domain."
+  },
+  {
+    "name": "Classic Cottages",
+    "url": "https://www.classic.co.uk/",
+    "adapterKey": "classic-cottages-newsletter",
+    "notes": "Independent Cornwall-based (Hayle) holiday cottage agency, official first-party footer newsletter, single email field. Client-side AJAX submit toggling real .newsletter__success ('Thank you — Keep an eye out for our welcome email...') / .newsletter__error ('Sorry, an error has occurred... please call us on 01326 555555') panels, both wordings confirmed directly from the served HTML. CookieYes banner, same .cky-btn-reject selector already used by adventure-island-newsletter. No first-party competition found on classic.co.uk — the '£250/£500 Classic Cottages voucher' prizes found are run by third parties (The Good Web Guide, olive magazine) as their own promotions with Classic Cottages product as the prize, not entered on Classic Cottages' own site."
   }
 ]
