@@ -11,6 +11,19 @@ import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types"
  * (Contact Form 7 id 103083) by its specific field values, not just "the
  * first form on the page". No marketing/newsletter checkbox exists on this
  * form at all, so there's nothing to deliberately leave unticked here.
+ *
+ * CORRECTED (was previously misdiagnosed as a genuine site-side mail
+ * bug): this form runs CF7's reCAPTCHA v3 module (real Google API script,
+ * real token, confirmed populated correctly before every submit — this
+ * isn't a client-side failure). The generic "Sorry, there was a problem
+ * sending your entry" text hides the real reason — read the raw AJAX JSON
+ * response directly and it's `"status":"spam"` every time, i.e. Google's
+ * invisible risk-scoring rejects the token despite it looking valid,
+ * consistently, across many attempts over many hours. This is the same
+ * "don't solve or evade" category as every other reCAPTCHA-fronted
+ * adapter in this project, just with an unusually misleading UI message —
+ * marked SKIPPED rather than retried forever expecting a mail-server
+ * fix that was never the actual problem.
  */
 export const villagePeopleBanhamZooAdapter: CompetitionAdapter = {
   key: "village-people-banham-zoo",
@@ -74,28 +87,50 @@ export const villagePeopleBanhamZooAdapter: CompetitionAdapter = {
       return { status: "SUCCESS", message: "Dry run: would have submitted" };
     }
 
-    // Contact Form 7 submits via AJAX and injects a status message into
-    // this specific form's own .wpcf7-response-output div — matched by
-    // wording rather than a guessed class, since the actual text isn't
-    // present until after a live submit.
-    await submit.click();
+    // Contact Form 7 (this version) submits via its REST API endpoint
+    // (/wp-json/contact-form-7/v1/contact-forms/103083/feedback, confirmed
+    // directly — not the older admin-ajax.php pattern) and injects a
+    // status message into this specific form's own .wpcf7-response-output
+    // div. Its displayed text is a generic "there was a problem sending
+    // your entry" regardless of the real reason, so the raw JSON response
+    // is read directly too — confirmed live it carries a `status` field
+    // ("mail_sent"/"spam"/"validation_failed"/etc.) that's far more
+    // specific than the UI copy.
+    const [ajaxResponse] = await Promise.all([
+      page
+        .waitForResponse((r) => r.url().includes("/contact-forms/103083/feedback") && r.request().method() === "POST", { timeout: 15000 })
+        .catch(() => null),
+      submit.click(),
+    ]);
 
     const responseOutput = form.locator(".wpcf7-response-output");
     try {
-      await responseOutput.waitFor({ state: "visible", timeout: 15000 });
+      await responseOutput.waitFor({ state: "visible", timeout: 10000 });
     } catch {
-      await log.warn("No response message appeared in the form within 15s after submit");
+      await log.warn("No response message appeared in the form within 10s after submit");
       return { status: "FAILED", message: "No confirmation or error appeared after submit — outcome unclear" };
     }
 
     const responseText = (await responseOutput.innerText().catch(() => "")).trim();
-    const formClasses = (await form.getAttribute("class").catch(() => "")) ?? "";
-    if (/sent|thank/i.test(responseText) || /wpcf7-mail-sent-ok/.test(formClasses)) {
+    const ajaxJson = await ajaxResponse?.json().catch(() => null);
+    const realStatus = ajaxJson?.status as string | undefined;
+
+    if (realStatus === "mail_sent") {
       await log.info(`Entry submitted: ${responseText}`);
       return { status: "SUCCESS", message: responseText || undefined };
     }
 
-    await log.warn(`Form response: ${responseText}`);
-    return { status: "FAILED", message: `Form rejected submission: ${responseText || "unknown error"}` };
+    if (realStatus === "spam") {
+      // Confirmed directly, repeatedly: this form's reCAPTCHA v3 token
+      // generates correctly but is consistently score-rejected server-
+      // side — Google's invisible risk-scoring flagging this as likely
+      // automated, not solved or evaded, same policy as every other
+      // reCAPTCHA-fronted adapter in this project.
+      await log.warn(`CF7 flagged this submission as spam (reCAPTCHA v3 score rejection) — UI showed: "${responseText}"`);
+      return { status: "FAILED", message: "Blocked by reCAPTCHA v3 spam-score rejection — not solved or evaded" };
+    }
+
+    await log.warn(`Form response (status: ${realStatus ?? "unknown"}): ${responseText}`);
+    return { status: "FAILED", message: `Form rejected submission (${realStatus ?? "unknown"}): ${responseText || "unknown error"}` };
   },
 };

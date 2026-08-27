@@ -122,18 +122,23 @@ export const muddyStilettosReaderTreatsAdapter: CompetitionAdapter = {
       await submit.click();
     }
 
-    // Confirmed directly across several separate live attempts: the
-    // submit button reliably becomes enabled once the T&Cs checkbox
-    // state actually changes, and clicking it (falling back to removing
-    // a re-rendered consent overlay first, above) reports success with
-    // no thrown error — but no network mutation request is ever observed
-    // firing, and the page never shows any confirmation text or resets.
-    // This looks like some client-side check silently swallowing the
-    // click rather than a network/timing issue this project's usual
-    // fixes address — possibly an anti-automation signal (e.g. a
-    // trusted-event or interaction-pattern check). Not investigated
-    // further/not evaded; this correctly reports FAILED below rather
-    // than guessing success, and the scheduled timer will keep retrying.
+    // Confirmed directly across many separate live attempts, over two
+    // sessions, with escalating diagnostics (network request/response
+    // capture, DOM state polling, forced clicks, genuinely trusted
+    // Playwright clicks vs. synthetic dispatched events): the submit
+    // button reliably becomes enabled once the T&Cs checkbox state
+    // actually changes, and clicking it (falling back to removing a
+    // re-rendered consent overlay first, above) reports success with no
+    // thrown error — but literally zero network requests are ever
+    // observed firing as a result, checkbox state and all. This isn't a
+    // timing or overlay issue this project's usual fixes address; it
+    // looks like a targeted anti-automation defense specific to this
+    // page (the sibling wreath-kit Reader Treat, same code path, did
+    // eventually succeed through repeated scheduled retries — so this
+    // is left on the same retry cadence rather than marked permanently
+    // blocked, in case it's similarly just very unreliable rather than
+    // deterministically hostile). Not solved or evaded either way; this
+    // correctly reports FAILED below rather than guessing success.
     const success = page.getByText(/thank you|you're entered|good luck|entry received|successfully entered|entered the reader treat/i);
     const error = page.getByText(/already entered|invalid|error|something went wrong|please enter|incorrect/i);
     try {
