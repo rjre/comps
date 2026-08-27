@@ -64,5 +64,11 @@
     "url": "https://www.visitlakedistrict.com/offers/sign-up-to-newsletter",
     "adapterKey": "visit-lake-district-newsletter",
     "notes": "Official Visit Lake District (run by Cumbria Tourism) newsletter, standard Mailchimp classic embed. Required: Email, First Name, Last Name, Country of residence (UK selected). Optional: Title, Postcode, a 'What holiday interests you?' checkbox group (left untouched). Only the organiser's own GDPR consent checkbox is ticked. Org already tracked via the visit-lake-district-prize-draw competition adapter."
+  },
+  {
+    "name": "Solmar Villas",
+    "url": "https://www.solmarvillas.com/",
+    "adapterKey": "solmar-villas-newsletter",
+    "notes": "Official Solmar Villas (solmarvillas.com) homepage newsletter signup, a genuine Drupal Webform ('Sign up today for exclusive offers'), separate from the British Travel Awards vote-to-win competition already tracked via solmar-villas-british-travel-awards (different site, britishtravelawards.com). First name, last name, email. Confirmed directly from the served HTML: this form always renders a visible reCAPTCHA v2 image challenge (data-type=\"image\", not conditional) — adapter fills the form and fails loudly at that point rather than solving/evading it, same category as c2c-blowout-company and visit-essex-gardeners-world (submit-time reCAPTCHA, not a page-load block). Worth re-checking if Solmar ever drops the reCAPTCHA from this form."
   }
 ]
