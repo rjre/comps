@@ -16,7 +16,7 @@ import { officialLondonTheatreHeathersAdapter } from "./adapters/officialLondonT
 import { parkHolidaysWinAHolidayHomeAdapter } from "./adapters/parkHolidaysWinAHolidayHome";
 import { ambassadorCruiseLineEnglandGolfAdapter } from "./adapters/ambassadorCruiseLineEnglandGolf";
 import { advantageTravelAmbassadorCaribbeanAdapter } from "./adapters/advantageTravelAmbassadorCaribbean";
-import { marieClaireCompsAdapter } from "./adapters/marieClaireComps";
+import { dmriCompsAdapter } from "./adapters/dmriComps";
 
 const adapters: CompetitionAdapter[] = [
   exampleAdapter,
@@ -36,7 +36,7 @@ const adapters: CompetitionAdapter[] = [
   parkHolidaysWinAHolidayHomeAdapter,
   ambassadorCruiseLineEnglandGolfAdapter,
   advantageTravelAmbassadorCaribbeanAdapter,
-  marieClaireCompsAdapter,
+  dmriCompsAdapter,
 ];
 
 export const adapterRegistry = new Map(adapters.map((a) => [a.key, a]));

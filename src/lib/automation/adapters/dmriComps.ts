@@ -2,13 +2,23 @@ import { createHash } from "crypto";
 import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types";
 
 /**
- * comps.marieclaire.co.uk — Marie Claire's official reader competitions
- * club (Future PLC, in partnership with DMRI, a white-label reader-comps
- * platform used by several UK magazine publishers). Found via
- * competitionstoday.co.uk (an aggregator, used only as a lead source —
- * this adapter enters on Future/Marie Claire's own domain, and that
- * aggregator page is what supplied the researched trivia answers below).
- * Genuinely no purchase necessary, real registered UK publisher.
+ * DMRI reader-competitions club sites — a white-label platform Future PLC
+ * uses across several of its own magazine brands (confirmed directly:
+ * comps.marieclaire.co.uk, comps.womanmagazine.co.uk and
+ * comps.whatsontv.co.uk all run the identical UI/flow, sometimes even the
+ * same individual competition "concurrently" across sites — but each
+ * domain has its own separate account database, a real login on one
+ * doesn't carry over to another, confirmed directly). This adapter is
+ * written generically against that shared platform (deriving the site's
+ * own origin from whatever competition URL it's given, never hardcoding
+ * one magazine's domain), so a single adapter key covers every DMRI site
+ * this project tracks a competition on — adding a new one is just a new
+ * `TRIVIA_ANSWERS` entry plus a Competition row pointing at this same
+ * adapterKey, not a new file. Found via aggregators (competitionstoday.co.uk
+ * for the Marie Claire one) used only as lead sources and for their
+ * pre-researched trivia answers — entry always happens on the organiser's
+ * own domain. Genuinely no purchase necessary, real registered UK
+ * publisher.
  *
  * Unlike a one-shot competition, this platform runs DAILY prize draws —
  * its own confirmation text says "you can enter this prize draw once each
@@ -84,6 +94,12 @@ const TRIVIA_ANSWERS: Record<string, string> = {
 };
 
 function derivedPassword(email: string): string {
+  // Deliberately NOT salted per-domain: each DMRI site has its own
+  // separate account database anyway (confirmed directly — a login on one
+  // domain doesn't work on another), so reusing the same derived password
+  // across sites doesn't create any cross-site collision risk, and
+  // changing this formula would silently break the login for the
+  // already-registered live Marie Claire account.
   const hash = createHash("sha256").update(`marie-claire-comps:${email}`).digest("hex");
   return `Mc${hash.slice(0, 10)}9`;
 }
@@ -101,15 +117,16 @@ const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const LOG_OUT_TEXT = /log\s*out/i;
 
-export const marieClaireCompsAdapter: CompetitionAdapter = {
-  key: "marie-claire-comps",
-  siteName: "Marie Claire Competitions (Future PLC / DMRI)",
+export const dmriCompsAdapter: CompetitionAdapter = {
+  key: "dmri-comps",
+  siteName: "DMRI Reader Competitions (Future PLC)",
   async enterCompetition({ page, competitionUrl, profile, log, dryRun }: AdapterContext): Promise<EntryOutcome> {
     const answer = TRIVIA_ANSWERS[competitionUrl];
     if (!answer) {
       await log.warn(`No researched trivia answer recorded for ${competitionUrl} — refusing to guess`);
       return { status: "FAILED", message: "No verified answer available for this competition's question" };
     }
+    const origin = new URL(competitionUrl).origin;
 
     await page.setExtraHTTPHeaders({ "User-Agent": USER_AGENT });
     await log.info(`Navigating to ${competitionUrl}`);
@@ -183,7 +200,7 @@ export const marieClaireCompsAdapter: CompetitionAdapter = {
     // implicitly created by a bare login attempt on some earlier run.
     // /account is the stable, reliable place to check and fill these (see
     // the file-level comment for why the in-page wizard isn't used).
-    await page.goto("https://comps.marieclaire.co.uk/account", { waitUntil: "load", timeout: 45000 });
+    await page.goto(`${origin}/account`, { waitUntil: "load", timeout: 45000 });
     await page.waitForTimeout(1000);
     const firstNameField = page.locator("#AccountFormUpdate_firstname");
     const currentFirstName = await firstNameField.inputValue().catch(() => "");
