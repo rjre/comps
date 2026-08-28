@@ -27,6 +27,11 @@ const SEED_ORIGINS = [
   "https://comps.womanmagazine.co.uk",
   "https://competitions.womansweekly.com",
   "https://comps.whatsontv.co.uk",
+  // Spotted via feed discovery, which resolved a ThePrizeFinder item to
+  // competitions.madeformums.com/competition/... — the same DMRI URL
+  // shape. Without this it would have been tracked as a `generic` row and
+  // failed, rather than using the adapter that already handles it.
+  "https://competitions.madeformums.com",
 ];
 
 /**

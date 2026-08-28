@@ -146,8 +146,10 @@ model SubscriptionAttempt {
   attemptedAt        DateTime         @default(now())
 }
 
-// Read-only surface of possible "you've won" emails, for a human to check —
-// the mail scanner never replies, deletes, marks read, or clicks anything.
+// Possible "you've won" emails, surfaced for a human to check. The mail
+// scanner never replies, deletes, or forwards — the only mailbox change it
+// makes is archiving a message once it has been fully handled, and for a
+// win that means only after the win notification actually went out.
 model PotentialWin {
   id              String   @id @default(cuid())
   gmailMessageId  String   @unique
@@ -156,5 +158,28 @@ model PotentialWin {
   snippet         String
   receivedAt      DateTime
   reviewed        Boolean  @default(false)
+  // When the configured notification webhook accepted this win. Null means
+  // nobody has been told yet, which is what stops it being archived.
+  notifiedAt      DateTime?
   createdAt       DateTime @default(now())
+}
+
+// One row per message the mail triage has looked at, so a message is never
+// handled twice and so "why is this still in my inbox?" has an answer.
+model ProcessedEmail {
+  id             String   @id @default(cuid())
+  gmailMessageId String   @unique
+  from           String
+  subject        String
+  receivedAt     DateTime
+  // WIN | LEADS | NOTHING — see src/lib/gmail/triage.ts
+  category       String
+  // How many competition links this email contributed, for LEADS.
+  linksFound     Int      @default(0)
+  linksRegistered Int     @default(0)
+  // Set once the message was actually archived (INBOX label removed).
+  archivedAt     DateTime?
+  // Why it hasn't been archived yet, when it hasn't.
+  heldReason     String?
+  processedAt    DateTime @default(now())
 }

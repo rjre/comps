@@ -35,7 +35,7 @@ function sameSite(hostA: string, hostB: string): boolean {
 // (later, at entry time) opened with the user's real profile data.
 export async function resolveEntryUrl(listingUrl: string): Promise<string | null> {
   if (!isSafeExternalUrl(listingUrl)) return null;
-  if (!(await isAllowedByRobots(listingUrl))) return null;
+  if (!(await isAllowedByRobots(listingUrl, DISCOVERY_USER_AGENT))) return null;
   await politeDelay(listingUrl);
 
   const listingHost = new URL(listingUrl).host;

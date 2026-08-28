@@ -4,7 +4,7 @@ import { runPlatformDiscovery } from "@/lib/scheduler/discoverOnce";
 import { runEntryPass } from "@/lib/scheduler/runOnce";
 import { runNewsletterPass } from "@/lib/scheduler/subscribeNewsletters";
 import { runPrune } from "@/lib/maintenance/prune";
-import { scanForWins } from "@/lib/gmail/scanForWins";
+import { processMailbox } from "@/lib/gmail/processMailbox";
 import { isGmailConfigured } from "@/lib/gmail/client";
 
 const minutes = (name: string, fallback: number) => Number(process.env[name] ?? fallback) * 60_000;
@@ -64,7 +64,7 @@ async function main() {
   ];
 
   if (isGmailConfigured()) {
-    loops.push(loop("mail-scan", MAIL_SCAN_INTERVAL_MS, scanForWins));
+    loops.push(loop("mailbox", MAIL_SCAN_INTERVAL_MS, processMailbox));
     schedule.push(`mail scan ${MAIL_SCAN_INTERVAL_MS / 60_000}min`);
   } else {
     console.log("Gmail not configured — skipping mail scanning (see README: npm run gmail:auth).");

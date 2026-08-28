@@ -88,15 +88,34 @@ one didn't reach. Each pass takes a file lock (`data/locks/`), so a
 hand-started run and a worker-driven one can never enter the same
 competition at once.
 
-## Checking for wins (Gmail)
+## Email triage (Gmail)
 
-`/wins` lists emails that look like a prize notification, found by scanning
-Gmail with a "you've won"-shaped search. This uses the `gmail.readonly`
-OAuth scope only — the app is *structurally* unable to send, delete, modify
-or mark mail read with that scope. Nothing is acted on automatically; it's a
-list for you to check.
+The worker reads the inbox, decides what each message is, acts on it, and
+archives it once it's genuinely handled. Three outcomes:
 
-Setup (one-time, needs a human in the loop):
+- **A possible win** — recorded to `/wins` and a notification sent.
+  Archived *only if that notification succeeded*. An unnotified win stays
+  in the inbox, because archiving the one email that matters would put it
+  somewhere nobody is looking. With no `NOTIFY_WEBHOOK` set, wins are
+  never archived.
+- **Competition leads** — a newsletter carrying competition links. The
+  links go through the same pipeline a feed item does (entry-URL
+  resolution, SSRF check, robots.txt) and are registered for entry, then
+  the email is archived. Note "registered", not "entered": entry is the
+  runner's job with its own pacing and retries, and the email has nothing
+  left to contribute once its links are tracked.
+- **Neither** — assessed and archived. That assessment is the handling.
+
+Every message looked at gets a `ProcessedEmail` row recording the category
+and, when it wasn't archived, why — so "why is this still in my inbox?"
+always has an answer. Nothing is ever deleted, trashed, marked read, or
+replied to; the only mailbox change is removing the INBOX label.
+
+Set `NOTIFY_WEBHOOK` to get win alerts. An `https://ntfy.sh/<topic>` URL
+is the least-setup option (pick a topic, install the app); anything else
+receives a JSON POST, which suits Slack/Discord-style webhooks.
+
+### Setup (one-time, needs a human in the loop)
 
 1. In [Google Cloud Console](https://console.cloud.google.com/), create a
    project, enable the **Gmail API**, and create an OAuth **Desktop app**
@@ -105,8 +124,15 @@ Setup (one-time, needs a human in the loop):
 2. Put `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` in `.env`.
 3. Run `npm run gmail:auth` — it prints a URL, you authorize in a browser,
    and it prints back a `GOOGLE_REFRESH_TOKEN` to add to `.env`. If that's
-   the Pi over SSH, forward the port first: `ssh -L 53682:localhost:53682 <pi>`.
+   the Pi over SSH, forward the port first:
+   `ssh -L 53682:localhost:53682 <pi>`.
 4. Restart the worker.
+
+This asks for the `gmail.modify` scope — the narrowest one that can
+archive, since archiving means removing a label. It grants label changes
+and marking read; it does **not** grant sending mail or permanent
+deletion. If you previously authorised the older read-only scope, the
+token has to be regenerated: scopes are baked into the refresh token.
 
 ## Stack
 

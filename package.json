@@ -19,7 +19,7 @@
     "run:discovery": "tsx src/lib/discovery/runDiscovery.ts",
     "run:entries": "tsx src/lib/scheduler/runOnce.ts",
     "subscribe:newsletters": "tsx src/lib/scheduler/subscribeNewsletters.ts",
-    "run:mail-scan": "tsx src/lib/gmail/scanForWins.ts",
+    "run:mail-scan": "tsx src/lib/gmail/processMailbox.ts",
     "gmail:auth": "tsx scripts/gmail-auth.ts",
     "worker": "tsx src/worker/index.ts",
     "prune": "tsx src/lib/maintenance/prune.ts"

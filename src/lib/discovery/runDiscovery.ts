@@ -4,7 +4,9 @@ import { resolveEntryUrl } from "./resolveEntryUrl";
 import { getScraper } from "./scrapers/registry";
 import type { ListingItem } from "./scrapers/types";
 import { politeDelay, isAllowedByRobots } from "@/lib/net/politeness";
+import { DISCOVERY_USER_AGENT } from "@/lib/net/fetchHtml";
 import { isSafeExternalUrl } from "@/lib/net/ssrf";
+import { acquireLock } from "@/lib/scheduler/lock";
 import type { FeedSource } from "@prisma/client";
 
 const parser = new Parser();
@@ -42,41 +44,54 @@ function isNonEnterableHost(host: string): boolean {
  * existing item is a no-op.
  */
 export async function runDiscovery() {
-  const sources = await prisma.feedSource.findMany({ where: { enabled: true } });
-  if (sources.length === 0) {
-    console.log("No feed sources configured — add some at /sources.");
+  // The other passes each take one (see lock.ts); this is the last that
+  // didn't. A pass takes tens of minutes because of the per-host
+  // politeness delays, so a hand-started one overlapping the worker's is
+  // easy to cause and just doubles the requests every source sees.
+  const lock = await acquireLock("feed-discovery");
+  if (!lock) {
+    console.log("Another feed-discovery pass is already running — leaving it to finish.");
     return;
   }
-
-  let added = 0;
-  for (const source of sources) {
-    try {
-      const items = source.kind === "html" ? await fetchHtmlListingItems(source) : await fetchRssItems(source);
-
-      for (const item of items) {
-        added += (await processListingItem(item, source)) ? 1 : 0;
-      }
-
-      await prisma.feedSource.update({
-        where: { id: source.id },
-        data: { lastFetchedAt: new Date(), lastError: null },
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(`Failed to fetch source "${source.name}" (${source.url}): ${message}`);
-      await prisma.feedSource.update({
-        where: { id: source.id },
-        data: { lastFetchedAt: new Date(), lastError: message },
-      });
+  try {
+    const sources = await prisma.feedSource.findMany({ where: { enabled: true } });
+    if (sources.length === 0) {
+      console.log("No feed sources configured — add some at /sources.");
+      return;
     }
-  }
 
-  console.log(`Discovery pass complete: ${added} new fillable competition(s) added.`);
-  return added;
+    let added = 0;
+    for (const source of sources) {
+      try {
+        const items = source.kind === "html" ? await fetchHtmlListingItems(source) : await fetchRssItems(source);
+
+        for (const item of items) {
+          added += (await processListingItem(item, source)) ? 1 : 0;
+        }
+
+        await prisma.feedSource.update({
+          where: { id: source.id },
+          data: { lastFetchedAt: new Date(), lastError: null },
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`Failed to fetch source "${source.name}" (${source.url}): ${message}`);
+        await prisma.feedSource.update({
+          where: { id: source.id },
+          data: { lastFetchedAt: new Date(), lastError: message },
+        });
+      }
+    }
+
+    console.log(`Discovery pass complete: ${added} new fillable competition(s) added.`);
+    return added;
+  } finally {
+    await lock.release();
+  }
 }
 
 async function fetchRssItems(source: FeedSource): Promise<ListingItem[]> {
-  if (!(await isAllowedByRobots(source.url))) {
+  if (!(await isAllowedByRobots(source.url, DISCOVERY_USER_AGENT))) {
     console.warn(`robots.txt disallows fetching feed ${source.url}, skipping`);
     return [];
   }
