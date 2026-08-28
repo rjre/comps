@@ -6,9 +6,11 @@ import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types"
  * regional newsletter editions this profile is subscribed to (found via
  * Gmail, not the web-search sweep). Every instance shares one form
  * template (name/email/county + a genuine trivia question with a
- * hyperlinked source + optional third-party marketing checkbox + a
- * required T&Cs checkbox), so one adapter is reused across all of them,
- * same pattern as visit-lake-district-prize-draw.
+ * hyperlinked source + a required T&Cs checkbox, plus sometimes an
+ * optional third-party marketing checkbox — ticked when present, more
+ * marketing signup surfaces more competition leads, same policy as
+ * elsewhere in this project), so one adapter is reused across all of
+ * them, same pattern as visit-lake-district-prize-draw.
  *
  * Each Reader Treat's trivia question only has a real answer findable by
  * following the page's own "here" hyperlink to the sponsor's site (never
@@ -23,6 +25,8 @@ const READER_TREAT_ANSWERS: Record<string, string> = {
     "A flower shop", // Sown and Wild's "Our Story" page: founder Chloe "worked alongside my Mum in her flower shop"
   "https://muddystilettos.co.uk/reader-treats/win-a-200-fortnum-mason-hamper-with-steven-eagell-toyota/":
     "Milton Keynes", // Steven Eagell Group's own history: established in Milton Keynes in 2002, its first centre
+  "https://muddystilettos.co.uk/reader-treats/agria-blenheim-palace-international-horse-trials-fashion-competition/":
+    "4 days", // the competition's own "Need to Know" section: runs 17-20 Sept 2026, and the prize itself is "four-day members' passes"
 };
 
 export const muddyStilettosReaderTreatsAdapter: CompetitionAdapter = {
@@ -72,7 +76,26 @@ export const muddyStilettosReaderTreatsAdapter: CompetitionAdapter = {
       }
     }
     await page.locator("#question").selectOption({ label: answer });
-    await log.info(`Filled name, email, county, and the researched trivia answer ("${answer}") — left the optional third-party marketing checkbox unticked`);
+    await log.info(`Filled name, email, county, and the researched trivia answer ("${answer}")`);
+
+    // Some (not all) Reader Treats also carry an optional third-party
+    // marketing opt-in (confirmed directly: `#consent` on the Blenheim
+    // Palace one, absent on the Toyota/wreath-kit ones) — ticked when
+    // present (more marketing signup surfaces more competition leads, same
+    // policy as elsewhere in this project), using the same native-setter
+    // trick as the T&Cs checkbox below since it's the same React-controlled
+    // component.
+    const marketingConsent = page.locator("#consent");
+    if ((await marketingConsent.count()) > 0) {
+      await marketingConsent.evaluate((el: HTMLInputElement) => {
+        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "checked")!.set!;
+        nativeSetter.call(el, true);
+        el.dispatchEvent(new Event("click", { bubbles: true }));
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      await log.info("Ticked optional third-party marketing consent checkbox");
+    }
 
     await dismissConsent(3000);
 
