@@ -54,10 +54,18 @@ stage "sync competitions" npm run sync:competitions
 stage "sync newsletters" npm run sync:newsletters
 
 if [ "$BEFORE" != "$AFTER" ]; then
-  echo "=== restarting worker (code changed ${BEFORE:0:7} -> ${AFTER:0:7}) ==="
-  systemctl --user restart comps-worker.service 2>/dev/null \
-    || sudo systemctl restart "comps-worker@$(whoami).service" 2>/dev/null \
-    || echo "--- could not restart the worker automatically; restart it yourself" >&2
+  # The dashboard is served from the .next build, not from source, so a
+  # pull that isn't followed by a build leaves it silently serving the old
+  # pages — or 500ing, if the build no longer matches the schema. Rebuild
+  # before restarting, and restart the web service too, not just the worker.
+  stage "build dashboard" npm run build
+
+  echo "=== restarting services (code changed ${BEFORE:0:7} -> ${AFTER:0:7}) ==="
+  for unit in comps-worker comps-web; do
+    systemctl --user restart "${unit}.service" 2>/dev/null \
+      || sudo systemctl restart "${unit}@$(whoami).service" 2>/dev/null \
+      || echo "--- could not restart ${unit} automatically; restart it yourself" >&2
+  done
 fi
 
 echo "######## update finished $(date -Is), status ${worst} ########"

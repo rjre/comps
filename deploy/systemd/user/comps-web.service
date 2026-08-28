@@ -6,6 +6,10 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=%h/comps
+# Default port, overridable from .env below. Not 3000: that's a common
+# default and was already taken on the machine this was first deployed to,
+# which just made the unit crash-loop on EADDRINUSE.
+Environment=PORT=3100
 EnvironmentFile=%h/comps/.env
 ExecStart=/usr/bin/npm run start
 Restart=always
