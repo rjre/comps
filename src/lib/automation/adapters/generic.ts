@@ -93,6 +93,8 @@ export const genericAdapter: CompetitionAdapter = {
     }
 
     await handleCheckboxes(form);
+    const declined = await declineMarketingRadios(form);
+    if (declined > 0) await log.info(`Declined ${declined} marketing opt-in radio group(s)`);
 
     // Anything the form itself marks required and we could not fill means
     // we don't actually understand this form. Submitting anyway is how a
@@ -112,6 +114,18 @@ export const genericAdapter: CompetitionAdapter = {
       return { status: "FAILED", message: "Submit control not found" };
     }
 
+    // A disabled submit means the form's own validation isn't satisfied —
+    // it stays disabled until its required inputs are answered. Clicking
+    // it does nothing at all, which is exactly how this adapter came to
+    // report a successful entry on Secret Escapes' competition form while
+    // submitting nothing (confirmed live).
+    if (await submit.isDisabled().catch(() => false)) {
+      return {
+        status: "SKIPPED_RULES",
+        message: "The form's submit control is still disabled — it wants answers this adapter can't supply",
+      };
+    }
+
     // Honour the shared dry-run contract. This adapter predates it (it was
     // written against an earlier three-argument adapter signature that had
     // no dryRun at all), so without this a dry run would submit real
@@ -123,10 +137,34 @@ export const genericAdapter: CompetitionAdapter = {
     }
 
     await log.info(`Filled ${filledCount} field(s), submitting`);
+    const urlBefore = page.url();
+    const formsBefore = await page.locator("form").count().catch(() => 0);
     await submit.click();
     await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
 
-    return { status: "SUCCESS", message: `Filled ${filledCount} field(s)` };
+    // Don't claim an entry without evidence of one. "Clicked submit" is
+    // not evidence: a disabled control, a validation error, or a JS form
+    // that silently refuses all look identical from here, and reporting
+    // SUCCESS marks the competition ENTERED so it's never retried. Any of
+    // a navigation, the form going away, or a confirmation message counts.
+    const navigated = page.url() !== urlBefore;
+    const formGone = (await page.locator("form").count().catch(() => formsBefore)) < formsBefore;
+    const confirmed = await page
+      .getByText(/thank you|thanks for entering|you(?:'ve| have) been entered|entry received|good luck|successfully entered/i)
+      .first()
+      .isVisible()
+      .catch(() => false);
+
+    if (!navigated && !formGone && !confirmed) {
+      await log.warn("Submitted, but the page showed no sign of having accepted it");
+      return {
+        status: "FAILED",
+        message: `Filled ${filledCount} field(s) and submitted, but saw no confirmation, navigation or form change — entry not confirmed`,
+      };
+    }
+
+    const evidence = confirmed ? "confirmation message" : navigated ? "navigation" : "form removed";
+    return { status: "SUCCESS", message: `Filled ${filledCount} field(s); accepted (${evidence})` };
   },
 };
 
@@ -235,9 +273,17 @@ async function unfilledRequiredFields(form: import("playwright").Locator): Promi
     .evaluate((el) => {
       const scope = el as HTMLFormElement;
       const names: string[] = [];
+      // `data-required` / `aria-required` as well as the real attribute:
+      // JS-validated forms (Secret Escapes' competition form, confirmed
+      // live) mark their fields with a custom attribute and keep the
+      // submit button disabled until they're answered, so looking only at
+      // [required] sees a form with no requirements at all.
       const controls = scope.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
-        "input[required], textarea[required], select[required]",
+        "input[required], textarea[required], select[required], " +
+          "input[data-required], textarea[data-required], select[data-required], " +
+          'input[aria-required="true"], textarea[aria-required="true"], select[aria-required="true"]',
       );
+      const radioGroupsSeen = new Set<string>();
       for (const control of Array.from(controls)) {
         // Honeypots: required but deliberately hidden, and meant to stay
         // empty. Filling or refusing on them would both be wrong.
@@ -248,7 +294,23 @@ async function unfilledRequiredFields(form: import("playwright").Locator): Promi
           style.visibility === "hidden" ||
           control.getAttribute("aria-hidden") === "true";
         if (hidden) continue;
-        if (control instanceof HTMLInputElement && (control.type === "checkbox" || control.type === "radio")) continue;
+        if (control instanceof HTMLInputElement && control.type === "radio") {
+          // A required radio group is unanswered only if nothing in the
+          // whole group is checked — checking each radio individually
+          // would report every unselected option as missing.
+          const group = control.name || control.id;
+          if (radioGroupsSeen.has(group)) continue;
+          radioGroupsSeen.add(group);
+          const anyChecked = Array.from(
+            scope.querySelectorAll<HTMLInputElement>(`input[type="radio"][name="${CSS.escape(control.name)}"]`),
+          ).some((r) => r.checked);
+          if (!anyChecked) names.push(group);
+          continue;
+        }
+        if (control instanceof HTMLInputElement && control.type === "checkbox") {
+          if (!control.checked) names.push(control.getAttribute("name") || control.id || "checkbox");
+          continue;
+        }
         if (!control.value || control.value.trim() === "") {
           names.push(control.getAttribute("name") || control.id || control.tagName.toLowerCase());
         }
@@ -295,6 +357,49 @@ async function selectMatchingOption(
 //   at all already implies accepting that competition's rules, and
 //   leaving a required box unchecked would just block submission.
 // Anything not `required` and not marketing-hinted is left as-is.
+/**
+ * Marketing consent offered as a radio pair (yes/no) rather than a
+ * checkbox — Secret Escapes' `fi-text-optIn` is one, confirmed live.
+ * These are answered "no", the same as an unticked marketing checkbox and
+ * the same as the DMRI adapter does: declining marketing is this
+ * project's standing policy, so it's an answer we can give on the user's
+ * behalf without guessing.
+ *
+ * Note what this deliberately does NOT do: answer required radios that
+ * assert a *fact* about the user (age, residency, eligibility). Those get
+ * left alone, so the form fails the completeness check and the entry is
+ * declined rather than a false declaration being made.
+ */
+async function declineMarketingRadios(form: import("playwright").Locator): Promise<number> {
+  return (await form
+    .evaluate((el, hints: string[]) => {
+      const scope = el as HTMLFormElement;
+      const radios = Array.from(scope.querySelectorAll<HTMLInputElement>('input[type="radio"]'));
+      const groups = new Map<string, HTMLInputElement[]>();
+      for (const radio of radios) {
+        const key = radio.name || radio.id;
+        groups.set(key, [...(groups.get(key) ?? []), radio]);
+      }
+      let answered = 0;
+      for (const [name, group] of groups) {
+        const identity = `${name} ${group.map((r) => r.id).join(" ")}`.toLowerCase();
+        if (!hints.some((hint) => identity.includes(hint))) continue;
+        if (group.some((r) => r.checked)) continue;
+        const no = group.find((r) => {
+          const label = scope.querySelector(`label[for="${r.id}"]`)?.textContent?.trim().toLowerCase() ?? "";
+          return r.value.toLowerCase() === "no" || r.value === "0" || r.value.toLowerCase() === "false" || /^no\b/.test(label);
+        });
+        if (no) {
+          no.checked = true;
+          no.dispatchEvent(new Event("change", { bubbles: true }));
+          answered++;
+        }
+      }
+      return answered;
+    }, MARKETING_HINTS as unknown as string[])
+    .catch(() => 0)) as number;
+}
+
 async function handleCheckboxes(form: import("playwright").Locator) {
   const checkboxes = form.locator('input[type="checkbox"]');
   const count = await checkboxes.count();
