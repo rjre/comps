@@ -13,7 +13,7 @@ import { acquireLock } from "@/lib/scheduler/lock";
  * Runs as its own Run row so the pass shows up in /runs alongside entry
  * runs, rather than only in whatever captured the process's stdout.
  */
-async function discoverOnce() {
+export async function runPlatformDiscovery() {
   // Separate lock from the entry pass — the two are safe to run
   // concurrently, two discovery passes just duplicate each other's work.
   const lock = await acquireLock("discovery");
@@ -109,9 +109,15 @@ async function discoverOnce() {
   }
 }
 
-discoverOnce()
-  .catch((err) => {
-    console.error(err);
-    process.exitCode = 1;
-  })
-  .finally(() => prisma.$disconnect());
+// Also runnable directly (`npm run ...`) as well as from the worker's
+// loop, so a pass can still be driven by hand for testing without
+// starting the whole worker. `require.main` is undefined when this module
+// is imported, so importing it never kicks off a pass as a side effect.
+if (require.main === module) {
+  runPlatformDiscovery()
+    .catch((err) => {
+      console.error(err);
+      process.exitCode = 1;
+    })
+    .finally(() => prisma.$disconnect());
+}

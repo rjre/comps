@@ -13,4 +13,5 @@ data/screenshots/
 .claude/
 .npm-install-stamp
 data/cycle.log*
+data/update.log*
 data/locks/

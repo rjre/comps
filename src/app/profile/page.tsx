@@ -11,10 +11,15 @@ async function saveProfile(formData: FormData) {
     email: String(formData.get("email") ?? ""),
     phone: String(formData.get("phone") ?? "") || null,
     addressLine1: String(formData.get("addressLine1") ?? "") || null,
+    addressLine2: String(formData.get("addressLine2") ?? "") || null,
     city: String(formData.get("city") ?? "") || null,
     region: String(formData.get("region") ?? "") || null,
     postalCode: String(formData.get("postalCode") ?? "") || null,
     country: String(formData.get("country") ?? "") || null,
+    dateOfBirth: (() => {
+      const raw = String(formData.get("dateOfBirth") ?? "");
+      return raw ? new Date(raw) : null;
+    })(),
   };
 
   const existing = await prisma.profile.findFirst();
@@ -72,6 +77,10 @@ export default async function ProfilePage() {
           <input name="addressLine1" defaultValue={profile?.addressLine1 ?? ""} />
         </label>
         <label>
+          Address line 2
+          <input name="addressLine2" defaultValue={profile?.addressLine2 ?? ""} />
+        </label>
+        <label>
           City
           <input name="city" defaultValue={profile?.city ?? ""} />
         </label>
@@ -86,6 +95,14 @@ export default async function ProfilePage() {
         <label>
           Country
           <input name="country" defaultValue={profile?.country ?? ""} />
+        </label>
+        <label>
+          Date of birth (some competitions require age verification)
+          <input
+            name="dateOfBirth"
+            type="date"
+            defaultValue={profile?.dateOfBirth ? profile.dateOfBirth.toISOString().slice(0, 10) : ""}
+          />
         </label>
         <button type="submit">Save</button>
       </form>

@@ -95,14 +95,16 @@ async function pruneLogLines(): Promise<void> {
   );
 }
 
-async function main() {
+export async function runPrune() {
   await pruneScreenshots();
   await pruneLogLines();
 }
 
-main()
-  .catch((err) => {
-    console.error(err);
-    process.exitCode = 1;
-  })
-  .finally(() => prisma.$disconnect());
+if (require.main === module) {
+  runPrune()
+    .catch((err) => {
+      console.error(err);
+      process.exitCode = 1;
+    })
+    .finally(() => prisma.$disconnect());
+}

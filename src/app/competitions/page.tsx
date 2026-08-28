@@ -6,6 +6,9 @@ import { adapterRegistry } from "@/lib/automation/registry";
 // state, and a build-time snapshot of it would be permanently stale.
 export const dynamic = "force-dynamic";
 
+const PAGE_SIZE = 100;
+const STATUSES = ["PENDING", "ENTERED", "SKIPPED", "FAILED", "CLOSED"] as const;
+
 async function addCompetition(formData: FormData) {
   "use server";
 
@@ -21,11 +24,23 @@ async function addCompetition(formData: FormData) {
   revalidatePath("/competitions");
 }
 
-export default async function CompetitionsPage() {
-  const competitions = await prisma.competition.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { entries: true },
-  });
+export default async function CompetitionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status } = await searchParams;
+  const statusFilter = STATUSES.includes(status as (typeof STATUSES)[number]) ? status : undefined;
+
+  const [total, competitions] = await Promise.all([
+    prisma.competition.count({ where: statusFilter ? { status: statusFilter } : undefined }),
+    prisma.competition.findMany({
+      where: statusFilter ? { status: statusFilter } : undefined,
+      orderBy: { createdAt: "desc" },
+      take: PAGE_SIZE,
+      include: { entries: true },
+    }),
+  ]);
   const adapterKeys = [...adapterRegistry.keys()];
 
   return (
@@ -44,7 +59,7 @@ export default async function CompetitionsPage() {
         </label>
         <label>
           Adapter
-          <select name="adapterKey" required>
+          <select name="adapterKey" required defaultValue="generic">
             {adapterKeys.map((key) => (
               <option key={key} value={key}>
                 {key}
@@ -59,7 +74,19 @@ export default async function CompetitionsPage() {
         <button type="submit">Add</button>
       </form>
 
-      <h2>Tracked competitions</h2>
+      <h2>
+        Tracked competitions ({total}
+        {statusFilter ? ` — ${statusFilter}` : ""})
+      </h2>
+      <nav>
+        <a href="/competitions">all</a>{" "}
+        {STATUSES.map((s) => (
+          <a key={s} href={`/competitions?status=${s}`}>
+            {s.toLowerCase()}
+          </a>
+        ))}
+      </nav>
+      {total > PAGE_SIZE && <p>Showing the most recent {PAGE_SIZE} of {total}.</p>}
       <table>
         <thead>
           <tr>
@@ -76,6 +103,7 @@ export default async function CompetitionsPage() {
                 <a href={c.url} target="_blank" rel="noreferrer">
                   {c.name}
                 </a>
+                {c.notes && <div style={{ fontSize: "0.8rem", color: "#666" }}>{c.notes}</div>}
               </td>
               <td>{c.status}</td>
               <td>{c.adapterKey}</td>

@@ -64,7 +64,7 @@ function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
  * Set DRY_RUN=1 to have adapters fill forms without submitting — useful
  * when checking a new/changed adapter against the real page.
  */
-async function runOnce() {
+export async function runEntryPass() {
   const dryRun = process.env.DRY_RUN === "1";
   const startedAt = Date.now();
 
@@ -342,9 +342,15 @@ async function runOnce() {
   }
 }
 
-runOnce()
-  .catch((err) => {
-    console.error(err);
-    process.exitCode = 1;
-  })
-  .finally(() => prisma.$disconnect());
+// Also runnable directly (`npm run ...`) as well as from the worker's
+// loop, so a pass can still be driven by hand for testing without
+// starting the whole worker. `require.main` is undefined when this module
+// is imported, so importing it never kicks off a pass as a side effect.
+if (require.main === module) {
+  runEntryPass()
+    .catch((err) => {
+      console.error(err);
+      process.exitCode = 1;
+    })
+    .finally(() => prisma.$disconnect());
+}

@@ -1,0 +1,15 @@
+[Unit]
+Description=Comps entry assistant — dashboard
+After=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/home/%i/comps
+EnvironmentFile=/home/%i/comps/.env
+ExecStart=/usr/bin/npm run start -- -p 3000
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

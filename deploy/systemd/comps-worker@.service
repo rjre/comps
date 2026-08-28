@@ -1,0 +1,18 @@
+[Unit]
+Description=Comps entry assistant — discovery + entry worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/home/%i/comps
+EnvironmentFile=/home/%i/comps/.env
+ExecStart=/usr/bin/npm run worker
+Restart=on-failure
+RestartSec=15
+# Headless Chromium under systemd needs a writable tmp; give it a private one.
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -9,24 +9,29 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "test": "vitest run",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
     "sync:competitions": "tsx scripts/syncCompetitions.ts",
     "sync:newsletters": "tsx scripts/syncNewsletters.ts",
+    "discover:competitions": "tsx src/lib/scheduler/discoverOnce.ts",
+    "run:discovery": "tsx src/lib/discovery/runDiscovery.ts",
     "run:entries": "tsx src/lib/scheduler/runOnce.ts",
     "subscribe:newsletters": "tsx src/lib/scheduler/subscribeNewsletters.ts",
-    "prune": "tsx src/lib/maintenance/prune.ts",
-    "test:schedule": "tsx src/lib/scheduler/schedule.test.ts",
-    "discover:competitions": "tsx src/lib/scheduler/discoverOnce.ts",
-    "test": "npm run test:schedule && npm run test:dmri",
-    "test:dmri": "tsx src/lib/automation/adapters/dmriComps.test.ts"
+    "run:mail-scan": "tsx src/lib/gmail/scanForWins.ts",
+    "gmail:auth": "tsx scripts/gmail-auth.ts",
+    "worker": "tsx src/worker/index.ts",
+    "prune": "tsx src/lib/maintenance/prune.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
+    "googleapis": "^144.0.0",
     "next": "^14.2.5",
     "playwright": "^1.47.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "rss-parser": "^3.13.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -36,6 +41,7 @@
     "eslint-config-next": "^14.2.5",
     "prisma": "^5.20.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^4.1.11"
   }
 }

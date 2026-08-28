@@ -33,11 +33,28 @@ model Profile {
 // constrained by the TypeScript union types in src/lib/automation/types.ts
 // and src/lib/status.ts — validate against those, not free-form values.
 
+model FeedSource {
+  id            String   @id @default(cuid())
+  name          String
+  url           String   @unique // feed URL, or the listing page URL for kind = "html"
+  kind          String   @default("rss") // "rss" | "html"
+  scraperKey    String?  // which scraper in src/lib/discovery/scrapers handles this, when kind = "html"
+  enabled       Boolean  @default(true)
+  lastFetchedAt DateTime?
+  lastError     String?
+  createdAt     DateTime @default(now())
+  competitions  Competition[]
+}
+
 model Competition {
   id          String   @id @default(cuid())
   name        String
-  url         String   @unique
-  adapterKey  String   // which adapter in src/lib/automation/adapters handles this site
+  url         String   @unique // for feed-discovered rows, the resolved off-site entry form URL
+  // Which adapter in src/lib/automation/adapters handles this site.
+  // Defaults to "generic" (heuristic form-fill) because the feed-discovery
+  // pipeline creates rows before anyone has written a site-specific
+  // adapter; every other code path sets this explicitly.
+  adapterKey  String   @default("generic")
   opensAt     DateTime?
   closesAt    DateTime?
   maxEntries  Int      @default(1) // entries allowed per person, per the competition's own rules
@@ -51,6 +68,10 @@ model Competition {
   // Set only for sites that require a real account to enter — JSON string,
   // e.g. {"username","password"}. Same pattern as NewsletterSource.credentials.
   credentials String?
+  // Provenance, set only for rows the feed-discovery pipeline created.
+  feedSourceId     String?
+  feedSource       FeedSource? @relation(fields: [feedSourceId], references: [id], onDelete: SetNull)
+  sourceListingUrl String? // the discovery listing page this was resolved from, for debugging
   createdAt   DateTime @default(now())
   entries     Entry[]
 }
@@ -123,4 +144,17 @@ model SubscriptionAttempt {
   status             String           // SUCCESS | FAILED
   message            String?
   attemptedAt        DateTime         @default(now())
+}
+
+// Read-only surface of possible "you've won" emails, for a human to check —
+// the mail scanner never replies, deletes, marks read, or clicks anything.
+model PotentialWin {
+  id              String   @id @default(cuid())
+  gmailMessageId  String   @unique
+  from            String
+  subject         String
+  snippet         String
+  receivedAt      DateTime
+  reviewed        Boolean  @default(false)
+  createdAt       DateTime @default(now())
 }

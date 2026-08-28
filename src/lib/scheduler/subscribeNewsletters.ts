@@ -17,7 +17,7 @@ const SCREENSHOT_DIR = path.join(process.cwd(), "data", "screenshots");
  *
  * Set DRY_RUN=1 to have adapters fill the form without submitting.
  */
-async function subscribeNewsletters() {
+export async function runNewsletterPass() {
   const dryRun = process.env.DRY_RUN === "1";
 
   // Same reasoning as the entry pass (see lock.ts): two concurrent passes
@@ -126,9 +126,15 @@ async function subscribeNewsletters() {
   }
 }
 
-subscribeNewsletters()
-  .catch((err) => {
-    console.error(err);
-    process.exitCode = 1;
-  })
-  .finally(() => prisma.$disconnect());
+// Also runnable directly (`npm run ...`) as well as from the worker's
+// loop, so a pass can still be driven by hand for testing without
+// starting the whole worker. `require.main` is undefined when this module
+// is imported, so importing it never kicks off a pass as a side effect.
+if (require.main === module) {
+  runNewsletterPass()
+    .catch((err) => {
+      console.error(err);
+      process.exitCode = 1;
+    })
+    .finally(() => prisma.$disconnect());
+}

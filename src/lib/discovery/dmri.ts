@@ -1,3 +1,4 @@
+import { isAllowedByRobots, politeDelay } from "@/lib/net/politeness";
 import type { DiscoveredCompetition, DiscoveryContext, DiscoverySource } from "./types";
 
 /**
@@ -28,22 +29,30 @@ const SEED_ORIGINS = [
   "https://comps.whatsontv.co.uk",
 ];
 
-/** The site 403s Playwright's default UA; be equally explicit here. */
+/**
+ * The site 403s anything that doesn't look like a browser — including the
+ * shared DISCOVERY_USER_AGENT, and including robots.txt itself (confirmed
+ * directly against all four origins). That's why this source can't just
+ * use net/fetchHtml.ts: it still goes through the same robots.txt check
+ * and per-host rate limit, but has to identify as a browser to get an
+ * answer at all. All four sites' robots.txt allow everything (`Allow: /`
+ * on Marie Claire, an empty `Disallow:` on the other three), checked
+ * directly.
+ */
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 
 /** Index pagination is `/index/index/page/N.php`; stop early when a page adds nothing new. */
 const MAX_INDEX_PAGES = 12;
 
-/** Courtesy gap between requests to the same site. */
-const REQUEST_DELAY_MS = 700;
 
 /** Upper bound on a discovered daily draw's entry cap, however far off its closing date is. */
 const MAX_DAILY_ENTRIES = 60;
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
+/** robots.txt-checked, rate-limited GET — the same contract as net/fetchHtml.ts, with this platform's required UA. */
 async function fetchText(url: string): Promise<string | null> {
+  if (!(await isAllowedByRobots(url, USER_AGENT))) return null;
+  await politeDelay(url);
   try {
     const response = await fetch(url, {
       headers: { "User-Agent": USER_AGENT, Accept: "text/html" },
@@ -122,7 +131,6 @@ export const dmriDiscoverySource: DiscoverySource = {
       for (let pageNumber = 1; pageNumber <= MAX_INDEX_PAGES; pageNumber++) {
         const indexUrl = pageNumber === 1 ? `${origin}/` : `${origin}/index/index/page/${pageNumber}.php`;
         const html = await fetchText(indexUrl);
-        await sleep(REQUEST_DELAY_MS);
         if (!html) {
           if (pageNumber === 1) await ctx.log(`${origin}: index not reachable, skipping this site`);
           break;
@@ -138,7 +146,6 @@ export const dmriDiscoverySource: DiscoverySource = {
 
       for (const url of candidates) {
         const html = await fetchText(url);
-        await sleep(REQUEST_DELAY_MS);
         if (!html) {
           await ctx.log(`  could not read ${url}, skipping`);
           continue;
