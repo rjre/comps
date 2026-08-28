@@ -106,5 +106,11 @@
     "url": "https://www.anchorbayholidays.uk/newsletter-competitions/",
     "adapterKey": "anchor-bay-holidays-newsletter",
     "notes": "Official UK holiday cottage agency, first-party Sendinblue/Brevo embedded newsletter form (First Name, Last Name, Email). This page's own '£500 Voucher Competition' already closed for 2026 (a winner was announced) — but per the page's own text, every active subscriber is automatically entered into next year's draw, so the newsletter itself is worth having regardless. Invisible reCAPTCHA v2 badge present (confirmed no visible challenge box) — checked for a rendered visible challenge right before submit and fails loudly if one appears, not assumed blocking just because the badge exists."
+  },
+  {
+    "name": "Marie Claire",
+    "url": "https://www.marieclaire.co.uk/newsletter",
+    "adapterKey": "future-plc-newsletter",
+    "notes": "Marie Claire's own first-party newsletter signup, distinct from any of the already-tracked comps.marieclaire.co.uk daily prize-draw entries (dmri-comps adapter, different subdomain/platform). Uses Future PLC's shared 'newsletterForm' widget — a real form hydrated from a JSON config embedded directly in the page (read directly from the raw HTML, not guessed): single required email field (name=MAIL), two independently-optional checkboxes for 'other Future brands' and 'trusted partners or sponsors' marketing left unticked, submits as 'Sign me up'. Confirmed the identical widget/config also renders on womanandhome.com/newsletter (same publisher, different brand) — adapterKey (future-plc-newsletter) is written generically against the shared widget rather than hardcoded to Marie Claire, so any other Future PLC title's newsletter can reuse it later via a new row here rather than a new adapter file. Same Sourcepoint consent-management iframe (privacy-mgmt.com) already documented on this publisher's comps.* subdomains in dmriComps.ts, dismissed the same way (Agree — no one-click reject-all offered)."
   }
 ]
