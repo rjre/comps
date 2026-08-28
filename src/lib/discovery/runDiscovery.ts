@@ -7,6 +7,9 @@ import { politeDelay, isAllowedByRobots } from "@/lib/net/politeness";
 import { DISCOVERY_USER_AGENT } from "@/lib/net/fetchHtml";
 import { isSafeExternalUrl } from "@/lib/net/ssrf";
 import { acquireLock } from "@/lib/scheduler/lock";
+
+/** New items to work through per source per pass — see the loop for why. */
+const MAX_NEW_ITEMS_PER_SOURCE = Number(process.env.MAX_NEW_ITEMS_PER_SOURCE ?? 25);
 import type { FeedSource } from "@prisma/client";
 
 const parser = new Parser();
@@ -65,8 +68,23 @@ export async function runDiscovery() {
       try {
         const items = source.kind === "html" ? await fetchHtmlListingItems(source) : await fetchRssItems(source);
 
+        // Budget of new items per source per pass. ThePrizeFinder's "new
+        // competitions" feed alone carries 431 items, and at the per-host
+        // politeness delay that is over an hour of fetching — so a
+        // strictly sequential pass would spend its entire first run on
+        // source 1 and never reach the other fourteen. Already-seen items
+        // cost only a DB lookup and don't count against the budget, so
+        // successive passes keep advancing through a long feed while every
+        // source still contributes on every pass.
+        let workDone = 0;
         for (const item of items) {
-          added += (await processListingItem(item, source)) ? 1 : 0;
+          const result = await processListingItem(item, source);
+          if (result === "created") added++;
+          if (result !== "skipped-known") workDone++;
+          if (workDone >= MAX_NEW_ITEMS_PER_SOURCE) {
+            console.log(`Reached this pass's budget of ${MAX_NEW_ITEMS_PER_SOURCE} new item(s) for "${source.name}" — the rest carry over.`);
+            break;
+          }
         }
 
         await prisma.feedSource.update({
@@ -112,15 +130,23 @@ async function fetchHtmlListingItems(source: FeedSource): Promise<ListingItem[]>
   return scraper.fetchItems(source.url);
 }
 
-/** Returns true if a new Competition was created. */
-async function processListingItem(item: ListingItem, source: FeedSource): Promise<boolean> {
+type ItemResult = "created" | "skipped-known" | "no-work";
+
+/**
+ * Returns what happened, not just whether a row appeared — the per-source
+ * budget in runDiscovery has to count items that cost a network fetch,
+ * and NOT items skipped from the database. Counting the cheap skips would
+ * mean a source whose first N items are all known burns its whole budget
+ * without advancing.
+ */
+async function processListingItem(item: ListingItem, source: FeedSource): Promise<ItemResult> {
   const alreadySeen = await prisma.competition.findFirst({ where: { sourceListingUrl: item.link } });
-  if (alreadySeen) return false;
+  if (alreadySeen) return "skipped-known";
 
   const entryUrl = await resolveEntryUrl(item.link);
   if (!entryUrl) {
     console.log(`Could not resolve an off-site entry URL for "${item.title}", skipping`);
-    return false;
+    return "no-work";
   }
   // resolveEntryUrl already rejects private/local hosts — this is a second
   // gate right at the boundary before anything gets stored as a
@@ -128,11 +154,11 @@ async function processListingItem(item: ListingItem, source: FeedSource): Promis
   // user's real profile data.
   if (!isSafeExternalUrl(entryUrl)) {
     console.log(`"${item.title}" resolved to a private/local address (${entryUrl}), refusing to track it`);
-    return false;
+    return "no-work";
   }
 
   const existingByUrl = await prisma.competition.findUnique({ where: { url: entryUrl } });
-  if (existingByUrl) return false;
+  if (existingByUrl) return "no-work";
 
   const host = new URL(entryUrl).host;
   const nonEnterable = isNonEnterableHost(host);
@@ -151,7 +177,7 @@ async function processListingItem(item: ListingItem, source: FeedSource): Promis
       notes: nonEnterable ? `Entry lives on ${host} — a social-account action or newsletter signup, not a fillable form.` : undefined,
     },
   });
-  return !nonEnterable;
+  return nonEnterable ? "no-work" : "created";
 }
 
 if (require.main === module) {
