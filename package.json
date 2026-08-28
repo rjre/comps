@@ -14,7 +14,12 @@
     "sync:competitions": "tsx scripts/syncCompetitions.ts",
     "sync:newsletters": "tsx scripts/syncNewsletters.ts",
     "run:entries": "tsx src/lib/scheduler/runOnce.ts",
-    "subscribe:newsletters": "tsx src/lib/scheduler/subscribeNewsletters.ts"
+    "subscribe:newsletters": "tsx src/lib/scheduler/subscribeNewsletters.ts",
+    "prune": "tsx src/lib/maintenance/prune.ts",
+    "test:schedule": "tsx src/lib/scheduler/schedule.test.ts",
+    "discover:competitions": "tsx src/lib/scheduler/discoverOnce.ts",
+    "test": "npm run test:schedule && npm run test:dmri",
+    "test:dmri": "tsx src/lib/automation/adapters/dmriComps.test.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",

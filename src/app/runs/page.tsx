@@ -2,6 +2,10 @@ import { readdir } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/db";
 
+// Read live on every request: this reflects an unattended service's current
+// state, and a build-time snapshot of it would be permanently stale.
+export const dynamic = "force-dynamic";
+
 const SCREENSHOT_DIR = path.join(process.cwd(), "data", "screenshots");
 
 async function screenshotsForRun(runId: string): Promise<string[]> {

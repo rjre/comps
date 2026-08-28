@@ -19,6 +19,8 @@ interface PendingCompetition {
   adapterKey: string;
   closesAt?: string | null;
   maxEntries?: number;
+  /** For repeatable draws: minimum hours between counted entries (24 for a daily draw). */
+  entryIntervalHours?: number | null;
   notes?: string;
 }
 
@@ -45,6 +47,7 @@ async function main() {
         adapterKey: item.adapterKey,
         closesAt: item.closesAt ? new Date(item.closesAt) : null,
         maxEntries: item.maxEntries ?? 1,
+        entryIntervalHours: item.entryIntervalHours ?? null,
         notes: item.notes,
       },
     });

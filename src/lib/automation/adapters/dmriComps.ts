@@ -150,6 +150,148 @@ const TRIVIA_ANSWERS: Record<string, string> = {
     "Brian May",
 };
 
+/**
+ * Number words the platform's questions and copy swap between freely —
+ * "three distinctive interior styles" in the prose, "3" as an option.
+ */
+const NUMBER_WORDS: Record<string, string> = {
+  "0": "zero", "1": "one", "2": "two", "3": "three", "4": "four", "5": "five",
+  "6": "six", "7": "seven", "8": "eight", "9": "nine", "10": "ten",
+  "11": "eleven", "12": "twelve",
+};
+
+/**
+ * Punctuation and connectives the option label and the prose spell
+ * differently for the same thing — the copy's "Waffi Space Saver Cot &
+ * Mattress" against the option's "A Waffi Space Saver Cot and Mattress",
+ * or a curly apostrophe against a straight one. Normalising both sides is
+ * a like-for-like comparison, not a loosening of the match.
+ */
+function normaliseText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[\u2018\u2019\u02bc]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/[\u2010-\u2015]/g, "-")
+    .replace(/&/g, " and ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function answerVariants(option: string): string[] {
+  const base = normaliseText(option);
+  const variants = new Set([base]);
+  // "A Waffi Space Saver Cot" is the same answer as the copy's plain
+  // "Waffi Space Saver Cot" — the article belongs to the option list's
+  // phrasing, not to the answer.
+  const withoutArticle = base.replace(/^(a|an|the)\s+/, "");
+  if (withoutArticle !== base) variants.add(withoutArticle);
+  const asWord = NUMBER_WORDS[base];
+  if (asWord) variants.add(asWord);
+  for (const [digit, word] of Object.entries(NUMBER_WORDS)) {
+    if (word === base) variants.add(digit);
+  }
+  return [...variants].filter((variant) => variant.length > 0);
+}
+
+function escapeForRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Does `option` appear in the competition's own descriptive copy, as a whole word/phrase? */
+export function appearsInCopy(option: string, copy: string): boolean {
+  const haystack = normaliseText(copy);
+  return answerVariants(option).some((variant) => {
+    const pattern = new RegExp(`(^|[^a-z0-9])${escapeForRegex(variant)}([^a-z0-9]|$)`, "i");
+    return pattern.test(haystack);
+  });
+}
+
+/**
+ * Answers a competition's quiz question from the competition page's own
+ * descriptive copy, for competitions that have no hand-researched entry in
+ * TRIVIA_ANSWERS.
+ *
+ * This platform's questions are deliberately answerable from the prose
+ * immediately above the form ("Each spacious Spa Suite ... features three
+ * distinctive interior styles" / "How many interior styles..."), which is
+ * the whole point of the format — it's a read-the-advertiser's-copy check,
+ * not a general-knowledge test. So: take the page's text with the entry
+ * form itself removed, and see which of the offered options actually
+ * appears in it.
+ *
+ * Deliberately conservative — it returns an answer only when EXACTLY ONE
+ * option appears in the copy. Two matches, or none, means the copy doesn't
+ * settle it, and the adapter declines rather than guessing (README's "fail
+ * loudly" rule). Options the site has already rejected on an earlier day's
+ * draw are excluded first, so a wrong derivation self-corrects over the
+ * following days instead of repeating forever.
+ */
+export function deriveAnswerFromCopy(
+  options: string[],
+  copy: string,
+  rejected: Set<string>,
+): { answer: string } | { answer: null; reason: string } {
+  const usable = options.filter((option) => !rejected.has(option.trim().toLowerCase()));
+  if (usable.length === 0) {
+    return { answer: null, reason: "every offered option has already been rejected as incorrect by the site" };
+  }
+  const matches = usable.filter((option) => appearsInCopy(option, copy));
+  if (matches.length === 1) return { answer: matches[0]! };
+  if (matches.length === 0) {
+    return { answer: null, reason: `none of the options (${usable.join(" / ")}) appear in the competition's own copy` };
+  }
+  return { answer: null, reason: `the copy is ambiguous — ${matches.join(" and ")} all appear in it` };
+}
+
+/**
+ * Reads the rendered quiz: the options on offer, and the page's own
+ * descriptive copy with everything that could match an option *because
+ * it's an option* stripped out (all `label` elements, plus chrome and
+ * scripts). Without that subtraction every option trivially "appears in
+ * the copy" and derivation would be meaningless.
+ *
+ * Quiz radios are identified by exclusion — this platform's other radio
+ * groups are its own `optIn*` opt-in and the rotating `QB[...]` partner
+ * offers, both already handled by answerOffersAndOptin. Whichever
+ * remaining radio group is largest is the quiz.
+ */
+async function readQuiz(page: { evaluate: Function }): Promise<{ options: string[]; copy: string }> {
+  return (await page.evaluate(() => {
+    const radios = Array.from(document.querySelectorAll<HTMLInputElement>('input[type="radio"]')).filter(
+      (radio) => !/^optIn/i.test(radio.id || "") && !/^QB\[/.test(radio.name || ""),
+    );
+    const groups = new Map<string, HTMLInputElement[]>();
+    for (const radio of radios) {
+      const key = radio.name || radio.id;
+      const group = groups.get(key);
+      if (group) group.push(radio);
+      else groups.set(key, [radio]);
+    }
+    const largest = [...groups.values()].sort((a, b) => b.length - a.length)[0] ?? [];
+    const options = largest
+      .map((radio) => document.querySelector(`label[for="${radio.id}"]`)?.textContent?.trim() ?? "")
+      .filter((text) => text.length > 0);
+
+    const clone = document.body.cloneNode(true) as HTMLElement;
+    clone
+      .querySelectorAll("script, style, noscript, label, nav, header, footer, select")
+      .forEach((node) => node.remove());
+    const copy = (clone.textContent ?? "").replace(/\s+/g, " ").trim();
+    return { options, copy };
+  })) as { options: string[]; copy: string };
+}
+
+/** Answers the site has already told us are wrong for this competition, from earlier entry records. */
+export function rejectedAnswers(previousOutcomes: { message: string | null }[]): Set<string> {
+  const rejected = new Set<string>();
+  for (const outcome of previousOutcomes) {
+    const match = /^Answer "(.+)" was rejected as incorrect/.exec(outcome.message ?? "");
+    if (match?.[1]) rejected.add(match[1].trim().toLowerCase());
+  }
+  return rejected;
+}
+
 function derivedPassword(email: string): string {
   // Deliberately NOT salted per-domain: each DMRI site has its own
   // separate account database anyway (confirmed directly — a login on one
@@ -280,12 +422,12 @@ const LOG_OUT_TEXT = /log\s*out/i;
 export const dmriCompsAdapter: CompetitionAdapter = {
   key: "dmri-comps",
   siteName: "DMRI Reader Competitions (Future PLC)",
-  async enterCompetition({ page, competitionUrl, profile, log, dryRun }: AdapterContext): Promise<EntryOutcome> {
-    const answer = TRIVIA_ANSWERS[competitionUrl];
-    if (!answer) {
-      await log.warn(`No researched trivia answer recorded for ${competitionUrl} — refusing to guess`);
-      return { status: "FAILED", message: "No verified answer available for this competition's question" };
-    }
+  async enterCompetition({ page, competitionUrl, profile, log, dryRun, previousOutcomes }: AdapterContext): Promise<EntryOutcome> {
+    // A hand-researched answer always wins. Where there isn't one — which
+    // is every competition the discovery pass finds on its own — the
+    // answer is derived from the competition page's own copy further down,
+    // once the quiz is actually rendered (it only appears after login).
+    const researchedAnswer = TRIVIA_ANSWERS[competitionUrl];
     const origin = new URL(competitionUrl).origin;
 
     await page.setExtraHTTPHeaders({ "User-Agent": USER_AGENT });
@@ -458,6 +600,32 @@ export const dmriCompsAdapter: CompetitionAdapter = {
       return { status: "SKIPPED_ALREADY_ENTERED", message: "Already entered today's draw" };
     }
 
+    let answer = researchedAnswer;
+    if (!answer) {
+      const { options, copy } = await readQuiz(page);
+      if (options.length === 0) {
+        await log.warn("No quiz options found on the entry form — page structure may have changed");
+        return { status: "FAILED", message: "Quiz options not found on the entry form" };
+      }
+      const rejected = rejectedAnswers(previousOutcomes);
+      if (rejected.size > 0) {
+        await log.info(`Excluding ${rejected.size} option(s) this site already marked wrong: ${[...rejected].join(", ")}`);
+      }
+      const derived = deriveAnswerFromCopy(options, copy, rejected);
+      if (derived.answer === null) {
+        await log.warn(
+          `No researched answer for this competition and could not derive one — ${derived.reason}. ` +
+            `Options offered: ${options.join(" / ")}`,
+        );
+        return {
+          status: "SKIPPED_RULES",
+          message: `No verified answer available (${derived.reason}); options were: ${options.join(" / ")}`,
+        };
+      }
+      answer = derived.answer;
+      await log.info(`Derived quiz answer "${answer}" from the competition's own copy (options: ${options.join(" / ")})`);
+    }
+
     const answerLabel = page.locator("label").filter({ hasText: new RegExp(`^${answer}$`) }).first();
     if ((await answerLabel.count()) === 0) {
       await log.warn(`Expected answer option "${answer}" not found among the quiz choices — page may have changed`);
@@ -560,7 +728,14 @@ export const dmriCompsAdapter: CompetitionAdapter = {
       };
     }
 
-    await log.warn(`Quiz answer "${answer}" was marked wrong by the site — researched answer may be stale`);
+    // The message format matters: rejectedAnswers() parses it back out of
+    // this competition's entry history on the next day's draw, so a wrong
+    // option is never offered twice.
+    await log.warn(
+      researchedAnswer
+        ? `Quiz answer "${answer}" was marked wrong by the site — the researched answer may be stale`
+        : `Derived quiz answer "${answer}" was marked wrong by the site — it won't be tried again for this competition`,
+    );
     return { status: "FAILED", message: `Answer "${answer}" was rejected as incorrect` };
   },
 };

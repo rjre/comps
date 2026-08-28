@@ -11,3 +11,6 @@ playwright-report/
 test-results/
 data/screenshots/
 .claude/
+.npm-install-stamp
+data/cycle.log*
+data/locks/

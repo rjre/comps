@@ -9,10 +9,24 @@ export type EntryOutcome =
   | { status: Extract<EntryStatus, "SKIPPED_ALREADY_ENTERED">; message?: string }
   | { status: Extract<EntryStatus, "SKIPPED_RULES">; message: string };
 
+/** One of this competition's own earlier attempts, newest first — see AdapterContext.previousOutcomes. */
+export interface PreviousOutcome {
+  status: EntryStatus;
+  message: string | null;
+  attemptedAt: Date;
+}
+
 export interface AdapterContext {
   page: Page;
   competitionUrl: string;
   profile: Profile;
+  /**
+   * This competition's earlier real (non-dry-run) attempts, newest first,
+   * so an adapter can avoid repeating something the site already rejected.
+   * The DMRI adapter uses it to stop re-submitting a quiz answer that was
+   * marked wrong on a previous day's draw. Empty on a first attempt.
+   */
+  previousOutcomes: PreviousOutcome[];
   /** Log to the current run — use liberally, this is what makes an adapter debuggable later. */
   log: RunLogger;
   /**

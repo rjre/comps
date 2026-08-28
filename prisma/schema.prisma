@@ -41,6 +41,11 @@ model Competition {
   opensAt     DateTime?
   closesAt    DateTime?
   maxEntries  Int      @default(1) // entries allowed per person, per the competition's own rules
+  // For repeatable draws (a daily prize draw, say): the minimum hours
+  // between two counted entry attempts. Null means "no cadence of its
+  // own" — see src/lib/scheduler/schedule.ts, which falls back to 24h for
+  // any competition whose maxEntries is above 1.
+  entryIntervalHours Int?
   status      String   @default("PENDING") // PENDING | ENTERED | SKIPPED | FAILED | CLOSED
   notes       String?
   // Set only for sites that require a real account to enter — JSON string,

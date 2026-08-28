@@ -2,6 +2,10 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { newsletterAdapterRegistry } from "@/lib/newsletters/registry";
 
+// Read live on every request: this reflects an unattended service's current
+// state, and a build-time snapshot of it would be permanently stale.
+export const dynamic = "force-dynamic";
+
 async function addNewsletterSource(formData: FormData) {
   "use server";
 
