@@ -118,5 +118,93 @@
     "closesAt": "2026-12-31T23:59:00.000Z",
     "maxEntries": 1,
     "notes": "Official Park Holidays UK Limited (FCA registered) competition, no purchase necessary, long runway (closes 31 Dec 2026). Two-step modal: email only (step 1, the T&Cs text underneath is informational, not an actual checkbox — confirmed directly), then county/title/name/phone plus a required 'Looking to buy a holiday home?' radio (answered 'No, I'd just like to enter the competition') and two optional marketing-channel checkboxes left unticked (step 2). Radio/checkbox inputs have no name/id attributes at all — matched by their wrapping label's own text."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a Three-Night Escape to Daisy Bank Camp",
+    "url": "https://comps.marieclaire.co.uk/competition/a_threenight_stay_at_daisy_bank_camp_marieclaire/122656.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-18T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on comps.marieclaire.co.uk, same shared dmri-comps adapter as the already-tracked Tewkesbury Park competition. No purchase necessary, real registered UK publisher. Prize: a three-night stay at Daisy Bank Camp. Closing date shown as '18th Sept 2026' by the lead source (see below), no exact time stated — 23:59 UK time assumed pending confirmation on the live page, same convention as other UK evening deadlines in this file. maxEntries set high (30, not the default 1) per this adapter's own file-level documentation: this platform runs a genuine daily draw and the scheduler should keep re-entering until it closes. Trivia answer ('West Yorkshire') sourced from competitions-whale.co.uk, a dedicated Marie Claire answers aggregator used only as a lead/answer source — entry itself happens on Marie Claire's own domain, same role ThePrizeFinder.com already plays for this adapter's other entries. Not independently cross-checked against a second source (see the adapter file's own caveat comment)."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a Stay at a Cotswold Cosy Couples Retreat",
+    "url": "https://comps.marieclaire.co.uk/competition/a_nights_stay_in_a_stunning_cotswold_cottage__co_marieclaire/122449.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-05T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on comps.marieclaire.co.uk, shared dmri-comps adapter. No purchase necessary. Prize: a stay at a Cotswold couples retreat. Closes '5th Sept 2026' per the lead source, no exact time given — 23:59 UK time assumed. maxEntries set high (30) for the same daily-draw reason as the sibling entries in this file. Trivia answer ('6') sourced from competitions-whale.co.uk (lead/answer source only, entry on Marie Claire's own domain) — not independently cross-checked."
+  },
+  {
+    "name": "Marie Claire Competitions — Win an Aureous Gift Card",
+    "url": "https://comps.marieclaire.co.uk/competition/_a__aureous_gift_card__marieclaire/122457.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-06T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on comps.marieclaire.co.uk, shared dmri-comps adapter. No purchase necessary. Prize: an Aureous gift card. Closes '6th Sept 2026' per the lead source, no exact time given — 23:59 UK time assumed. maxEntries set high (30) for the daily-draw reason documented in the adapter file. Trivia answer ('Aureous') sourced from competitions-whale.co.uk (lead/answer source only) — not independently cross-checked."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a Magical Christmas Experience at Blenheim Palace",
+    "url": "https://comps.marieclaire.co.uk/competition/a_magical_christmas_experience_at_blenheim_palace_marieclaire/122508.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-13T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on comps.marieclaire.co.uk, shared dmri-comps adapter. No purchase necessary. Prize: a family ticket for four to Blenheim Palace's Christmas attractions (Illuminated Trail, Cinderella-themed State Rooms) plus parking. Closes '13th Sept 2026' per the lead source, no exact time given — 23:59 UK time assumed. maxEntries set high (30) for the daily-draw reason documented in the adapter file. Trivia answer ('Cinderella', matching the Cinderella-themed State Rooms mentioned in the prize's own description) sourced from competitions-whale.co.uk (lead/answer source only) — not independently cross-checked."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a High Tide Cowshed Spa Getaway at St Moritz Hotel",
+    "url": "https://comps.marieclaire.co.uk/competition/_the_high_tide_cowshed_spa_getaway_at_st_moritz_hotel_marieclaire/122687.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-18T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on comps.marieclaire.co.uk, shared dmri-comps adapter. No purchase necessary. Prize: a Cowshed spa getaway at the St Moritz Hotel (Cornwall). Closes '18th Sept 2026' per the lead source, no exact time given — 23:59 UK time assumed. maxEntries set high (30) for the daily-draw reason documented in the adapter file. Trivia answer ('Cornwall', matching the hotel's own location) sourced from competitions-whale.co.uk (lead/answer source only) — not independently cross-checked."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a Wild Keeper Retreat Stay at Safari Lodges",
+    "url": "https://comps.marieclaire.co.uk/competition/a_wild_keeper_retreat_stay_at_safari_lodges_marieclaire/122559.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-04T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on comps.marieclaire.co.uk, shared dmri-comps adapter. No purchase necessary. Prize: a 'wild keeper' retreat stay at Safari Lodges. Closes '4th Sept 2026' per the lead source (tight — a handful of days after this was added), no exact time given — 23:59 UK time assumed. maxEntries set high (30) for the daily-draw reason documented in the adapter file. Trivia answer ('Elephant and Cheetah') sourced from competitions-whale.co.uk (lead/answer source only) — not independently cross-checked."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a VIP Slay Bae Membership",
+    "url": "https://comps.marieclaire.co.uk/competition/slaybae_marieclaire/122387.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-06T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on comps.marieclaire.co.uk, shared dmri-comps adapter. No purchase necessary. Prize: a VIP 'Slay Bae' designer-dress-rental membership. Closes '6th Sept 2026' per the lead source, no exact time given — 23:59 UK time assumed. maxEntries set high (30) for the daily-draw reason documented in the adapter file. Trivia answer ('Renting designer dresses', matching what the Slay Bae service itself does) sourced from competitions-whale.co.uk (lead/answer source only) — not independently cross-checked."
+  },
+  {
+    "name": "Marie Claire Competitions — Win My Life Is Murder Series 5 on DVD",
+    "url": "https://comps.marieclaire.co.uk/competition/my_life_is_murder_series_5_dvd_marieclaire/122606.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-13T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on comps.marieclaire.co.uk, shared dmri-comps adapter. No purchase necessary. Prize: My Life Is Murder Series 5 on DVD. Closes '13th Sept 2026' per the lead source, no exact time given — 23:59 UK time assumed. maxEntries set high (30) for the daily-draw reason documented in the adapter file. Question is 'Who plays Alexa's bad boy brother Will?' — answer 'Martin Henderson' sourced from competitions-whale.co.uk, which ran the question and answer text together in its scrape (cleaned up here to just the answer portion) — not independently cross-checked."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a Year's Free Membership with Traininpink",
+    "url": "https://comps.marieclaire.co.uk/competition/a_years_free_membership_with_traininpink_marieclaire/122611.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-16T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on comps.marieclaire.co.uk, shared dmri-comps adapter. No purchase necessary. Prize: a year's free membership with Traininpink. Closes '16th Sept 2026' per the lead source, no exact time given — 23:59 UK time assumed. maxEntries set high (30) for the daily-draw reason documented in the adapter file. Trivia answer ('Carlotta Gagna') sourced from competitions-whale.co.uk (lead/answer source only) — not independently cross-checked."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a Two Night Stay at Tewkesbury Park",
+    "url": "https://comps.marieclaire.co.uk/competition/a_two_night_stay_at_tewkesbury_park_marieclaire/122613.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-19T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "The competition the dmri-comps adapter's TRIVIA_ANSWERS map was originally built around (answer '93', from ThePrizeFinder.com) — added here as an explicit Competition row in case an earlier session verified the adapter against this URL without ever registering it via this pending-competitions.json queue. Safe to sync regardless: Competition.url is unique, so if it's already tracked this is a no-op. No purchase necessary. Prize: a two-night stay at Tewkesbury Park (Gloucestershire). Closes '19th Sept 2026' per competitions-whale.co.uk, whose own 'Suggested Answer: 93' for this competition exactly matches the already-verified answer, cross-confirming that source's general reliability. maxEntries set high (30) for the daily-draw reason documented in the adapter file."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a Trip to Starmus VIII in Tenerife",
+    "url": "https://comps.marieclaire.co.uk/competition/a_stellar_trip_with_spring_hotels_to_starmus_viii__marieclaire/123002.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-24T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on comps.marieclaire.co.uk, shared dmri-comps adapter. No purchase necessary. Prize: a trip with Spring Hotels to the Starmus VIII science/music festival in Tenerife. Closes '24th Sept 2026' per the lead source, no exact time given — 23:59 UK time assumed. maxEntries set high (30) for the daily-draw reason documented in the adapter file. Trivia answer ('Brian May', Starmus festival co-founder) sourced from competitions-whale.co.uk (lead/answer source only) — not independently cross-checked."
   }
 ]

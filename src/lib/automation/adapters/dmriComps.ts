@@ -72,29 +72,24 @@ import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types"
  * The quiz form itself can carry the entry platform's own always-present
  * "would you like to hear about future offers" opt-in
  * (`CompetitionEntryForm[optin]`, confirmed directly: same field name every
- * time, so matched directly by id rather than by label text) — accepted,
- * same "more marketing surfaces more competition leads" policy as
- * elsewhere in this project. Both that page and (more often) the pages
- * reached after submitting can also carry a rotating third-party "more
- * info from <some comping/tips newsletter>" opt-in (seen offering "Across
- * the Leagues EXTRA", "Coffee Break Winner", and a HealthWindow
- * insurance-quote partner on different runs) zero or more times before the
- * entry is actually confirmed. Its exact wording is NOT stable enough to
- * match reliably — the same HealthWindow offer alone rendered its accept
- * option as "Yes Please", "Yes please", and "Yes, Please" on different
- * runs (confirmed directly, live, and the whole reason this took so many
- * iterations to get right) — so answers are chosen by which named
- * `QB[...]` radio group(s) are present each round, not literal value/label
- * text. A single simple group is answered "yes"; confirmed directly,
- * HealthWindow instead renders several `QB[...]` groups at once from the
- * very start — "Are you covered already?", "Do you smoke?", "Policy to
- * include cancer cover?" — genuine insurance-underwriting questions this
- * adapter has no honest basis to answer for a real person, so whenever
- * more than one group is present, every group in that round is answered
- * "no"/decline instead of guessing personal circumstances. This can repeat
- * across more than one partner in a row, so it's handled in a loop until no
- * offer remains and a "Confirm Entry" step
- * appears, which is what actually finalises the entry.
+ * time, so matched directly by id rather than by label text), and both that
+ * page and (more often) the pages reached after submitting can also carry a
+ * rotating third-party "more info from <some comping/tips newsletter>"
+ * opt-in (seen offering "Across the Leagues EXTRA", "Coffee Break Winner",
+ * and a HealthWindow insurance-quote partner on different runs) zero or
+ * more times before the entry is actually confirmed. Every one of these —
+ * the organiser's own opt-in included — is answered "no"/declined:
+ * README's "No auto-consent" rule doesn't carve out an exception for the
+ * organiser's own marketing, only for the specific newsletter signups this
+ * project's user deliberately requested elsewhere. Its exact wording is NOT
+ * stable enough to match reliably — the same HealthWindow offer alone
+ * rendered its decline option as "No Thanks", "No thanks", and "No, Thanks"
+ * on different runs (confirmed directly, live) — so answers are chosen by
+ * which named `QB[...]` radio group(s) are present each round, matched by
+ * whichever option's label contains "no", not literal value/label text.
+ * This can repeat across more than one partner in a row, so it's handled in
+ * a loop until no offer remains and a "Confirm Entry" step appears, which
+ * is what actually finalises the entry.
  *
  * Every checkbox/radio interaction anywhere on this site (opt-ins, quiz
  * answers, the partner-offer radio) is done via direct DOM property
@@ -120,6 +115,39 @@ const TRIVIA_ANSWERS: Record<string, string> = {
   // comment above).
   "https://competitions.womansweekly.com/competition/the-original-tour-win%E2%80%93family-tickets-two-day-hop-on-hop-off-bus-tour-london_network/122958.php":
     "The Festival of Britain",
+  // The following 10 entries were sourced from competitions-whale.co.uk (a
+  // dedicated Marie Claire "competitions & answers" aggregator, same
+  // lead/answer-source-only role as ThePrizeFinder above — entry always
+  // happens on comps.marieclaire.co.uk itself). Confidence note: unlike the
+  // three entries above, these were NOT independently cross-checked against
+  // a second source or the competition's own descriptive copy — the one
+  // exception is Tewkesbury Park (122613) just above, where this same
+  // aggregator's "Suggested Answer: 93" exactly matches the already-verified
+  // "93" pinned above, which is reassuring about this source's general
+  // reliability but doesn't independently confirm each individual answer
+  // below. If any of these get marked wrong by the site, don't assume the
+  // aggregator is bad across the board — re-check that one specifically.
+  "https://comps.marieclaire.co.uk/competition/a_threenight_stay_at_daisy_bank_camp_marieclaire/122656.php":
+    "West Yorkshire",
+  "https://comps.marieclaire.co.uk/competition/a_nights_stay_in_a_stunning_cotswold_cottage__co_marieclaire/122449.php":
+    "6",
+  "https://comps.marieclaire.co.uk/competition/_a__aureous_gift_card__marieclaire/122457.php": "Aureous",
+  "https://comps.marieclaire.co.uk/competition/a_magical_christmas_experience_at_blenheim_palace_marieclaire/122508.php":
+    "Cinderella",
+  "https://comps.marieclaire.co.uk/competition/_the_high_tide_cowshed_spa_getaway_at_st_moritz_hotel_marieclaire/122687.php":
+    "Cornwall",
+  "https://comps.marieclaire.co.uk/competition/a_wild_keeper_retreat_stay_at_safari_lodges_marieclaire/122559.php":
+    "Elephant and Cheetah",
+  "https://comps.marieclaire.co.uk/competition/slaybae_marieclaire/122387.php": "Renting designer dresses",
+  // Question is "Who plays Alexa's bad boy brother Will?" — the aggregator's
+  // scrape ran the question and answer together; "Martin Henderson" is the
+  // answer portion.
+  "https://comps.marieclaire.co.uk/competition/my_life_is_murder_series_5_dvd_marieclaire/122606.php":
+    "Martin Henderson",
+  "https://comps.marieclaire.co.uk/competition/a_years_free_membership_with_traininpink_marieclaire/122611.php":
+    "Carlotta Gagna",
+  "https://comps.marieclaire.co.uk/competition/a_stellar_trip_with_spring_hotels_to_starmus_viii__marieclaire/123002.php":
+    "Brian May",
 };
 
 function derivedPassword(email: string): string {
@@ -133,11 +161,30 @@ function derivedPassword(email: string): string {
   return `Mc${hash.slice(0, 10)}9`;
 }
 
-async function checkViaJs(frameOrPage: { evaluate: Function }, selector: string) {
+// Registration's #loginOptIns container bundles the required T&Cs checkbox
+// together with marketing opt-ins (confirmed directly). Ticking every
+// checkbox in it — as this used to do — ticks the marketing ones too,
+// which README's "No auto-consent" rule doesn't allow. Only tick a
+// checkbox whose own label reads as genuine required terms (not
+// marketing/offers/partner language); anything ambiguous is left unticked
+// rather than guessed, even if that risks leaving an optional box unticked
+// that turns out to have been required — the safer failure mode here is
+// "adapter fails loudly at the T&Cs check below", not "ticked a marketing
+// box".
+async function tickRequiredTermsOnly(frameOrPage: { evaluate: Function }, selector: string) {
   await frameOrPage.evaluate((sel: string) => {
     document.querySelectorAll<HTMLInputElement>(sel).forEach((el) => {
-      el.checked = true;
-      el.dispatchEvent(new Event("change", { bubbles: true }));
+      const label = (
+        el.closest("label")?.textContent ||
+        document.querySelector(`label[for="${el.id}"]`)?.textContent ||
+        ""
+      ).toLowerCase();
+      const isMarketing = /market|offer|partner|newsletter|third.?part|promot/.test(label);
+      const isTerms = el.required || /terms|conditions|privacy policy|\bagree\b/.test(label);
+      if (isTerms && !isMarketing) {
+        el.checked = true;
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+      }
     });
   }, selector);
 }
@@ -157,23 +204,40 @@ async function waitForNextStep(page: { waitForTimeout: (ms: number) => Promise<v
   await page.waitForTimeout(6000);
 }
 
-// Answers whatever marketing consent controls are currently on the page —
+// Declines whatever marketing consent controls are currently on the page —
 // both the entry form's own always-present, non-rotating
 // `CompetitionEntryForm[optin]` field (confirmed directly: same name every
 // time, organiser's own "would you like to hear about future offers"
-// consent — accepted, same policy as elsewhere in this project) and any
-// number of rotating third-party `QB[...]` partner-offer groups (confirmed
-// directly: these can appear on the initial quiz page itself, not only
-// after a first submit). A single simple QB group is accepted; more than
-// one at once (confirmed directly: HealthWindow's underwriting questions —
-// "Do you smoke?", "cancer cover?" — appearing together) is declined
-// across the board rather than guessing personal circumstances.
+// consent) and any number of rotating third-party `QB[...]` partner-offer
+// groups (confirmed directly: these can appear on the initial quiz page
+// itself, not only after a first submit). Per README's "No auto-consent"
+// rule, every one is declined regardless of how many appear at once — not
+// just the multi-group HealthWindow-style underwriting cases.
 async function answerOffersAndOptin(page: { evaluate: Function }) {
   await page.evaluate(() => {
+    // "optInYes" implies a same-name radio pair — a standalone
+    // "optInNo" sibling is the standard counterpart, but fall back to
+    // scanning the same radio group by label text in case the site's own
+    // id doesn't follow that convention. Either way, never touch
+    // optInYes itself.
     const optIn = document.getElementById("optInYes") as HTMLInputElement | null;
-    if (optIn) {
-      optIn.checked = true;
-      optIn.dispatchEvent(new Event("change", { bubbles: true }));
+    if (!optIn) return;
+    let decline = document.getElementById("optInNo") as HTMLInputElement | null;
+    if (!decline) {
+      decline =
+        Array.from(document.querySelectorAll<HTMLInputElement>(`input[name="${optIn.name}"]`)).find((r) => {
+          const label = (
+            r.closest("label")?.textContent ||
+            document.querySelector(`label[for="${r.id}"]`)?.textContent ||
+            r.value ||
+            ""
+          ).toLowerCase();
+          return /\bno\b/.test(label);
+        }) ?? null;
+    }
+    if (decline) {
+      decline.checked = true;
+      decline.dispatchEvent(new Event("change", { bubbles: true }));
     }
   });
 
@@ -186,30 +250,26 @@ async function answerOffersAndOptin(page: { evaluate: Function }) {
   });
   if (groupNames.length === 0) return groupNames.length;
 
-  const acceptOffer = groupNames.length === 1;
-  await page.evaluate(
-    ({ groupNames, acceptOffer }: { groupNames: string[]; acceptOffer: boolean }) => {
-      for (const name of groupNames) {
-        const radios = Array.from(document.querySelectorAll<HTMLInputElement>('input[type="radio"]')).filter(
-          (r) => r.name === name,
-        );
-        const target = radios.find((r) => {
-          const label = (
-            r.closest("label")?.textContent ||
-            document.querySelector(`label[for="${r.id}"]`)?.textContent ||
-            r.value ||
-            ""
-          ).toLowerCase();
-          return acceptOffer ? /\byes\b/.test(label) : /\bno\b/.test(label);
-        });
-        if (target) {
-          target.checked = true;
-          target.dispatchEvent(new Event("change", { bubbles: true }));
-        }
+  await page.evaluate((groupNames: string[]) => {
+    for (const name of groupNames) {
+      const radios = Array.from(document.querySelectorAll<HTMLInputElement>('input[type="radio"]')).filter(
+        (r) => r.name === name,
+      );
+      const target = radios.find((r) => {
+        const label = (
+          r.closest("label")?.textContent ||
+          document.querySelector(`label[for="${r.id}"]`)?.textContent ||
+          r.value ||
+          ""
+        ).toLowerCase();
+        return /\bno\b/.test(label);
+      });
+      if (target) {
+        target.checked = true;
+        target.dispatchEvent(new Event("change", { bubbles: true }));
       }
-    },
-    { groupNames, acceptOffer },
-  );
+    }
+  }, groupNames);
   return groupNames.length;
 }
 
@@ -297,8 +357,8 @@ export const dmriCompsAdapter: CompetitionAdapter = {
       if (!step1) return { status: "FAILED", message: "Registration step 1 (password) did not load" };
       await step1.locator("#Register_email").fill(profile.email);
       await step1.locator("#Register_password").fill(password);
-      await checkViaJs(step1, "#loginOptIns input[type=checkbox]");
-      await log.info("Filled email/password and ticked all opt-ins (T&Cs required, marketing opt-ins deliberate)");
+      await tickRequiredTermsOnly(step1, "#loginOptIns input[type=checkbox]");
+      await log.info("Filled email/password and ticked required T&Cs only (marketing opt-ins left unticked)");
       await Promise.all([
         page.waitForNavigation({ waitUntil: "load", timeout: 15000 }).catch(() => {}),
         step1.locator("#loginNextButton").click(),
@@ -457,14 +517,37 @@ export const dmriCompsAdapter: CompetitionAdapter = {
 
     const success = page.getByText(/your answer was correct|you have been entered/i);
     const wrongAnswer = page.getByText(/your answer was (incorrect|wrong)/i);
-    try {
-      await Promise.race([
+    const waitForOutcome = () =>
+      Promise.race([
         success.first().waitFor({ state: "visible", timeout: 15000 }),
         wrongAnswer.first().waitFor({ state: "visible", timeout: 15000 }),
       ]);
+    try {
+      await waitForOutcome();
     } catch {
-      await log.warn("Neither a success nor a wrong-answer message appeared within 15s after confirming entry");
-      return { status: "FAILED", message: "No confirmation appeared after submitting entry — outcome unclear" };
+      // Confirmed directly (Woman Magazine): the platform can insert an
+      // extra review step that moves the URL to .../confirm/... but
+      // re-renders the exact same quiz form with the previous answers
+      // still selected, rather than a distinct "Confirm Entry" button —
+      // that re-render is what was silently mistaken for "no outcome
+      // appeared" before this fix. If the same submit control has
+      // reappeared on a /confirm/ URL, this is that review step, not a
+      // genuine failure — submit once more before giving up for real.
+      const reviewStep = page.url().includes("/confirm/") && (await page.locator(enterSelector).count()) > 0;
+      if (reviewStep) {
+        await log.info("Landed on a review step that re-renders the quiz form — submitting once more");
+        await page.locator(enterSelector).click();
+        await waitForNextStep(page);
+        try {
+          await waitForOutcome();
+        } catch {
+          await log.warn("Neither a success nor a wrong-answer message appeared within 15s after confirming entry (twice)");
+          return { status: "FAILED", message: "No confirmation appeared after submitting entry — outcome unclear" };
+        }
+      } else {
+        await log.warn("Neither a success nor a wrong-answer message appeared within 15s after confirming entry");
+        return { status: "FAILED", message: "No confirmation appeared after submitting entry — outcome unclear" };
+      }
     }
 
     if (await success.first().isVisible().catch(() => false)) {

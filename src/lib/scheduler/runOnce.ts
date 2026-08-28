@@ -139,6 +139,20 @@ async function runOnce() {
           } else {
             await log.warn(`${outcome.status}: ${competition.name} — ${outcome.message ?? ""}`, competition.id);
             await captureScreenshot(outcome.status.toLowerCase());
+            // A one-shot competition (maxEntries 1) whose adapter reports
+            // SKIPPED_ALREADY_ENTERED on a real (non-dry) run means the
+            // site itself is confirming its single entry cap was already
+            // reached by an earlier run — even if that earlier run's own
+            // Entry record never got marked SUCCESS (a confirmation-
+            // detection miss). Without this, the competition stays PENDING
+            // forever and the runner keeps resubmitting the same real form
+            // on every future run. Daily-draw adapters (maxEntries > 1,
+            // e.g. dmri-comps) are unaffected — "already entered" there
+            // means "already entered today", not "cap reached".
+            if (outcome.status === "SKIPPED_ALREADY_ENTERED" && !dryRun && competition.maxEntries === 1) {
+              await prisma.competition.update({ where: { id: competition.id }, data: { status: "ENTERED" } });
+              await log.info("Marking ENTERED — site confirms this one-shot competition's entry cap was already reached", competition.id);
+            }
           }
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);

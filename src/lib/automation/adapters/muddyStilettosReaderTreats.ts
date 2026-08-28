@@ -19,6 +19,12 @@ import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types"
  * Treat is registered as a Competition row using this adapterKey; the
  * adapter fails loudly if a competition's URL isn't in the map rather
  * than guessing.
+ *
+ * The optional third-party marketing checkbox (`#consent`, present on some
+ * but not all Reader Treats) is deliberately left unticked — README's own
+ * "No auto-consent" rule ("adapters must not tick marketing/data-sharing
+ * consent boxes on your behalf") applies here regardless of any lead-gen
+ * upside.
  */
 const READER_TREAT_ANSWERS: Record<string, string> = {
   "https://wales.muddystilettos.co.uk/reader-treats/win-diy-dried-flower-wreath-kit-sown-and-wild/":
@@ -80,22 +86,8 @@ export const muddyStilettosReaderTreatsAdapter: CompetitionAdapter = {
 
     // Some (not all) Reader Treats also carry an optional third-party
     // marketing opt-in (confirmed directly: `#consent` on the Blenheim
-    // Palace one, absent on the Toyota/wreath-kit ones) — ticked when
-    // present (more marketing signup surfaces more competition leads, same
-    // policy as elsewhere in this project), using the same native-setter
-    // trick as the T&Cs checkbox below since it's the same React-controlled
-    // component.
-    const marketingConsent = page.locator("#consent");
-    if ((await marketingConsent.count()) > 0) {
-      await marketingConsent.evaluate((el: HTMLInputElement) => {
-        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "checked")!.set!;
-        nativeSetter.call(el, true);
-        el.dispatchEvent(new Event("click", { bubbles: true }));
-        el.dispatchEvent(new Event("input", { bubbles: true }));
-        el.dispatchEvent(new Event("change", { bubbles: true }));
-      });
-      await log.info("Ticked optional third-party marketing consent checkbox");
-    }
+    // Palace one, absent on the Toyota/wreath-kit ones) — deliberately left
+    // unticked, per README's "No auto-consent" rule.
 
     await dismissConsent(3000);
 
@@ -163,10 +155,18 @@ export const muddyStilettosReaderTreatsAdapter: CompetitionAdapter = {
     // deterministically hostile). Not solved or evaded either way; this
     // correctly reports FAILED below rather than guessing success.
     const success = page.getByText(/thank you|you're entered|good luck|entry received|successfully entered|entered the reader treat/i);
-    const error = page.getByText(/already entered|invalid|error|something went wrong|please enter|incorrect/i);
+    // "already entered" is its own case, not a form error: it means a past
+    // run's real submission actually succeeded even though that run itself
+    // failed to detect it (confirmed happening in practice — see
+    // runOnce.ts's handling of SKIPPED_ALREADY_ENTERED for a maxEntries=1
+    // competition), so it must not be reported as FAILED or the runner
+    // keeps re-submitting this same real form indefinitely.
+    const alreadyEntered = page.getByText(/already entered/i);
+    const error = page.getByText(/invalid|error|something went wrong|please enter|incorrect/i);
     try {
       await Promise.race([
         success.first().waitFor({ state: "visible", timeout: 15000 }),
+        alreadyEntered.first().waitFor({ state: "visible", timeout: 15000 }),
         error.first().waitFor({ state: "visible", timeout: 15000 }),
       ]);
     } catch {
@@ -178,6 +178,12 @@ export const muddyStilettosReaderTreatsAdapter: CompetitionAdapter = {
       const text = (await success.first().innerText().catch(() => "")).trim();
       await log.info(`Confirmation shown: ${text}`);
       return { status: "SUCCESS", message: text || undefined };
+    }
+
+    if (await alreadyEntered.first().isVisible().catch(() => false)) {
+      const text = (await alreadyEntered.first().innerText().catch(() => "")).trim();
+      await log.info(`Site reports this was already entered: ${text}`);
+      return { status: "SKIPPED_ALREADY_ENTERED", message: text || undefined };
     }
 
     const errorText = (await error.first().innerText().catch(() => "")).trim();
