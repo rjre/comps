@@ -115,6 +115,11 @@ const TRIVIA_ANSWERS: Record<string, string> = {
   // separate prize draw, not a duplicate entry into a shared one.
   "https://comps.womanmagazine.co.uk/competition/the-original-tour-win%E2%80%93family-tickets-two-day-hop-on-hop-off-bus-tour-london_network/122957.php":
     "The Festival of Britain",
+  // Same content, same verified answer, genuinely separate draw on Woman's
+  // Weekly's own sibling DMRI site (independent winners per site, per the
+  // comment above).
+  "https://competitions.womansweekly.com/competition/the-original-tour-win%E2%80%93family-tickets-two-day-hop-on-hop-off-bus-tour-london_network/122958.php":
+    "The Festival of Britain",
 };
 
 function derivedPassword(email: string): string {
