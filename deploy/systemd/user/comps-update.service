@@ -1,0 +1,10 @@
+[Unit]
+Description=Comps — pull code and ingest pending candidates
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/comps
+ExecStart=%h/comps/scripts/update.sh
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# A oneshot with no timeout blocks its own timer for as long as it hangs.
+TimeoutStartSec=20min

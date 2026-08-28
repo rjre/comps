@@ -1,0 +1,18 @@
+[Unit]
+Description=Comps entry assistant — the worker (discovery, entries, newsletters, housekeeping)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/comps
+EnvironmentFile=%h/comps/.env
+ExecStart=/usr/bin/npm run worker
+# The worker is the whole service and is meant to stay up indefinitely, so
+# it always comes back: `always` rather than `on-failure` covers a clean
+# exit too (an unhandled promise rejection can exit 0).
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=default.target

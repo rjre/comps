@@ -1,0 +1,15 @@
+[Unit]
+Description=Comps dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/comps
+EnvironmentFile=%h/comps/.env
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=default.target
