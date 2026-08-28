@@ -4,6 +4,7 @@ import path from "path";
 import { prisma } from "@/lib/db";
 import { getNewsletterAdapter } from "@/lib/newsletters/registry";
 import { createRunLogger } from "@/lib/logger";
+import { acquireLock } from "@/lib/scheduler/lock";
 
 const SCREENSHOT_DIR = path.join(process.cwd(), "data", "screenshots");
 
@@ -18,6 +19,16 @@ const SCREENSHOT_DIR = path.join(process.cwd(), "data", "screenshots");
  */
 async function subscribeNewsletters() {
   const dryRun = process.env.DRY_RUN === "1";
+
+  // Same reasoning as the entry pass (see lock.ts): two concurrent passes
+  // would both work through the same PENDING sources and sign the profile
+  // up to each of them twice.
+  const lock = await acquireLock("newsletters");
+  if (!lock) {
+    console.log("Another newsletter pass is already running — leaving it to finish.");
+    return;
+  }
+
   const run = await prisma.run.create({ data: { dryRun } });
   const log = createRunLogger(run.id);
 
@@ -110,6 +121,8 @@ async function subscribeNewsletters() {
       data: { status: "FAILED", finishedAt: new Date(), errorMessage: message },
     });
     throw err;
+  } finally {
+    await lock.release();
   }
 }
 

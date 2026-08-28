@@ -23,7 +23,7 @@ const THIRD_PARTY_NOISE: RegExp[] = [
   /X-Frame-Options/i,
   /Content Security Policy/i,
   /googlesyndication|doubleclick|googletagmanager|adservice|pubmatic|onetag|prebid|criteo|taboola|outbrain/i,
-  /bordeaux\.futurecdn|ATS-DROPMATCH|PixelID is not configured/i,
+  /bordeaux\.futurecdn|ATS-DROPMATCH|PixelID is not configured|pubx bid floors/i,
   /third-party cookie|SameSite|deprecat/i,
 ];
 
@@ -41,12 +41,18 @@ export class PageIssueCollector {
   private droppedNoise = 0;
 
   record(kind: "console" | "pageerror", text: string): void {
-    const message = text.trim().replace(/\s+/g, " ").slice(0, 300);
-    if (!message) return;
-    if (isPageNoise(message)) {
+    const full = text.trim().replace(/\s+/g, " ");
+    if (!full) return;
+    // Match against the whole message, then truncate. Ad-script errors
+    // often only identify themselves in the stack trace at the end (a
+    // "%c BORDEAUX ... Error getting pubx bid floors" line names
+    // bordeaux.futurecdn.net 300 characters in), so truncating first let
+    // them through as if they were the site's own errors.
+    if (isPageNoise(full)) {
       this.droppedNoise += 1;
       return;
     }
+    const message = full.slice(0, 300);
     const key = `${kind === "pageerror" ? "Page error" : "Console error"}: ${message}`;
     this.counts.set(key, (this.counts.get(key) ?? 0) + 1);
   }
