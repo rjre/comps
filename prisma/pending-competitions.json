@@ -206,5 +206,13 @@
     "closesAt": "2026-09-24T22:59:00.000Z",
     "maxEntries": 30,
     "notes": "Sibling DMRI (Future PLC) daily prize draw on comps.marieclaire.co.uk, shared dmri-comps adapter. No purchase necessary. Prize: a trip with Spring Hotels to the Starmus VIII science/music festival in Tenerife. Closes '24th Sept 2026' per the lead source, no exact time given — 23:59 UK time assumed. maxEntries set high (30) for the daily-draw reason documented in the adapter file. Trivia answer ('Brian May', Starmus festival co-founder) sourced from competitions-whale.co.uk (lead/answer source only) — not independently cross-checked."
+  },
+  {
+    "name": "Coast Magazine — Win a Luxury Family Holiday in Cornwall (Carbis Bay Estate)",
+    "url": "https://www.coastmagazine.co.uk/competitions/win-a-luxury-family-holiday-in-cornwall/",
+    "adapterKey": "coast-magazine-carbis-bay",
+    "closesAt": "2026-09-30T23:00:00.000Z",
+    "maxEntries": 1,
+    "notes": "Same Kelsey Media / Coast Magazine dotdigital platform as the existing coast-magazine-suffolk-coast adapter (coast.kelseydirect.com/p/5D8F-KQW/carbis-bay is the real entry form, found via the article's outbound link). No purchase necessary, UK residents (Kelsey's own T&Cs say 21+, though the form's own age question only asks 'aged 18 or over?' — filled as the form itself asks). Prize: four-night stay for up to 12 people (+1 dog) at the Carbis Bay Estate, Cornwall (managed by Beach Retreats). Quiz question ('What is the name of St Ives' most famous gallery?') answered A) Tate St Ives — a real, independently verifiable fact, not taken from the competition's own copy. Closes midnight 30 Sept 2026 UK time."
   }
 ]

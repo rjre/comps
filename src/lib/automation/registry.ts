@@ -7,6 +7,7 @@ import { visitEssexGardenersWorldAdapter } from "./adapters/visitEssexGardenersW
 import { northNorfolkAttractionsAdapter } from "./adapters/northNorfolkAttractions";
 import { villagePeopleBanhamZooAdapter } from "./adapters/villagePeopleBanhamZoo";
 import { coastMagazineSuffolkCoastAdapter } from "./adapters/coastMagazineSuffolkCoast";
+import { coastMagazineCarbisBayAdapter } from "./adapters/coastMagazineCarbisBay";
 import { devonsTopAttractionsAdapter } from "./adapters/devonsTopAttractions";
 import { c2cBlowoutCompanyAdapter } from "./adapters/c2cBlowoutCompany";
 import { tuiMonthlyGiveawayAdapter } from "./adapters/tuiMonthlyGiveaway";
@@ -30,6 +31,7 @@ const adapters: CompetitionAdapter[] = [
   northNorfolkAttractionsAdapter,
   villagePeopleBanhamZooAdapter,
   coastMagazineSuffolkCoastAdapter,
+  coastMagazineCarbisBayAdapter,
   devonsTopAttractionsAdapter,
   c2cBlowoutCompanyAdapter,
   tuiMonthlyGiveawayAdapter,
