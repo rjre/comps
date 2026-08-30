@@ -214,5 +214,13 @@
     "closesAt": "2026-09-30T23:00:00.000Z",
     "maxEntries": 1,
     "notes": "Same Kelsey Media / Coast Magazine dotdigital platform as the existing coast-magazine-suffolk-coast adapter (coast.kelseydirect.com/p/5D8F-KQW/carbis-bay is the real entry form, found via the article's outbound link). No purchase necessary, UK residents (Kelsey's own T&Cs say 21+, though the form's own age question only asks 'aged 18 or over?' — filled as the form itself asks). Prize: four-night stay for up to 12 people (+1 dog) at the Carbis Bay Estate, Cornwall (managed by Beach Retreats). Quiz question ('What is the name of St Ives' most famous gallery?') answered A) Tate St Ives — a real, independently verifiable fact, not taken from the competition's own copy. Closes midnight 30 Sept 2026 UK time."
+  },
+  {
+    "name": "The Suffolk Coast — \"Gather Prizes\" First Package (Feast)",
+    "url": "https://www.thesuffolkcoast.co.uk/competition-entry",
+    "adapterKey": "suffolk-coast",
+    "closesAt": "2026-08-31T07:00:00.000Z",
+    "maxEntries": 1,
+    "notes": "A second, genuinely separate 'Gather Prizes' draw run directly by The Suffolk Coast Ltd on their own site, sibling to the already-tracked competition-entry-2 ('Roam' / second package) that the suffolk-coast adapter was built against. Confirmed by fetching both pages directly: identical ASP.NET WebForms markup and control IDs (#ctl00_contentBody_panelFormFoodDrink, #ctl00_contentBody_chkAgree, #ctl00_contentBody_btEstablishmentSend, etc) on both /competition-entry and /competition-entry-2 — same template, different prize copy — so the existing adapter needs no code changes, just this second Competition row pointed at the sibling URL (same reuse pattern as dmri-comps and muddy-stilettos-reader-treats). Prize ('first package'): 2-night dinner/B&B for 2 at The Brudenell Hotel Aldeburgh, a Lady Florence river-cruise dining experience for 2, full-day hire of 2 EEZYBIKEs, 2 Snape Maltings Concert Hall tickets, a Suffolk Food Hall hamper and a Pump Street chocolate bundle. No purchase necessary, one entry per person, real T&Cs on the page itself (opened 13 July 2026). Closing time stated on the page as '8am on 31 August 2026' (BST) = 07:00 UTC — a tight window from when this syncs, flagging that explicitly since it may already have closed by the time a run picks it up."
   }
 ]
