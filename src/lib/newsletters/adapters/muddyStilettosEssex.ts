@@ -13,6 +13,9 @@ const TARGET_COUNTY_VALUES = [
   "9", // Cornwall
   "14", // Devon
   "30", // Wales
+  "2", // Hertfordshire & Bedfordshire
+  "7", // Surrey
+  "3", // Buckinghamshire & Oxfordshire
   "1", // Muddy Stilettos (flagship)
 ];
 
