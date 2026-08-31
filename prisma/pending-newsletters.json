@@ -118,5 +118,17 @@
     "url": "https://www.ambassadorcruiseline.com/mailing-list/",
     "adapterKey": "ambassador-cruise-line-newsletter",
     "notes": "Ambassador Cruise Line's own mailing-list signup, separate from the already-tracked ambassador-cruise-line-england-golf competition on the same site. Vue/Nuxt page with custom Radix Vue widgets (hidden native inputs behind styled buttons/labels) — verified via curl (server-rendered, not a client-only SPA shell). Required: first name, surname, email, and a single checkbox that IS the newsletter opt-in ('I have read the privacy policy and would like to receive news and offers to my inbox') — ticked here since this is the newsletter adapter, not the competition one. Region/age-range/postal-comms preference left at their sensible defaults (all optional, no matching profile field). Could not verify a live post-submit confirmation string or any cookie-consent banner during this research pass (this session's headless-browser tooling couldn't reach the live site — static HTML only), so the adapter matches confirmation text broadly by wording; worth double-checking against a real dry run once the local runner has live browser access."
+  },
+  {
+    "name": "Woman & Home",
+    "url": "https://www.womanandhome.com/newsletter/",
+    "adapterKey": "future-plc-newsletter",
+    "notes": "Second Future PLC title confirmed on the shared 'newsletterForm' widget that futurePlcNewsletter.ts was deliberately written generically against — this exact URL was already identified as compatible when that adapter was built (see its own docblock) but never actually registered as a row until now. Re-verified directly this run: HTTP 200 (note the page 301s from the bare /newsletter to /newsletter/ — use the trailing-slash URL directly), real served HTML contains the same slice-container-newsletterForm widget and input[name=MAIL] as marieclaire.co.uk/newsletter. No code changes needed, same adapterKey."
+  },
+  {
+    "name": "GoodTo",
+    "url": "https://www.goodto.com/newsletter",
+    "adapterKey": "future-plc-newsletter",
+    "notes": "Third Future PLC title on the same shared newsletterForm widget as Marie Claire and Woman & Home — GoodTo (Future PLC's family/parenting/lifestyle title; womansweekly.com itself now redirects here, so this is also effectively Woman's Weekly's current newsletter home). Re-verified directly: HTTP 200, real served HTML contains input[name=MAIL] and the widget's own embedded success copy ('Thank you for signing up. You will receive a confirmation email shortly.') and failure copy ('There was a problem. Please refresh the page and try again.') matching what futurePlcNewsletter.ts already expects — no code changes needed, same adapterKey. Note: www.woman.co.uk (the separate 'Woman' magazine title) returned a clean HTTP 403 with a StackPath-style bot-protection header (x-stackprotect-id) on a plain page-load fetch, not a sandbox networking artifact (that failure mode here has always been a connection reset, not a clean 403) — treating that one as a genuine page-load bot block and not pursuing it further for now."
   }
 ]
