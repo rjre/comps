@@ -222,5 +222,29 @@
     "closesAt": "2026-08-31T07:00:00.000Z",
     "maxEntries": 1,
     "notes": "A second, genuinely separate 'Gather Prizes' draw run directly by The Suffolk Coast Ltd on their own site, sibling to the already-tracked competition-entry-2 ('Roam' / second package) that the suffolk-coast adapter was built against. Confirmed by fetching both pages directly: identical ASP.NET WebForms markup and control IDs (#ctl00_contentBody_panelFormFoodDrink, #ctl00_contentBody_chkAgree, #ctl00_contentBody_btEstablishmentSend, etc) on both /competition-entry and /competition-entry-2 — same template, different prize copy — so the existing adapter needs no code changes, just this second Competition row pointed at the sibling URL (same reuse pattern as dmri-comps and muddy-stilettos-reader-treats). Prize ('first package'): 2-night dinner/B&B for 2 at The Brudenell Hotel Aldeburgh, a Lady Florence river-cruise dining experience for 2, full-day hire of 2 EEZYBIKEs, 2 Snape Maltings Concert Hall tickets, a Suffolk Food Hall hamper and a Pump Street chocolate bundle. No purchase necessary, one entry per person, real T&Cs on the page itself (opened 13 July 2026). Closing time stated on the page as '8am on 31 August 2026' (BST) = 07:00 UTC — a tight window from when this syncs, flagging that explicitly since it may already have closed by the time a run picks it up."
+  },
+  {
+    "name": "Village People Magazine — Win an Ultimate Ears BOOM 4 Portable Speaker (with John Lewis Norwich)",
+    "url": "https://www.village-people.info/enter-our-competition/",
+    "adapterKey": "village-people-ultimate-ears",
+    "closesAt": "2026-11-23T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Same page/site as the already-tracked village-people-banham-zoo competition, but a genuinely separate Contact Form 7 instance (id 105434, confirmed by fetching the real page and matching the form's own hidden _wpcf7 value) — two winners, John Lewis Norwich tie-in. No purchase necessary. Closes 23 Nov 2026 (no exact time stated — 23:59 UK time assumed). Identical field shape to the Banham Zoo form (name/single address textarea/phone/email), no marketing checkbox. This site's CF7 install has already been root-caused (on the Banham Zoo form) to consistently score-reject every submission via reCAPTCHA v3 regardless of a valid-looking token — since that's a site-wide plugin setting rather than per-form, the same rejection is expected here; built anyway per this project's 'submit-time reCAPTCHA, still worth building' policy, so worth confirming on the first live run whether this specific form is affected the same way."
+  },
+  {
+    "name": "Village People Magazine — Win the Ultimate Elemis Pamper Experience at John Lewis Norwich",
+    "url": "https://www.village-people.info/enter-our-competition/",
+    "adapterKey": "village-people-elemis-pamper",
+    "closesAt": "2026-09-28T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Third form on the same village-people.info page (Contact Form 7 id 103089, confirmed directly), two winners, Elemis/John Lewis Norwich tie-in — expert consultation, tailored facial, goody bag and cream tea for two. No purchase necessary. Closes 28 Sept 2026 (no exact time stated — 23:59 UK time assumed). Same field shape and same site-wide reCAPTCHA v3 spam-rejection caveat as village-people-ultimate-ears above."
+  },
+  {
+    "name": "Diggerland UK — Monthly Prize Draw (August 2026: myFirst Insta 20 Camera)",
+    "url": "https://www.diggerland.com/prize-draw/",
+    "adapterKey": "diggerland-prize-draw",
+    "closesAt": "2026-08-31T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Diggerland UK (H E Group) monthly prize draw, no purchase necessary — genuinely recurring ('Each month, Diggerland UK Theme Park give you the opportunity to win a fantastic prize', confirmed from the page's own schema.org description), so modelled the same way as tui-monthly-giveaway: register a fresh 'Diggerland UK — Monthly Prize Draw (<Month> <Year>)' row once this closes, reusing the same adapter, rather than expecting this row to re-enter itself. This specific instance's prize is a myFirst Insta 20 kids' camera, closing date stated on the page as 'Monday 31 August 2026' (no exact time — 23:59 UK time assumed = 22:59 UTC) — i.e. today, the same day this was added, so it may well have already closed by the time a run picks it up; flagging that tightness explicitly rather than hiding it. Entry is a Google Form embedded via iframe (confirmed directly from the served HTML and the form's own embedded JSON config) with a fresh form id expected each month, so the adapter reads whichever iframe is currently on the page rather than a hardcoded form URL. Two fields (Name, Email Address) plus two independently-REQUIRED Yes/No marketing questions ('receive prize draw info from Diggerland/myFirst via email?') — answering 'No' to both (required to submit at all either way) is the correct no-auto-consent choice here, not an opt-in. Complianz cookie banner. No CAPTCHA on this specific form (the site's reCAPTCHA v2 elsewhere is scoped to WooCommerce checkout only, confirmed not present on this page)."
   }
 ]

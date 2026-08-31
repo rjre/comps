@@ -6,6 +6,9 @@ import { suffolkCoastAdapter } from "./adapters/suffolkCoast";
 import { visitEssexGardenersWorldAdapter } from "./adapters/visitEssexGardenersWorld";
 import { northNorfolkAttractionsAdapter } from "./adapters/northNorfolkAttractions";
 import { villagePeopleBanhamZooAdapter } from "./adapters/villagePeopleBanhamZoo";
+import { villagePeopleUltimateEarsAdapter } from "./adapters/villagePeopleUltimateEars";
+import { villagePeopleElemisPamperAdapter } from "./adapters/villagePeopleElemisPamper";
+import { diggerlandPrizeDrawAdapter } from "./adapters/diggerlandPrizeDraw";
 import { coastMagazineSuffolkCoastAdapter } from "./adapters/coastMagazineSuffolkCoast";
 import { coastMagazineCarbisBayAdapter } from "./adapters/coastMagazineCarbisBay";
 import { devonsTopAttractionsAdapter } from "./adapters/devonsTopAttractions";
@@ -30,6 +33,9 @@ const adapters: CompetitionAdapter[] = [
   visitEssexGardenersWorldAdapter,
   northNorfolkAttractionsAdapter,
   villagePeopleBanhamZooAdapter,
+  villagePeopleUltimateEarsAdapter,
+  villagePeopleElemisPamperAdapter,
+  diggerlandPrizeDrawAdapter,
   coastMagazineSuffolkCoastAdapter,
   coastMagazineCarbisBayAdapter,
   devonsTopAttractionsAdapter,
