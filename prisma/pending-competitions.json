@@ -225,19 +225,19 @@
   },
   {
     "name": "Village People Magazine — Win an Ultimate Ears BOOM 4 Portable Speaker (with John Lewis Norwich)",
-    "url": "https://www.village-people.info/enter-our-competition/",
+    "url": "https://www.village-people.info/enter-our-competition/#wpcf7-f105434-p346-o2",
     "adapterKey": "village-people-ultimate-ears",
     "closesAt": "2026-11-23T22:59:00.000Z",
     "maxEntries": 1,
-    "notes": "Same page/site as the already-tracked village-people-banham-zoo competition, but a genuinely separate Contact Form 7 instance (id 105434, confirmed by fetching the real page and matching the form's own hidden _wpcf7 value) — two winners, John Lewis Norwich tie-in. No purchase necessary. Closes 23 Nov 2026 (no exact time stated — 23:59 UK time assumed). Identical field shape to the Banham Zoo form (name/single address textarea/phone/email), no marketing checkbox. This site's CF7 install has already been root-caused (on the Banham Zoo form) to consistently score-reject every submission via reCAPTCHA v3 regardless of a valid-looking token — since that's a site-wide plugin setting rather than per-form, the same rejection is expected here; built anyway per this project's 'submit-time reCAPTCHA, still worth building' policy, so worth confirming on the first live run whether this specific form is affected the same way."
+    "notes": "Same page/site as the already-tracked village-people-banham-zoo competition, but a genuinely separate Contact Form 7 instance (id 105434, confirmed by fetching the real page and matching the form's own hidden _wpcf7 value) — two winners, John Lewis Norwich tie-in. No purchase necessary. Closes 23 Nov 2026 (no exact time stated — 23:59 UK time assumed). Identical field shape to the Banham Zoo form (name/single address textarea/phone/email), no marketing checkbox. This site's CF7 install has already been root-caused (on the Banham Zoo form) to consistently score-reject every submission via reCAPTCHA v3 regardless of a valid-looking token — since that's a site-wide plugin setting rather than per-form, the same rejection is expected here; built anyway per this project's 'submit-time reCAPTCHA, still worth building' policy, so worth confirming on the first live run whether this specific form is affected the same way. URL carries a #wpcf7-... fragment (the form's own real anchor, harmless at goto time — fragments aren't sent to the server, so the browser loads the identical page) purely so this row's url differs from village-people-banham-zoo's and village-people-elemis-pamper's below — Competition.url is @unique in the schema and all three competitions genuinely live on the exact same page URL, which the existing Banham Zoo row didn't have to account for since it was the only one at the time."
   },
   {
     "name": "Village People Magazine — Win the Ultimate Elemis Pamper Experience at John Lewis Norwich",
-    "url": "https://www.village-people.info/enter-our-competition/",
+    "url": "https://www.village-people.info/enter-our-competition/#wpcf7-f103089-p346-o3",
     "adapterKey": "village-people-elemis-pamper",
     "closesAt": "2026-09-28T22:59:00.000Z",
     "maxEntries": 1,
-    "notes": "Third form on the same village-people.info page (Contact Form 7 id 103089, confirmed directly), two winners, Elemis/John Lewis Norwich tie-in — expert consultation, tailored facial, goody bag and cream tea for two. No purchase necessary. Closes 28 Sept 2026 (no exact time stated — 23:59 UK time assumed). Same field shape and same site-wide reCAPTCHA v3 spam-rejection caveat as village-people-ultimate-ears above."
+    "notes": "Third form on the same village-people.info page (Contact Form 7 id 103089, confirmed directly), two winners, Elemis/John Lewis Norwich tie-in — expert consultation, tailored facial, goody bag and cream tea for two. No purchase necessary. Closes 28 Sept 2026 (no exact time stated — 23:59 UK time assumed). Same field shape and same site-wide reCAPTCHA v3 spam-rejection caveat as village-people-ultimate-ears above. Same #wpcf7-... fragment reasoning as that row: distinguishes this Competition.url from its two siblings on the same physical page (unique constraint), harmless at goto time."
   },
   {
     "name": "Diggerland UK — Monthly Prize Draw (August 2026: myFirst Insta 20 Camera)",
