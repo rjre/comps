@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { adapterRegistry } from "@/lib/automation/registry";
+import { Pill } from "@/components/Pill";
 
 // Read live on every request: this reflects an unattended service's current
 // state, and a build-time snapshot of it would be permanently stale.
@@ -46,72 +47,89 @@ export default async function CompetitionsPage({
   return (
     <main>
       <h1>Competitions</h1>
+      <p className="lede">Everything the service is tracking, and what it decided to do with each one.</p>
 
-      <h2>Add a competition</h2>
-      <form action={addCompetition}>
-        <label>
-          Name
-          <input name="name" required />
-        </label>
-        <label>
-          URL
-          <input name="url" type="url" required />
-        </label>
-        <label>
-          Adapter
-          <select name="adapterKey" required defaultValue="generic">
-            {adapterKeys.map((key) => (
-              <option key={key} value={key}>
-                {key}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Max entries allowed (per that competition&apos;s own rules)
-          <input name="maxEntries" type="number" min={1} defaultValue={1} />
-        </label>
-        <button type="submit">Add</button>
-      </form>
+      <div className="card">
+        <h2 style={{ marginTop: 0 }}>Add a competition</h2>
+        <form action={addCompetition}>
+          <label>
+            Name
+            <input name="name" required />
+          </label>
+          <label>
+            URL
+            <input name="url" type="url" required />
+          </label>
+          <label>
+            Adapter
+            <select name="adapterKey" required defaultValue="generic">
+              {adapterKeys.map((key) => (
+                <option key={key} value={key}>
+                  {key}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Max entries allowed (per that competition&apos;s own rules)
+            <input name="maxEntries" type="number" min={1} defaultValue={1} />
+          </label>
+          <button type="submit">Add</button>
+        </form>
+      </div>
 
       <h2>
         Tracked competitions ({total}
         {statusFilter ? ` — ${statusFilter}` : ""})
       </h2>
-      <nav>
-        <a href="/competitions">all</a>{" "}
+      <nav className="tabs">
+        <a href="/competitions" data-active={!statusFilter}>
+          all
+        </a>
         {STATUSES.map((s) => (
-          <a key={s} href={`/competitions?status=${s}`}>
+          <a key={s} href={`/competitions?status=${s}`} data-active={statusFilter === s}>
             {s.toLowerCase()}
           </a>
         ))}
       </nav>
-      {total > PAGE_SIZE && <p>Showing the most recent {PAGE_SIZE} of {total}.</p>}
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Adapter</th>
-            <th>Entries so far</th>
-          </tr>
-        </thead>
-        <tbody>
-          {competitions.map((c) => (
-            <tr key={c.id}>
-              <td>
-                <a href={c.url} target="_blank" rel="noreferrer">
-                  {c.name}
-                </a>
-                {c.notes && <div style={{ fontSize: "0.8rem", color: "#666" }}>{c.notes}</div>}
-              </td>
-              <td>{c.status}</td>
-              <td>{c.adapterKey}</td>
-              <td>{c.entries.filter((e) => e.status === "SUCCESS").length}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {total > PAGE_SIZE && (
+        <p>
+          Showing the most recent {PAGE_SIZE} of {total}.
+        </p>
+      )}
+      {competitions.length === 0 ? (
+        <p className="empty-state">No competitions match this filter.</p>
+      ) : (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Adapter</th>
+                <th>Entries so far</th>
+              </tr>
+            </thead>
+            <tbody>
+              {competitions.map((c) => (
+                <tr key={c.id}>
+                  <td>
+                    <a href={c.url} target="_blank" rel="noreferrer">
+                      {c.name}
+                    </a>
+                    {c.notes && <div className="subtext">{c.notes}</div>}
+                  </td>
+                  <td>
+                    <Pill status={c.status} />
+                  </td>
+                  <td className="mono">{c.adapterKey}</td>
+                  <td className="mono">{c.entries.filter((e) => e.status === "SUCCESS").length}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </main>
   );
 }

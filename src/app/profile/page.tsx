@@ -39,11 +39,11 @@ export default async function ProfilePage() {
   return (
     <main>
       <h1>Profile</h1>
-      <p>
+      <p className="lede">
         This is the single identity used for every automated entry — entering the same giveaway
         under multiple identities is not supported here, by design.
       </p>
-      <form action={saveProfile}>
+      <form action={saveProfile} className="card">
         <label>
           Title
           <select name="title" defaultValue={profile?.title ?? ""}>

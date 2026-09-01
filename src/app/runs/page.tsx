@@ -1,6 +1,7 @@
 import { readdir } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/db";
+import { Pill } from "@/components/Pill";
 
 // Read live on every request: this reflects an unattended service's current
 // state, and a build-time snapshot of it would be permanently stale.
@@ -16,12 +17,6 @@ async function screenshotsForRun(runId: string): Promise<string[]> {
     return [];
   }
 }
-
-const levelColor: Record<string, string> = {
-  INFO: "inherit",
-  WARN: "#b45309",
-  ERROR: "#b91c1c",
-};
 
 export default async function RunsPage() {
   const runs = await prisma.run.findMany({
@@ -39,22 +34,25 @@ export default async function RunsPage() {
   return (
     <main>
       <h1>Runs</h1>
-      <p>
+      <p className="lede">
         Each row is one invocation of <code>npm run run:entries</code>. Expand a run to see its
         full log — this is the place to look when an adapter needs fixing.
       </p>
 
       {runs.length === 0 ? (
-        <p>No runs yet. Run `npm run run:entries` (optionally with `DRY_RUN=1`) to see one here.</p>
+        <p className="empty-state">
+          No runs yet. Run <code>npm run run:entries</code> (optionally with <code>DRY_RUN=1</code>) to
+          see one here.
+        </p>
       ) : (
         runs.map((run) => {
           const shots = screenshotsByRun[run.id] ?? [];
           return (
-          <details key={run.id} style={{ marginBottom: "1rem" }} open={run === runs[0]}>
+          <details key={run.id} open={run === runs[0]}>
             <summary>
-              <strong>{run.startedAt.toLocaleString()}</strong> — {run.status}
-              {run.dryRun ? " (dry run)" : ""} — {run.candidateCount ?? 0} candidate(s),{" "}
-              {run.entries.length} entry attempt(s)
+              <strong className="mono">{run.startedAt.toLocaleString()}</strong>{" "}
+              <Pill status={run.status} /> {run.dryRun ? " (dry run)" : ""} — {run.candidateCount ?? 0}{" "}
+              candidate(s), {run.entries.length} entry attempt(s)
               {run.errorMessage ? ` — ${run.errorMessage}` : ""}
             </summary>
             <table>
@@ -68,22 +66,24 @@ export default async function RunsPage() {
               <tbody>
                 {run.logLines.map((line) => (
                   <tr key={line.id}>
-                    <td>{line.createdAt.toLocaleTimeString()}</td>
-                    <td style={{ color: levelColor[line.level] }}>{line.level}</td>
+                    <td className="mono">{line.createdAt.toLocaleTimeString()}</td>
+                    <td>
+                      <Pill status={line.level} />
+                    </td>
                     <td>{line.message}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {shots.length > 0 && (
-              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", padding: "0.9rem 1.1rem" }}>
                 {shots.map((file) => (
                   <a key={file} href={`/api/screenshots/${file}`} target="_blank" rel="noreferrer">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`/api/screenshots/${file}`}
                       alt={file}
-                      style={{ height: "120px", border: "1px solid #8884" }}
+                      style={{ height: "120px", border: "1px solid var(--border)", borderRadius: "6px" }}
                     />
                   </a>
                 ))}
