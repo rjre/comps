@@ -246,5 +246,29 @@
     "closesAt": "2026-08-31T22:59:00.000Z",
     "maxEntries": 1,
     "notes": "Official Diggerland UK (H E Group) monthly prize draw, no purchase necessary — genuinely recurring ('Each month, Diggerland UK Theme Park give you the opportunity to win a fantastic prize', confirmed from the page's own schema.org description), so modelled the same way as tui-monthly-giveaway: register a fresh 'Diggerland UK — Monthly Prize Draw (<Month> <Year>)' row once this closes, reusing the same adapter, rather than expecting this row to re-enter itself. This specific instance's prize is a myFirst Insta 20 kids' camera, closing date stated on the page as 'Monday 31 August 2026' (no exact time — 23:59 UK time assumed = 22:59 UTC) — i.e. today, the same day this was added, so it may well have already closed by the time a run picks it up; flagging that tightness explicitly rather than hiding it. Entry is a Google Form embedded via iframe (confirmed directly from the served HTML and the form's own embedded JSON config) with a fresh form id expected each month, so the adapter reads whichever iframe is currently on the page rather than a hardcoded form URL. Two fields (Name, Email Address) plus two independently-REQUIRED Yes/No marketing questions ('receive prize draw info from Diggerland/myFirst via email?') — answering 'No' to both (required to submit at all either way) is the correct no-auto-consent choice here, not an opt-in. Complianz cookie banner. No CAPTCHA on this specific form (the site's reCAPTCHA v2 elsewhere is scoped to WooCommerce checkout only, confirmed not present on this page)."
+  },
+  {
+    "name": "Diggerland UK — Monthly Prize Draw (September 2026: ORIDA Maidstone one-night stay)",
+    "url": "https://www.diggerland.com/prize-draw/#september-2026",
+    "adapterKey": "diggerland-prize-draw",
+    "closesAt": "2026-09-30T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Fresh monthly row per the reuse pattern documented on the August entry above — same page, same diggerland-prize-draw adapter (still reads whichever Google Form iframe is currently embedded, so no code changes needed), just this month's prize/closing date. Re-fetched the live page directly (curl) and confirmed this month's prize is a one-night stay at the ORIDA Maidstone hotel, and the page's own text states 'the closing date for the competition is Wednesday 30th September 2026'. Competition.url is @unique and physically identical to the August row's URL, so a harmless '#september-2026' fragment (never sent to the server, and this page has no hash-routing to worry about) disambiguates it, same trick already used for the Village People sibling forms."
+  },
+  {
+    "name": "Muddy Stilettos Reader Treat — Agria Blenheim Palace International Horse Trials Fashion Competition",
+    "url": "https://muddystilettos.co.uk/reader-treats/agria-blenheim-palace-international-horse-trials-fashion-competition/",
+    "adapterKey": "muddy-stilettos-reader-treats",
+    "closesAt": "2026-09-05T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Found this run: the muddyStilettosReaderTreats.ts adapter file already carries a researched, verified answer ('4 days') for this exact URL in its READER_TREAT_ANSWERS map, but no Competition row for it was ever appended to this pending file — a gap from whichever earlier session added the code, now closed. Same national muddystilettos.co.uk Reader Treats form/template as the already-tracked Fortnum & Mason hamper entry (name/email/county/trivia, T&Cs checkbox), no code changes needed beyond what's already there. Prize: four-day members' passes to the Agria Blenheim Palace International Horse Trials (17-20 Sept 2026) plus a fashion bundle. Trivia ('How many days does the Agria Blenheim Palace International Horse Trials run for?', options 2/4/5 days) answered '4 days' directly from the event's own dates on the competition page's 'Need to Know' section. Page's own embedded config gives closing date as 2026-09-05 (assumed 23:59 UK time = 22:59 UTC, same convention as this file's other Reader Treats) — tight, four days after this was added."
+  },
+  {
+    "name": "Muddy Stilettos Reader Treat — Win a Firstsite Mosaic Membership for a Family of 4",
+    "url": "https://essex.muddystilettos.co.uk/reader-treats/win-a-firstsite-mosaic-membership-for-a-family-of-4/",
+    "adapterKey": "muddy-stilettos-reader-treats",
+    "closesAt": "2026-09-26T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "New Essex-edition Reader Treat, found via this run's own web sweep (not Gmail). Same shared muddyStilettosReaderTreats.ts template/adapter as the other entries in this file — no code changes needed beyond adding this URL's answer to READER_TREAT_ANSWERS, done this run. Prize: a year's family (4-person) membership to Firstsite, Colchester's contemporary art gallery — genuinely local to this Essex-based profile. Trivia ('Who has a new exhibition at Firstsite called 'From the Landscape'?', options Simon Carter/Simon Cowell/Simon Pegg — all sharing the first name 'Simon' by design) answered 'Simon Carter', independently verified via web search (Great British Life / Colchester Gazette both report Frinton-based artist Simon Carter's 'From the Landscape' opening at Firstsite in Oct 2026), not guessed from the page's own copy. Page's own embedded config gives closing date as 2026-09-26 (23:59 UK time assumed = 22:59 UTC)."
   }
 ]

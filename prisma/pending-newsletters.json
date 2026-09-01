@@ -126,6 +126,12 @@
     "notes": "Second Future PLC title confirmed on the shared 'newsletterForm' widget that futurePlcNewsletter.ts was deliberately written generically against — this exact URL was already identified as compatible when that adapter was built (see its own docblock) but never actually registered as a row until now. Re-verified directly this run: HTTP 200 (note the page 301s from the bare /newsletter to /newsletter/ — use the trailing-slash URL directly), real served HTML contains the same slice-container-newsletterForm widget and input[name=MAIL] as marieclaire.co.uk/newsletter. No code changes needed, same adapterKey."
   },
   {
+    "name": "Diggerland UK",
+    "url": "https://www.diggerland.com/newsletter-signup/",
+    "adapterKey": "diggerland-newsletter",
+    "notes": "First-party newsletter, org already tracked via the diggerland-prize-draw competition adapter but a genuinely separate page/form. Self-hosted Sendy form (posts to diggerland.ovh/sendy/subscribe) with name/email and a GDPR marketing-consent checkbox that IS this newsletter's own opt-in (ticked here, unlike a competition form's marketing checkbox). Text honeypot field (#hp, hidden via a wrapping display:none div) left blank. No reCAPTCHA present on this specific form's markup (the site bundles a Contact Form 7 reCAPTCHA plugin site-wide, already documented on the prize-draw adapter as scoped elsewhere) — adapter checks for one at submit and fails loudly if it ever appears rather than solving it. This is a plain cross-origin form POST, not AJAX, so a successful submit navigates the browser to diggerland.ovh and the response body is Sendy's own small, stable, tool-hardcoded plain-text output (confirmed via Sendy's own documentation/forum, not guessed) — '1' for a fresh subscribe, 'Already subscribed.', a 'confirm your email' message for double opt-in, or an 'Error: ...' string — matched directly in the adapter rather than assuming HTTP 200 means success."
+  },
+  {
     "name": "GoodTo",
     "url": "https://www.goodto.com/newsletter",
     "adapterKey": "future-plc-newsletter",

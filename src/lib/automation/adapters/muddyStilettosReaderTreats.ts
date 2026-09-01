@@ -33,6 +33,8 @@ const READER_TREAT_ANSWERS: Record<string, string> = {
     "Milton Keynes", // Steven Eagell Group's own history: established in Milton Keynes in 2002, its first centre
   "https://muddystilettos.co.uk/reader-treats/agria-blenheim-palace-international-horse-trials-fashion-competition/":
     "4 days", // the competition's own "Need to Know" section: runs 17-20 Sept 2026, and the prize itself is "four-day members' passes"
+  "https://essex.muddystilettos.co.uk/reader-treats/win-a-firstsite-mosaic-membership-for-a-family-of-4/":
+    "Simon Carter", // independently verified (Great British Life / Gazette): Frinton-based artist Simon Carter's "From the Landscape" opens at Firstsite Oct 2026 — not the two decoy names (Simon Cowell, Simon Pegg) sharing the same first name
 };
 
 export const muddyStilettosReaderTreatsAdapter: CompetitionAdapter = {
