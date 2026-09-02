@@ -270,5 +270,21 @@
     "closesAt": "2026-09-26T22:59:00.000Z",
     "maxEntries": 1,
     "notes": "New Essex-edition Reader Treat, found via this run's own web sweep (not Gmail). Same shared muddyStilettosReaderTreats.ts template/adapter as the other entries in this file — no code changes needed beyond adding this URL's answer to READER_TREAT_ANSWERS, done this run. Prize: a year's family (4-person) membership to Firstsite, Colchester's contemporary art gallery — genuinely local to this Essex-based profile. Trivia ('Who has a new exhibition at Firstsite called 'From the Landscape'?', options Simon Carter/Simon Cowell/Simon Pegg — all sharing the first name 'Simon' by design) answered 'Simon Carter', independently verified via web search (Great British Life / Colchester Gazette both report Frinton-based artist Simon Carter's 'From the Landscape' opening at Firstsite in Oct 2026), not guessed from the page's own copy. Page's own embedded config gives closing date as 2026-09-26 (23:59 UK time assumed = 22:59 UTC)."
+  },
+  {
+    "name": "Visit Northumberland — Win a Food Lovers Break",
+    "url": "https://www.visitnorthumberland.com/inspire-me/competitions/win-a-food-lovers-break",
+    "adapterKey": "visit-northumberland",
+    "closesAt": "2027-01-31T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Visit Northumberland (visitnorthumberland.com) competition, run directly by the Northumberland DMO, no purchase necessary (confirmed from the page's own T&Cs). Prize: a 1-night stay for two at The Tempus (Superior Room or Lakeside Cabin), dinner at The Orangery (£35pp allowance), B&B, plus a 'Meet the Makers Northumberland' food tour for two. Closes midnight Sunday 31 Jan 2027 per the page's own text. New adapter (visit-northumberland) built and verified against the real served HTML/JS (its own '.js-competitionform-wrapper' component, distinct from the NewMind/eCMS engine used by Visit Essex/North Norfolk/Lake District) — see the adapter file's own docblock for the full technical writeup, including a same-page 'Newsletter Sign Up' modal that turned out to be a copy-pasted duplicate of this same competition form (not a genuine separate newsletter) rather than something worth tracking for Part B. Only firstName/lastName/email/addressLine1/city/region/postalCode required, all already set on this profile. Invisible reCAPTCHA v3 — not solved/evaded, just submitted normally. This sandbox's own Playwright couldn't render this or any other external domain today (proxy-level connection reset, the same documented sandbox artifact as several other entries in this file) — curl fetched the real page/JS bundle cleanly, but the first live run is still worth a human's eyes on the resulting screenshot."
+  },
+  {
+    "name": "Visit Northumberland — Win a Short Break in a Northumberland Coastal Cottage",
+    "url": "https://www.visitnorthumberland.com/inspire-me/competitions/win-a-short-break-in-a-northumberland-coastal-cottage",
+    "adapterKey": "visit-northumberland",
+    "closesAt": "2026-10-04T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Sibling competition to the Food Lovers Break above — same site, same visit-northumberland adapter, same form/JS component (only the hidden Pure360ListName value differs, 'LittleHideaways_Aug2026', which the adapter reads from the page itself rather than hardcoding). Official Visit Northumberland (visitnorthumberland.com) competition, no purchase necessary. Prize: up to 3 nights at a Little Hideaways dog-friendly cottage in Seahouses (Oct 2026-Feb 2027, blackout dates excluded). Closes midnight Sunday 4 Oct 2026 per the page's own text (converted to 22:59 UTC, BST in effect on that date) — tighter runway than its sibling, worth a relatively prompt first run."
   }
 ]
