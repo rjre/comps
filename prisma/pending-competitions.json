@@ -286,5 +286,29 @@
     "closesAt": "2026-10-04T22:59:00.000Z",
     "maxEntries": 1,
     "notes": "Sibling competition to the Food Lovers Break above — same site, same visit-northumberland adapter, same form/JS component (only the hidden Pure360ListName value differs, 'LittleHideaways_Aug2026', which the adapter reads from the page itself rather than hardcoding). Official Visit Northumberland (visitnorthumberland.com) competition, no purchase necessary. Prize: up to 3 nights at a Little Hideaways dog-friendly cottage in Seahouses (Oct 2026-Feb 2027, blackout dates excluded). Closes midnight Sunday 4 Oct 2026 per the page's own text (converted to 22:59 UTC, BST in effect on that date) — tighter runway than its sibling, worth a relatively prompt first run."
+  },
+  {
+    "name": "Visit East of England — Win a Coastal Stay at The Grove and £50 to Spend at YALM",
+    "url": "https://visiteastofengland.com/competitions/win-a-coastal-stay-at-the-grove-and--50-to-spend-at-yalm",
+    "adapterKey": "visit-east-of-england",
+    "closesAt": "2026-09-29T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Visit East of England (visiteastofengland.com) competition — the regional DMO covering Norfolk and Suffolk, genuinely East Anglian and a new platform for this project (Destination Core/Craft CMS with the Solspace Freeform plugin, distinct from the NewMind/eCMS engine on visitessex.com/visitnorthnorfolk.com). New visit-east-of-england adapter built and verified directly against the served HTML/JS: a single data-freeform form (firstName/email required, lastName/telephone/postcode optional), two required checkboxes that are entry acceptance not marketing (privacyPolicy, termsAndConditions), and one genuinely optional marketing checkbox (marketingMaterial) left unticked. No trivia question. AJAX submit with fixed confirmation/error copy read directly from the form's own data-success-message/data-error-message attributes. Invisible reCAPTCHA v3 — not solved/evaded, just executed. No cookie-consent banner script found anywhere in the served HTML/JS for this site (checked directly). Both Visit Norfolk (visitnorfolk.co.uk/competitions) and Visit Suffolk (visitsuffolk.com/competitions) — sibling DMOs on what looks like the same underlying platform/vendor — were checked directly this run and currently show 'no live competitions right now' placeholder text, so nothing to register there yet; visitsuffolk.com's own /visit_suffolk_competition.aspx legacy URL 403s but /competitions on the same domain loads fine, so not a genuine site-wide block. Prize: one night for two at The Grove hotel, Cromer, plus a £50 YALM (Norwich) voucher and a pair of Norwich Theatre tickets. Closes '29th Sept 2026' per the page's own text, no exact time given — 23:59 UK time assumed = 22:59 UTC. No purchase necessary — a plain free-entry form, no purchase referenced anywhere on the page."
+  },
+  {
+    "name": "Visit East of England — Win a Luxury Spa Break and Suffolk Vineyard Experience for Two",
+    "url": "https://visiteastofengland.com/competitions/win-a-luxury-spa-break-and-suffolk-vineyard-experience-for-two",
+    "adapterKey": "visit-east-of-england",
+    "closesAt": "2026-09-29T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Sibling competition to the Grove/YALM entry above — identical form/field structure on the same visiteastofengland.com Freeform widget, confirmed directly field-by-field, no adapter changes needed. Prize: a luxury spa break plus a Suffolk vineyard experience for two. Closes '29th Sept 2026' per the page's own text (23:59 UK time assumed = 22:59 UTC), no purchase necessary."
+  },
+  {
+    "name": "Visit East of England — Win up to £1,000 Towards a Norfolk Broads Boating Holiday",
+    "url": "https://visiteastofengland.com/competitions/win-up-to-1-000-towards-a-norfolk-broads-boating-holiday",
+    "adapterKey": "visit-east-of-england",
+    "closesAt": "2026-09-29T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Third sibling competition on the same visiteastofengland.com Freeform widget, identical form/field structure confirmed directly, no adapter changes needed. Prize: up to £1,000 towards a Norfolk Broads boating holiday with Barnes Brinkcraft. Closes '29th Sept 2026' per the page's own text (23:59 UK time assumed = 22:59 UTC), no purchase necessary."
   }
 ]
