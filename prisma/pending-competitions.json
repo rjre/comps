@@ -310,5 +310,13 @@
     "closesAt": "2026-09-29T22:59:00.000Z",
     "maxEntries": 1,
     "notes": "Third sibling competition on the same visiteastofengland.com Freeform widget, identical form/field structure confirmed directly, no adapter changes needed. Prize: up to £1,000 towards a Norfolk Broads boating holiday with Barnes Brinkcraft. Closes '29th Sept 2026' per the page's own text (23:59 UK time assumed = 22:59 UTC), no purchase necessary."
+  },
+  {
+    "name": "Visit North Norfolk — Win a Winter Shepherd Hut Stay at The Victoria, Holkham",
+    "url": "https://www.visitnorthnorfolk.com/win-a-stay-in-a-shepherd-hut-at-the-victoria-holkham",
+    "adapterKey": "north-norfolk-attractions",
+    "closesAt": "2026-09-30T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "New sibling prize draw on Visit North Norfolk's own site (visitnorthnorfolk.com), same official DMO already tracked via the north-norfolk-attractions adapter, no purchase necessary (same legitimacy basis already established for that sibling). Prize: a self-catering stay for two people (+ up to two dogs) in one of The Victoria's shepherd huts near Holkham Beach — a 4-night midweek or 3-night weekend stay, redeemable by 31 Jan 2027. Closes 23:59 UK time 30 Sept 2026 per the page's own text (converted to 22:59 UTC). Confirmed directly (curl) this is the same NewMind/eCMS questionnaire engine as the existing sibling (forename/surname/email + the same 'Have you ever visited North Norfolk before?' Yes/No question, answered truthfully not researched) but with a different internal question field id (question-28931 here vs question-27021 on the Attractions page) and two consent checkboxes (Visit North Norfolk, Holkham) rather than one — so the existing adapter was generalized this run to match the question by its own row text instead of a hardcoded field id, rather than forking a near-duplicate adapter file. Both consent checkboxes left unticked deliberately. No code changes needed beyond that generalization; no new selectors to verify for this row specifically."
   }
 ]

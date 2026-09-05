@@ -1,16 +1,23 @@
 import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types";
 
 /**
- * Visit North Norfolk — "Win Passes to North Norfolk Attractions"
- * (visitnorthnorfolk.com/win-passes-to-north-norfolk-attractions), run
- * directly by Visit North Norfolk, the official tourism board. Same
+ * Visit North Norfolk's NewMind/eCMS prize draws — "Win Passes to North
+ * Norfolk Attractions" (visitnorthnorfolk.com/win-passes-to-north-norfolk-attractions)
+ * and its sibling "Win a Winter Shepherd Hut Stay at The Victoria"
+ * (visitnorthnorfolk.com/win-a-stay-in-a-shepherd-hut-at-the-victoria-holkham),
+ * run directly by Visit North Norfolk, the official tourism board. Same
  * NewMind/eCMS questionnaire engine as visitEssexGardenersWorld.ts and
  * visitEssex.ts, so the same quirks apply: an unticked marketing-consent
  * checkbox triggers a one-time "are you sure" confirmation panel instead of
  * blocking submission, and there's an invisible reCAPTCHA we don't attempt
  * to solve or evade. The one question ("Have you ever visited North
  * Norfolk before?") isn't a quiz with a right answer — it's Yes/No either
- * way, so it's answered truthfully rather than researched.
+ * way, so it's answered truthfully rather than researched. Its radio-group
+ * field name (question-27021 on the Attractions page, question-28931 on
+ * the Shepherd Hut page — confirmed by fetching both directly) isn't
+ * stable across competitions on this platform, so it's matched by the
+ * question's own row text instead of a hardcoded field id, letting both
+ * competitions share this one adapter.
  */
 export const northNorfolkAttractionsAdapter: CompetitionAdapter = {
   key: "north-norfolk-attractions",
@@ -51,17 +58,21 @@ export const northNorfolkAttractionsAdapter: CompetitionAdapter = {
 
     await dismissCookieBanner(3000);
 
-    const visitedBefore = page.locator('input[name="question-27021"][value="No"]');
+    const questionRow = page.locator(".row", { hasText: "Have you ever visited North Norfolk before?" });
+    const visitedBefore = questionRow.locator('input[value="No"]');
     if ((await visitedBefore.count()) === 0) {
       await log.warn("Expected 'Have you visited North Norfolk before?' question not found — page may have changed");
       return { status: "FAILED", message: "Question option not found on page" };
     }
-    await visitedBefore.check();
+    await visitedBefore.first().check();
     await log.info("Answered 'Have you ever visited North Norfolk before?': No");
 
-    // Left unticked deliberately: consent value=8331 ("I am happy to
-    // receive emails from Visit North Norfolk"). See NewsletterAdapter for
-    // opting into that via a standalone signup instead.
+    // Left unticked deliberately: this platform's own per-competition
+    // consent checkboxes (e.g. consent value=8331 "I am happy to receive
+    // emails from Visit North Norfolk" on the Attractions page; 8911/8921
+    // for Visit North Norfolk/Holkham respectively on the Shepherd Hut
+    // page). See NewsletterAdapter for opting into either via a standalone
+    // signup instead.
 
     const submit = page.locator('input[name="Submit"][value="Submit Answers"]');
     if ((await submit.count()) === 0) {
