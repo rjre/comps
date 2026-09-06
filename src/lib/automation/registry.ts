@@ -18,6 +18,8 @@ import { parkHolidaysWinAHolidayHomeAdapter } from "./adapters/parkHolidaysWinAH
 import { ambassadorCruiseLineEnglandGolfAdapter } from "./adapters/ambassadorCruiseLineEnglandGolf";
 import { advantageTravelAmbassadorCaribbeanAdapter } from "./adapters/advantageTravelAmbassadorCaribbean";
 import { dmriCompsAdapter } from "./adapters/dmriComps";
+import { gleamAdapter } from "./adapters/gleam";
+import { kingSumoAdapter } from "./adapters/kingSumo";
 
 const adapters: CompetitionAdapter[] = [
   exampleAdapter,
@@ -41,6 +43,8 @@ const adapters: CompetitionAdapter[] = [
   ambassadorCruiseLineEnglandGolfAdapter,
   advantageTravelAmbassadorCaribbeanAdapter,
   dmriCompsAdapter,
+  gleamAdapter,
+  kingSumoAdapter,
 ];
 
 export const adapterRegistry = new Map(adapters.map((a) => [a.key, a]));

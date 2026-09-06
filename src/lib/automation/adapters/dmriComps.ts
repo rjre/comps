@@ -198,6 +198,28 @@ function escapeForRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/**
+ * Recognises the DMRI platform's own URL shape
+ * (`/competition/<slug>/<numeric-id>.php`), independent of which magazine's
+ * domain it's on. Future PLC/Hearst run this exact same white-label
+ * platform under dozens of sibling brand domains (confirmed directly:
+ * marieclaire, womanmagazine, womansweekly, whatsontv, madeformums,
+ * topsante, womensfitness, olivemagazine, and more all share it), and
+ * feed-discovery keeps finding new ones this project has never seen before
+ * — there's no fixed list of domains to maintain. Used both to fix
+ * misclassified rows (see scripts/backfillAdapterKeys.ts) and to stop
+ * feed-discovery creating a new one as `generic` in the first place (see
+ * runDiscovery.ts), so a competition on this platform is never entered by
+ * the heuristic form-filler, which cannot get past its login wall.
+ */
+export function looksLikeDmriUrl(url: string): boolean {
+  try {
+    return /^\/competition\/[^/]+\/\d+\.php$/.test(new URL(url).pathname);
+  } catch {
+    return false;
+  }
+}
+
 /** Does `option` appear in the competition's own descriptive copy, as a whole word/phrase? */
 export function appearsInCopy(option: string, copy: string): boolean {
   const haystack = normaliseText(copy);
@@ -419,6 +441,61 @@ const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const LOG_OUT_TEXT = /log\s*out/i;
 
+/**
+ * Every DMRI sibling site runs the same Sourcepoint consent CMP, but
+ * confirmed directly: not all of them serve its iframe from
+ * privacy-mgmt.com — topsante.co.uk (and, going by the same pattern,
+ * presumably other siblings) proxies it from its own `consent.<site>`
+ * subdomain instead (e.g. `consent.topsante.co.uk/index.html`, no
+ * privacy-mgmt.com anywhere in it). Matching on the `consentUUID` query
+ * param Sourcepoint's own loader URL always carries, rather than one
+ * specific hosting domain, catches both.
+ *
+ * Confirmed directly, on marieclaire.co.uk: this modal doesn't only
+ * appear once on initial page load — a second instance (a different
+ * `message_id`, so not simply the same one lingering) can render again
+ * later, specifically inside the login popup, and sits on top of its
+ * "Log In Now" button indefinitely, timing out every click on it. That's
+ * why this is called again right before that click (and registration's
+ * equivalent "Next" click) rather than only once up front.
+ */
+async function dismissSourcepointConsent(page: import("playwright").Page, log: AdapterContext["log"]) {
+  const spFrame = page.frames().find((f) => /privacy-mgmt\.com|[?&]consentUUID=/.test(f.url()));
+  if (!spFrame) return;
+  // "Agree" (marieclaire.co.uk) and "Accept All" (topsante.co.uk) are both
+  // this same CMP's top-level accept action — neither site offers a
+  // one-click reject at this level, only an "Options" drill-down.
+  const agree = spFrame.getByRole("button", { name: /^(Agree|Accept All)$/ }).first();
+  const clicked = await agree
+    .click({ timeout: 5000 })
+    .then(() => true)
+    .catch(() => false);
+  if (clicked) await log.info("Dismissed consent modal (Agree/Accept All — no one-click reject-all offered)");
+}
+
+/**
+ * Confirmed directly, on marieclaire.co.uk: the consent modal can
+ * re-render more than the twice already anticipated above — the exact
+ * same click, re-attempted moments later with no other change, can meet a
+ * freshly re-rendered instance of it and time out again. A single
+ * dismiss-then-click is a race, not a fix. This retries the click once,
+ * dismissing the modal again in between, before giving up for real —
+ * same "remove the overlay and retry" shape generic.ts already uses for
+ * its own submit click.
+ */
+async function clickThroughConsent(
+  locator: import("playwright").Locator,
+  page: import("playwright").Page,
+  log: AdapterContext["log"],
+): Promise<void> {
+  try {
+    await locator.click({ timeout: 8000 });
+  } catch {
+    await dismissSourcepointConsent(page, log);
+    await locator.click();
+  }
+}
+
 export const dmriCompsAdapter: CompetitionAdapter = {
   key: "dmri-comps",
   siteName: "DMRI Reader Competitions (Future PLC)",
@@ -435,14 +512,7 @@ export const dmriCompsAdapter: CompetitionAdapter = {
     await page.goto(competitionUrl, { waitUntil: "load", timeout: 45000 });
     await page.waitForTimeout(1500);
 
-    const spFrame = page.frames().find((f) => f.url().includes("privacy-mgmt.com"));
-    if (spFrame) {
-      await spFrame
-        .getByRole("button", { name: "Agree", exact: true })
-        .click({ timeout: 8000 })
-        .catch(() => {});
-      await log.info("Dismissed consent modal (Agree — no one-click reject-all offered)");
-    }
+    await dismissSourcepointConsent(page, log);
     await page.waitForTimeout(500);
 
     const password = derivedPassword(profile.email);
@@ -452,7 +522,7 @@ export const dmriCompsAdapter: CompetitionAdapter = {
       await log.warn("Expected 'Log In Now' prompt not found — page may have changed");
       return { status: "FAILED", message: "Login prompt not found on page" };
     }
-    await loginLink.click();
+    await clickThroughConsent(loginLink, page, log);
     await page.waitForTimeout(1500);
     const loginFrame = page.frames().find((f) => f.url().includes("existingMember"));
     if (!loginFrame) {
@@ -467,7 +537,7 @@ export const dmriCompsAdapter: CompetitionAdapter = {
     // produced false negatives.
     await Promise.all([
       page.waitForNavigation({ waitUntil: "load", timeout: 15000 }).catch(() => {}),
-      loginFrame.locator("#action-login").click(),
+      clickThroughConsent(loginFrame.locator("#action-login"), page, log),
     ]);
     await page.waitForTimeout(1000);
     const loggedIn = await page.getByText(LOG_OUT_TEXT).first().isVisible().catch(() => false);
@@ -503,7 +573,7 @@ export const dmriCompsAdapter: CompetitionAdapter = {
       await log.info("Filled email/password and ticked required T&Cs only (marketing opt-ins left unticked)");
       await Promise.all([
         page.waitForNavigation({ waitUntil: "load", timeout: 15000 }).catch(() => {}),
-        step1.locator("#loginNextButton").click(),
+        clickThroughConsent(step1.locator("#loginNextButton"), page, log),
       ]);
       await page.waitForTimeout(1000);
     } else {
@@ -570,7 +640,7 @@ export const dmriCompsAdapter: CompetitionAdapter = {
         await log.info("Dry run — account details filled but not submitted");
         return { status: "SUCCESS", message: "Dry run: would have completed profile and entered" };
       }
-      await page.locator("#register-button").click();
+      await clickThroughConsent(page.locator("#register-button"), page, log);
       await page.waitForTimeout(2000);
       const updateConfirmed = await page
         .getByText(/successfully updated your account/i)
@@ -659,7 +729,7 @@ export const dmriCompsAdapter: CompetitionAdapter = {
       await log.warn("'Enter Competition!' button not found");
       return { status: "FAILED", message: "Submit control not found" };
     }
-    await page.locator(enterSelector).click();
+    await clickThroughConsent(page.locator(enterSelector), page, log);
     await waitForNextStep(page);
 
     // Submitting can then land on a rotating third-party "more info from
@@ -668,7 +738,7 @@ export const dmriCompsAdapter: CompetitionAdapter = {
     let offerRounds = 0;
     let groupCount = await answerOffersAndOptin(page);
     while (groupCount > 0 && offerRounds < 5) {
-      await page.locator(enterSelector).click();
+      await clickThroughConsent(page.locator(enterSelector), page, log);
       await waitForNextStep(page);
       offerRounds += 1;
       groupCount = await answerOffersAndOptin(page);
@@ -679,7 +749,7 @@ export const dmriCompsAdapter: CompetitionAdapter = {
 
     const confirmButton = page.getByText("Confirm Entry", { exact: true });
     if ((await confirmButton.count()) > 0) {
-      await confirmButton.click();
+      await clickThroughConsent(confirmButton, page, log);
       await page.waitForTimeout(2000);
     }
 
@@ -704,7 +774,7 @@ export const dmriCompsAdapter: CompetitionAdapter = {
       const reviewStep = page.url().includes("/confirm/") && (await page.locator(enterSelector).count()) > 0;
       if (reviewStep) {
         await log.info("Landed on a review step that re-renders the quiz form — submitting once more");
-        await page.locator(enterSelector).click();
+        await clickThroughConsent(page.locator(enterSelector), page, log);
         await waitForNextStep(page);
         try {
           await waitForOutcome();

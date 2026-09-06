@@ -7,6 +7,7 @@ import { politeDelay, isAllowedByRobots } from "@/lib/net/politeness";
 import { DISCOVERY_USER_AGENT } from "@/lib/net/fetchHtml";
 import { isSafeExternalUrl } from "@/lib/net/ssrf";
 import { acquireLock } from "@/lib/scheduler/lock";
+import { looksLikeDmriUrl } from "@/lib/automation/adapters/dmriComps";
 
 /** New items to work through per source per pass — see the loop for why. */
 const MAX_NEW_ITEMS_PER_SOURCE = Number(process.env.MAX_NEW_ITEMS_PER_SOURCE ?? 25);
@@ -166,13 +167,35 @@ async function processListingItem(item: ListingItem, source: FeedSource): Promis
     console.log(`"${item.title}" resolves to ${host} — not a fillable form, recording as skipped`);
   }
 
+  // The DMRI reader-competitions platform (see adapters/dmriComps.ts) runs
+  // under dozens of Future PLC/Hearst magazine domains this project has no
+  // fixed list of — recognised by URL shape instead of host, so a
+  // sibling site feed-discovery has never seen before still gets the
+  // adapter that actually works on it, rather than the generic form-filler
+  // (which can't get past this platform's login wall at all).
+  //
+  // gleam.io and kingsumo.com are two more shared giveaway-widget
+  // platforms with their own dedicated adapters (see adapters/gleam.ts and
+  // adapters/kingSumo.ts) — recognised by host here since, unlike DMRI,
+  // each is a single domain rather than many magazine-branded siblings.
+  // Both were previously falling through to "generic", which cannot get
+  // past Gleam's headless-UA block or correctly tell a KingSumo
+  // email-only entry apart from a newsletter signup.
+  const adapterKey = looksLikeDmriUrl(entryUrl)
+    ? "dmri-comps"
+    : host === "gleam.io"
+      ? "gleam"
+      : host === "kingsumo.com"
+        ? "kingsumo"
+        : "generic";
+
   await prisma.competition.create({
     data: {
       name: item.title || entryUrl,
       url: entryUrl,
       sourceListingUrl: item.link,
       feedSourceId: source.id,
-      adapterKey: "generic",
+      adapterKey: nonEnterable ? "generic" : adapterKey,
       status: nonEnterable ? "SKIPPED" : "PENDING",
       notes: nonEnterable ? `Entry lives on ${host} — a social-account action or newsletter signup, not a fillable form.` : undefined,
     },
