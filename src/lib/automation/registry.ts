@@ -24,6 +24,7 @@ import { advantageTravelAmbassadorCaribbeanAdapter } from "./adapters/advantageT
 import { dmriCompsAdapter } from "./adapters/dmriComps";
 import { visitNorthumberlandAdapter } from "./adapters/visitNorthumberland";
 import { visitEastOfEnglandAdapter } from "./adapters/visitEastOfEngland";
+import { bauerCompetitionFormAdapter } from "./adapters/bauerCompetitionForm";
 
 const adapters: CompetitionAdapter[] = [
   exampleAdapter,
@@ -53,6 +54,7 @@ const adapters: CompetitionAdapter[] = [
   dmriCompsAdapter,
   visitNorthumberlandAdapter,
   visitEastOfEnglandAdapter,
+  bauerCompetitionFormAdapter,
 ];
 
 export const adapterRegistry = new Map(adapters.map((a) => [a.key, a]));
