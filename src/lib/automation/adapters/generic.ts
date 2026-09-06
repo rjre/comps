@@ -20,14 +20,37 @@ export const genericAdapter: CompetitionAdapter = {
   siteName: "Generic (heuristic form-fill)",
   async enterCompetition({ page, competitionUrl, profile, log, dryRun }: AdapterContext): Promise<EntryOutcome> {
     await log.info(`Navigating to ${competitionUrl}`);
-    await page.goto(competitionUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+    const response = await page.goto(competitionUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+
+    // A blocked or challenged page reads to the rest of this adapter as
+    // just an ordinary page with no form on it, which used to come out as
+    // the misleading "No form found on page" — indistinguishable in the
+    // logs from this adapter actually failing to recognise a real entry
+    // form. Diagnosed live: comps.womansownmagazine.co.uk 403s this
+    // browser outright; gleam.io-hosted giveaways sit behind a Cloudflare
+    // "Just a moment..." interstitial. Neither is a scraper bug to fix, so
+    // name it as what it is instead of guessing at the page content.
+    const pageTitle = await page.title().catch(() => "");
+    if (/^(just a moment|attention required|checking your browser|verifying you are human|access denied)\b/i.test(pageTitle.trim())) {
+      return { status: "SKIPPED_RULES", message: `Blocked by an anti-bot challenge page (title: "${pageTitle}")` };
+    }
+    if (response && !response.ok()) {
+      return { status: "FAILED", message: `Blocked — HTTP ${response.status()} ${response.statusText()}` };
+    }
 
     if (await hasAny(page, 'input[type="password"]')) {
       return { status: "SKIPPED_RULES", message: "Entry requires an account/login" };
     }
-    if (await hasAny(page, 'iframe[src*="recaptcha"], iframe[src*="hcaptcha"], iframe[src*="turnstile"]')) {
+    if (
+      await hasAny(
+        page,
+        'iframe[src*="recaptcha"], iframe[src*="hcaptcha"], iframe[src*="turnstile"], iframe[src*="challenges.cloudflare.com"]',
+      )
+    ) {
       return { status: "SKIPPED_RULES", message: "CAPTCHA present" };
     }
+
+    await dismissCookieBanner(page, log, 6000);
 
     const chosen = await chooseEntryForm(page);
     if (!chosen.form) {
@@ -139,7 +162,34 @@ export const genericAdapter: CompetitionAdapter = {
     await log.info(`Filled ${filledCount} field(s), submitting`);
     const urlBefore = page.url();
     const formsBefore = await page.locator("form").count().catch(() => 0);
-    await submit.click();
+    try {
+      await submit.click({ timeout: 10000 });
+    } catch (clickErr) {
+      // A cookie/consent overlay that renders (or re-renders) after the
+      // initial dismiss attempt sits on top of the submit control and
+      // swallows the click — confirmed live (a Usercentrics-style #uniccmp
+      // panel intercepting pointer events on an otherwise-correct submit
+      // locator). Same fix this project already uses per-site: remove the
+      // known culprits and retry the click once, rather than failing an
+      // entry the adapter actually filled out correctly.
+      await log.warn(
+        `Submit click was blocked (${clickErr instanceof Error ? clickErr.message.split("\n")[0] : String(clickErr)}) — removing known overlay elements and retrying`,
+      );
+      await page
+        .evaluate(() => {
+          const selectors = [
+            "#onetrust-consent-sdk",
+            "#CybotCookiebotDialog",
+            "#cookiescript_injected_wrapper",
+            "#uniccmp",
+            "[id*='sp_message_container']",
+            ".cky-consent-container",
+          ];
+          for (const s of selectors) document.querySelector(s)?.remove();
+        })
+        .catch(() => {});
+      await submit.click({ timeout: 10000 });
+    }
     await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
 
     // Don't claim an entry without evidence of one. "Clicked submit" is
@@ -235,8 +285,28 @@ async function chooseEntryForm(
 
     const veto = vetoReasonFor(descriptor);
     if (veto) {
-      vetoed.push(veto);
-      continue;
+      // "login/registration form" is matched on words like register/signup
+      // in the action/id/class alone, and that false-positives on sites
+      // that call their entry form a "registration" without it requiring an
+      // account: fpd.ie's competition entry POSTs to /register, id
+      // "RegisterForm", and asks for name/address/DOB/phone — a normal
+      // entry form, no password field anywhere (confirmed live). Only
+      // honour this veto when the form actually asks for a password.
+      if (veto === "login/registration form") {
+        const hasPassword = await form
+          .locator('input[type="password"]')
+          .count()
+          .catch(() => 0);
+        if (hasPassword === 0) {
+          // Fall through to normal scoring below — not vetoed after all.
+        } else {
+          vetoed.push(veto);
+          continue;
+        }
+      } else {
+        vetoed.push(veto);
+        continue;
+      }
     }
 
     // Text-ish inputs, as a proxy for "asks who you are".
@@ -322,6 +392,66 @@ async function unfilledRequiredFields(form: import("playwright").Locator): Promi
 
 async function hasAny(page: import("playwright").Page, selector: string): Promise<boolean> {
   return (await page.locator(selector).count()) > 0;
+}
+
+/**
+ * Best-effort dismissal of whichever cookie/consent CMP a page happens to
+ * use. Every site-specific adapter in this project hand-codes its own
+ * version of this (OneTrust, Cookiebot, CookieScript, CookieYes,
+ * Usercentrics/uniccmp, Sourcepoint...) because there's no single selector
+ * that works everywhere — this is the same idea generalised for sites with
+ * no dedicated adapter. Declines non-essential cookies where a one-click
+ * reject option exists; falls back to accepting only when it doesn't,
+ * consistent with this project's "prefer reject, but don't get stuck"
+ * pattern (see e.g. ambassadorCruiseLineEnglandGolf.ts, cruiseMummy.ts).
+ * Silent no-op if nothing matches — most sites have no banner at all.
+ */
+async function dismissCookieBanner(
+  page: import("playwright").Page,
+  log: AdapterContext["log"],
+  timeout: number,
+): Promise<void> {
+  const declineSelectors = [
+    "#onetrust-reject-all-handler",
+    "#CybotCookiebotDialogBodyButtonDecline",
+    "#cookiescript_reject",
+    ".cky-btn-reject",
+  ];
+  for (const selector of declineSelectors) {
+    const el = page.locator(selector).first();
+    if (await el.isVisible({ timeout }).catch(() => false)) {
+      await el.click().catch(() => {});
+      await log.info(`Dismissed cookie banner (${selector})`);
+      return;
+    }
+  }
+
+  const declineByText = page
+    .getByRole("button", { name: /^(reject all|decline all|decline|i do not accept|do not accept|necessary only|only necessary)$/i })
+    .first();
+  if (await declineByText.isVisible({ timeout: Math.min(timeout, 3000) }).catch(() => false)) {
+    await declineByText.click().catch(() => {});
+    await log.info("Dismissed cookie banner (declined, matched by button text)");
+    return;
+  }
+
+  const acceptSelectors = ["#onetrust-accept-btn-handler"];
+  for (const selector of acceptSelectors) {
+    const el = page.locator(selector).first();
+    if (await el.isVisible({ timeout: 1500 }).catch(() => false)) {
+      await el.click().catch(() => {});
+      await log.info(`Dismissed cookie banner (accepted, no reject option offered at ${selector})`);
+      return;
+    }
+  }
+
+  const acceptByText = page
+    .getByRole("button", { name: /^(accept all|accept all cookies|allow all|i accept|agree)$/i })
+    .first();
+  if (await acceptByText.isVisible({ timeout: 1500 }).catch(() => false)) {
+    await acceptByText.click().catch(() => {});
+    await log.info("Dismissed cookie banner (accepted, matched by button text — no reject option offered)");
+  }
 }
 
 function combine(selectors: readonly string[]): string {
