@@ -1,4 +1,5 @@
 import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types";
+import { isAntiBotChallengeTitle } from "@/lib/net/antiBotChallenge";
 
 /**
  * Official London Theatre (run by the Society of London Theatre, SOLT) —
@@ -79,7 +80,7 @@ export const officialLondonTheatreHeathersAdapter: CompetitionAdapter = {
     await page.waitForTimeout(2000);
 
     const title = await page.title().catch(() => "");
-    if (/just a moment|attention required|checking your browser/i.test(title)) {
+    if (isAntiBotChallengeTitle(title)) {
       await log.warn(`Landed on what looks like a Cloudflare challenge page (title: "${title}") instead of the entry form`);
       return { status: "FAILED", message: "Blocked by Cloudflare challenge before the form could be reached" };
     }

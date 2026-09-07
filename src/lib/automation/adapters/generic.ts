@@ -1,4 +1,5 @@
 import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types";
+import { isAntiBotChallengeTitle } from "@/lib/net/antiBotChallenge";
 
 /**
  * Best-effort adapter for sites with no hand-written adapter: it looks for
@@ -31,7 +32,7 @@ export const genericAdapter: CompetitionAdapter = {
     // "Just a moment..." interstitial. Neither is a scraper bug to fix, so
     // name it as what it is instead of guessing at the page content.
     const pageTitle = await page.title().catch(() => "");
-    if (/^(just a moment|attention required|checking your browser|verifying you are human|access denied)\b/i.test(pageTitle.trim())) {
+    if (isAntiBotChallengeTitle(pageTitle)) {
       return { status: "SKIPPED_RULES", message: `Blocked by an anti-bot challenge page (title: "${pageTitle}")` };
     }
     if (response && !response.ok()) {
