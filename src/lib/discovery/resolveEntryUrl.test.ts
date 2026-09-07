@@ -118,6 +118,23 @@ describe("resolveEntryUrl", () => {
     await expect(resolveEntryUrl(listingUrl)).resolves.toBe(sponsorUrl);
   });
 
+  it("finds a widget platform embedded via <iframe> on the sponsor's own page, even though that page is already off-site (stressedmum.co.uk/gleam.io pattern)", async () => {
+    const listingUrl = "https://comping-aggregator.example/example-giveaway/";
+    const blogUrl = "https://stressedmum.co.uk/have-some-fun-with-flip-vision-see-upside-down-glasses/";
+    const gleamUrl = "https://gleam.io/crs7N/airpods-5";
+
+    global.fetch = mockFetchRouter({
+      // The listing redirects straight off-site to the sponsor's blog post.
+      [listingUrl]: htmlResponse(listingUrl, "", blogUrl),
+      // The blog post is itself just a wrapper: the real entry form is a
+      // Gleam widget embedded as an <iframe>, never linked to directly.
+      [blogUrl]: htmlResponse(blogUrl, `<p>Enter below!</p><iframe src="${gleamUrl}?l=..."></iframe>`),
+      [`${gleamUrl}?l=...`]: htmlResponse(`${gleamUrl}?l=...`, ""),
+    });
+
+    await expect(resolveEntryUrl(listingUrl)).resolves.toBe(`${gleamUrl}?l=...`);
+  });
+
   it("extracts a URL published as plain labeled text, e.g. an og:description meta tag (contest-corner.com pattern)", async () => {
     const listingUrl = "https://www.contest-corner.com/example-giveaway/";
     const sponsorUrl = "https://sponsor.example.com/example-giveaway/";

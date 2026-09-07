@@ -44,6 +44,18 @@ export async function resolveEntryUrl(listingUrl: string): Promise<string | null
   if (!finalUrl || !isSafeExternalUrl(finalUrl)) return null;
 
   if (!sameSite(new URL(finalUrl).host, listingHost)) {
+    // The sponsor page itself can still be a wrapper around a third-party
+    // widget rather than the entry form: gleam.io in particular is
+    // iframed in far more often than linked to. Confirmed live on
+    // stressedmum.co.uk, whose own blog post URL was being stored as the
+    // competition's "entry" page while the real form lived behind a
+    // cross-origin iframe no adapter looks inside — every attempt then
+    // fought the blog's own comment form instead and failed.
+    const widgetUrl = await findEmbeddedWidgetUrl(finalUrl);
+    if (widgetUrl) {
+      const resolvedWidget = await followRedirects(widgetUrl);
+      if (resolvedWidget && isSafeExternalUrl(resolvedWidget)) return resolvedWidget;
+    }
     return finalUrl;
   }
 
@@ -154,6 +166,9 @@ async function findOutboundLink(pageUrl: string, sourceHost: string): Promise<st
   const embedded = findEmbeddedUrlProp(html, sourceHost);
   if (embedded) return embedded;
 
+  const widgetIframe = findWidgetIframeUrl(html, sourceHost);
+  if (widgetIframe) return widgetIframe;
+
   const labeled = findLabeledUrl(html, sourceHost);
   if (labeled) return labeled;
 
@@ -260,6 +275,32 @@ function findLabeledUrl(html: string, sourceHost: string): string | null {
     }
   }
   return null;
+}
+
+// Widget platforms embedded via <iframe src="..."> rather than linked —
+// a much stronger, unambiguous "this is the entry" signal than anchor
+// scanning, and the only way to find one at all when the page never
+// links to it directly.
+function findWidgetIframeUrl(html: string, sourceHost: string): string | null {
+  const iframeRegex = /<iframe\b[^>]*\bsrc=["']([^"']+)["']/gi;
+  let match: RegExpExecArray | null;
+  while ((match = iframeRegex.exec(html))) {
+    try {
+      const src = new URL(match[1]!, `https://${sourceHost}`).toString();
+      const host = new URL(src).host;
+      if (!sameSite(host, sourceHost) && isKnownWidgetHost(host) && isSafeExternalUrl(src)) return src;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+async function findEmbeddedWidgetUrl(pageUrl: string): Promise<string | null> {
+  await politeDelay(pageUrl);
+  const html = await fetchRaw(pageUrl);
+  if (!html) return null;
+  return findWidgetIframeUrl(html, new URL(pageUrl).host);
 }
 
 async function fetchRaw(url: string): Promise<string | null> {
