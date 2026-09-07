@@ -154,5 +154,11 @@
     "url": "https://www.whattowatch.com/newsletter",
     "adapterKey": "future-plc-newsletter",
     "notes": "Fourth Future PLC title on the shared newsletterForm widget (futurePlcNewsletter.ts, already covering Marie Claire/Woman & Home/GoodTo) — this org is already tracked as a competition via the dmri-comps adapter (What's On TV's own comps.whatsontv.co.uk daily draws). Confirmed directly: whatsontv.co.uk's own homepage links its 'newsletter' href straight to https://www.whattowatch.com/newsletter (a sibling Future PLC tech/TV-buying-guide brand) rather than a whatsontv.co.uk-hosted page — this is the org's own first-party pointer, not a guess, so used as-is. Re-verified the target page directly: HTTP 200, real served HTML contains data-component-name=\"Newsletter:NewsletterForm\", the slice-container-newsletterForm widget, input[name=MAIL], and both optional 'other Future brands'/'trusted partners or sponsors' checkbox wordings the adapter already expects to leave unticked. No code changes needed, same adapterKey."
+  },
+  {
+    "name": "Wightlink Ferries",
+    "url": "https://www.wightlink.co.uk/newsletter",
+    "adapterKey": "wightlink-newsletter",
+    "notes": "Official Wightlink Ferries newsletter ('Discounts, inspiration and news from Wightlink'), redirects to a distinct ClickDimensions form on form.wightlink.co.uk from the one already tracked as the wightlink-parkdean-resorts competition entry (different form, same platform). Org newly found this run via the Parkdean Resorts prize-draw lead. Confirmed directly from the page's own embedded form-config JSON (not guessed): first name, last name, email, postcode, all required, no marketing-channel checkbox to leave unticked. Form is rendered client-side into an empty #root div by ClickDimensions' newer form-editor script, so fields are matched by their real label text (as declared in that same JSON) rather than a static id. The config also declares a 'navigateToUrl' redirect to a preference-centre page on successful completion — this form's own real success signal, not guessed."
   }
 ]
