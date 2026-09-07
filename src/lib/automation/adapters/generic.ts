@@ -386,14 +386,36 @@ async function unfilledRequiredFields(form: import("playwright").Locator): Promi
       const radioGroupsSeen = new Set<string>();
       for (const control of Array.from(controls)) {
         // Honeypots: required but deliberately hidden, and meant to stay
-        // empty. Filling or refusing on them would both be wrong.
+        // empty. Filling or refusing on them would both be wrong. But
+        // `display:none` on the control itself isn't proof of that — a
+        // checkbox styled entirely through its own `<label>` (confirmed
+        // live: countryandtownhouse.com's Gravity Forms consent checkbox,
+        // `display:none` on the `<input>`, a fully visible label that
+        // natively toggles it) is a normal, real, required field, not a
+        // spam trap, and was being silently excluded here — the form then
+        // submitted incomplete and the site rejected it, which came out
+        // as an opaque "no confirmation" failure instead of this adapter
+        // honestly declining. Only a control with no visible label at all
+        // gets treated as a honeypot.
         const style = window.getComputedStyle(control);
-        const hidden =
+        const rawHidden =
           control.getAttribute("type") === "hidden" ||
           style.display === "none" ||
           style.visibility === "hidden" ||
           control.getAttribute("aria-hidden") === "true";
-        if (hidden) continue;
+        if (rawHidden) {
+          const label = control.id
+            ? scope.querySelector(`label[for="${CSS.escape(control.id)}"]`)
+            : control.closest("label");
+          const labelText = label?.textContent?.trim() ?? "";
+          const labelVisible =
+            labelText.length > 0 &&
+            (() => {
+              const labelStyle = window.getComputedStyle(label as Element);
+              return labelStyle.display !== "none" && labelStyle.visibility !== "hidden";
+            })();
+          if (!labelVisible) continue;
+        }
         if (control instanceof HTMLInputElement && control.type === "radio") {
           // A required radio group is unanswered only if nothing in the
           // whole group is checked — checking each radio individually
