@@ -261,74 +261,93 @@ export function formAdvertisesEntry(descriptor: string): boolean {
  * entry wins, then the one with the most fillable identity inputs. A page
  * with nothing but vetoed forms is a clean failure, not a fallback to one
  * of them.
+ *
+ * Checks every frame on the page, not just the top-level document — a
+ * real entry form is often embedded via `<iframe>` rather than linked to
+ * (a widget platform not in resolveEntryUrl.ts's known-host list, or a
+ * custom in-house widget), and until this the top-level document having
+ * no form, or only a vetoed one, was indistinguishable from a genuine
+ * "no entry form on this page" — this was a real share of both "No form
+ * found on page" and "Only non-entry form(s)" failures. A form's own
+ * frame is irrelevant to every later step (fill/evaluate/click all work
+ * the same on a Locator scoped to a child frame as to the main one), so
+ * nothing past this function needs to change.
  */
 async function chooseEntryForm(
   page: import("playwright").Page,
 ): Promise<{ form: import("playwright").Locator | null; reason: string }> {
-  const forms = page.locator("form");
-  const count = await forms.count();
-  if (count === 0) return { form: null, reason: "No form found on page" };
+  const containers: Array<import("playwright").Page | import("playwright").Frame> = [
+    page,
+    ...page.frames().filter((f) => f !== page.mainFrame()),
+  ];
 
   const vetoed: string[] = [];
-  let best: { index: number; score: number; why: string } | null = null;
+  let best: { locator: import("playwright").Locator; score: number; why: string } | null = null;
+  let anyForm = false;
 
-  for (let i = 0; i < count; i++) {
-    const form = forms.nth(i);
-    const descriptor = (
-      await form.evaluate((el) => {
-        const f = el as HTMLFormElement;
-        return [f.getAttribute("action"), f.id, f.className, f.getAttribute("name"), f.getAttribute("role")]
-          .filter(Boolean)
-          .join(" ");
-      }).catch(() => "")
-    ) as string;
+  for (const container of containers) {
+    const forms = container.locator("form");
+    const count = await forms.count().catch(() => 0);
+    for (let i = 0; i < count; i++) {
+      anyForm = true;
+      const form = forms.nth(i);
+      const descriptor = (
+        await form.evaluate((el) => {
+          const f = el as HTMLFormElement;
+          return [f.getAttribute("action"), f.id, f.className, f.getAttribute("name"), f.getAttribute("role")]
+            .filter(Boolean)
+            .join(" ");
+        }).catch(() => "")
+      ) as string;
 
-    const veto = vetoReasonFor(descriptor);
-    if (veto) {
-      // "login/registration form" is matched on words like register/signup
-      // in the action/id/class alone, and that false-positives on sites
-      // that call their entry form a "registration" without it requiring an
-      // account: fpd.ie's competition entry POSTs to /register, id
-      // "RegisterForm", and asks for name/address/DOB/phone — a normal
-      // entry form, no password field anywhere (confirmed live). Only
-      // honour this veto when the form actually asks for a password.
-      if (veto === "login/registration form") {
-        const hasPassword = await form
-          .locator('input[type="password"]')
-          .count()
-          .catch(() => 0);
-        if (hasPassword === 0) {
-          // Fall through to normal scoring below — not vetoed after all.
+      const veto = vetoReasonFor(descriptor);
+      if (veto) {
+        // "login/registration form" is matched on words like register/signup
+        // in the action/id/class alone, and that false-positives on sites
+        // that call their entry form a "registration" without it requiring an
+        // account: fpd.ie's competition entry POSTs to /register, id
+        // "RegisterForm", and asks for name/address/DOB/phone — a normal
+        // entry form, no password field anywhere (confirmed live). Only
+        // honour this veto when the form actually asks for a password.
+        if (veto === "login/registration form") {
+          const hasPassword = await form
+            .locator('input[type="password"]')
+            .count()
+            .catch(() => 0);
+          if (hasPassword === 0) {
+            // Fall through to normal scoring below — not vetoed after all.
+          } else {
+            vetoed.push(veto);
+            continue;
+          }
         } else {
           vetoed.push(veto);
           continue;
         }
-      } else {
-        vetoed.push(veto);
-        continue;
       }
-    }
 
-    // Text-ish inputs, as a proxy for "asks who you are".
-    const inputs = await form
-      .locator('input[type="text"], input[type="email"], input[type="tel"], input:not([type]), select')
-      .count()
-      .catch(() => 0);
-    const advertisesEntry = formAdvertisesEntry(descriptor) ? 10 : 0;
-    const score = advertisesEntry + inputs;
-    if (!best || score > best.score) {
-      best = {
-        index: i,
-        score,
-        why: advertisesEntry ? `form ${i} names itself as an entry form (${inputs} field(s))` : `form ${i} (${inputs} field(s))`,
-      };
+      // Text-ish inputs, as a proxy for "asks who you are".
+      const inputs = await form
+        .locator('input[type="text"], input[type="email"], input[type="tel"], input:not([type]), select')
+        .count()
+        .catch(() => 0);
+      const advertisesEntry = formAdvertisesEntry(descriptor) ? 10 : 0;
+      const score = advertisesEntry + inputs;
+      if (!best || score > best.score) {
+        best = {
+          locator: form,
+          score,
+          why: advertisesEntry ? `form ${i} names itself as an entry form (${inputs} field(s))` : `form ${i} (${inputs} field(s))`,
+        };
+      }
     }
   }
 
+  if (!anyForm) return { form: null, reason: "No form found on page" };
   if (!best) {
     return { form: null, reason: `Only non-entry form(s) on the page (${[...new Set(vetoed)].join(", ")})` };
   }
-  return { form: forms.nth(best.index), reason: best.why };
+  return { form: best.locator, reason: best.why };
 }
 
 /**
