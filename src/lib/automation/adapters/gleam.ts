@@ -85,6 +85,18 @@ export const gleamAdapter: CompetitionAdapter = {
     await log.info(`Navigating to ${competitionUrl}`);
     await page.goto(competitionUrl, { waitUntil: "load", timeout: 45000 });
 
+    // Cloudflare's interstitial challenge page for gleam.io itself (distinct
+    // from a campaign requiring the visitor to solve one — this is the whole
+    // page, before any campaign content loads). Confirmed live: several
+    // gleam.io competitions were stuck permanently reporting the generic,
+    // misleading "Entry form not found on page" on every single attempt —
+    // this is what they actually were, the same anti-bot-page situation
+    // generic.ts already names rather than tries to get past.
+    const pageTitle = await page.title().catch(() => "");
+    if (/^(just a moment|attention required|checking your browser|verifying you are human|access denied)\b/i.test(pageTitle.trim())) {
+      return { status: "SKIPPED_RULES", message: `Blocked by an anti-bot challenge page (title: "${pageTitle}")` };
+    }
+
     // Confirmed directly: an ended campaign's "Days Left" stat tile reads
     // "Ended" in place of a number, with no entry form anywhere on the
     // page — checked first so an ended campaign gets a clean decline
