@@ -3,9 +3,10 @@ import type { DiscoveredCompetition, DiscoveryContext, DiscoverySource } from ".
 
 /**
  * Discovers competitions on the DMRI reader-comps platform (the
- * white-label engine behind comps.marieclaire.co.uk and its Future PLC
- * sibling magazine sites — see adapters/dmriComps.ts for the full
- * description of the platform).
+ * white-label engine behind comps.marieclaire.co.uk, its Future PLC
+ * sibling magazine sites, and other third-party clients of the same
+ * platform such as pickmypostcode.com — see adapters/dmriComps.ts for the
+ * full description of the platform).
  *
  * This platform is worth discovering automatically in a way one-off
  * competitions aren't: each site runs a couple of dozen concurrent DAILY
@@ -32,17 +33,41 @@ const SEED_ORIGINS = [
   // shape. Without this it would have been tracked as a `generic` row and
   // failed, rather than using the adapter that already handles it.
   "https://competitions.madeformums.com",
+  // The rest of this batch was found the same way: `generic`-adapter rows
+  // stuck failing with "no form found" whose URL was the same
+  // `/competition/<slug>/<id>.php` shape and, once checked directly
+  // (index page 200s, robots.txt wide open, live `<h1>`/"ends on" text
+  // matching the platform exactly), turned out to be the identical
+  // white-label engine — not just Future PLC's other titles, but
+  // third-party clients of the same platform too (pickmypostcode).
+  "https://competitions.goodto.com",
+  "https://comps.womansownmagazine.co.uk",
+  "https://comps.trustedreviews.com",
+  "https://competitions.topsante.co.uk",
+  "https://comps.recombu.com",
+  "https://comps.pickmypostcode.com",
+  "https://competitions.olivemagazine.com",
+  "https://competitions.womensfitness.co.uk",
+  "https://competitions.thegreatoutdoorsmag.com",
+  "https://comps.lifedeathprizes.com",
+  "https://comps.celebsnow.co.uk",
+  "https://competitions.mensfitness.co.uk",
+  "https://competitions.houseofcoco.net",
+  "https://competitions.stuff.tv",
+  "https://competitions.amateurgardening.com",
+  "https://competitions.220triathlon.com",
+  "https://competitions.amateurphotographer.com",
 ];
 
 /**
  * The site 403s anything that doesn't look like a browser — including the
  * shared DISCOVERY_USER_AGENT, and including robots.txt itself (confirmed
- * directly against all four origins). That's why this source can't just
- * use net/fetchHtml.ts: it still goes through the same robots.txt check
- * and per-host rate limit, but has to identify as a browser to get an
- * answer at all. All four sites' robots.txt allow everything (`Allow: /`
- * on Marie Claire, an empty `Disallow:` on the other three), checked
- * directly.
+ * directly against every origin in SEED_ORIGINS). That's why this source
+ * can't just use net/fetchHtml.ts: it still goes through the same
+ * robots.txt check and per-host rate limit, but has to identify as a
+ * browser to get an answer at all. Every seeded site's robots.txt allows
+ * everything (`Allow: /` on Marie Claire, an empty `Disallow:` on the
+ * rest), checked directly.
  */
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";

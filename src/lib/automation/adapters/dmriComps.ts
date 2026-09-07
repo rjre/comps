@@ -458,14 +458,23 @@ const LOG_OUT_TEXT = /log\s*out/i;
  * "Log In Now" button indefinitely, timing out every click on it. That's
  * why this is called again right before that click (and registration's
  * equivalent "Next" click) rather than only once up front.
+ *
+ * Confirmed directly, on madeformums.com (and reproduced the same way on
+ * trustedreviews/recombu/pickmypostcode/olivemagazine): the button's own
+ * rendered text is "AGREE", all caps — the case-sensitive match below was
+ * silently never finding it, leaving the modal up forever and timing out
+ * every click behind it (this is what every "Log In Now" click-timeout
+ * failure on those sites actually was). Matching case-insensitively is
+ * confirmed live to dismiss it correctly.
  */
 async function dismissSourcepointConsent(page: import("playwright").Page, log: AdapterContext["log"]) {
   const spFrame = page.frames().find((f) => /privacy-mgmt\.com|[?&]consentUUID=/.test(f.url()));
   if (!spFrame) return;
-  // "Agree" (marieclaire.co.uk) and "Accept All" (topsante.co.uk) are both
-  // this same CMP's top-level accept action — neither site offers a
-  // one-click reject at this level, only an "Options" drill-down.
-  const agree = spFrame.getByRole("button", { name: /^(Agree|Accept All)$/ }).first();
+  // "Agree"/"AGREE" (marieclaire.co.uk, madeformums.com, ...) and "Accept
+  // All" (topsante.co.uk) are both this same CMP's top-level accept
+  // action — neither site offers a one-click reject at this level, only
+  // an "Options" drill-down.
+  const agree = spFrame.getByRole("button", { name: /^(Agree|Accept All)$/i }).first();
   const clicked = await agree
     .click({ timeout: 5000 })
     .then(() => true)
