@@ -59,17 +59,25 @@ export const genericAdapter: CompetitionAdapter = {
     const form = chosen.form;
     await log.info(`Using form: ${chosen.reason}`);
 
-    const fieldMap: Array<[string, string | undefined | null, boolean?]> = [
+    // `labelPattern`s are a fallback only, for the plugin-generated forms
+    // (WPForms, Gravity Forms) whose fields carry no useful name/id/
+    // autocomplete at all — a bare numeric `wpforms[fields][7]` — and are
+    // only ever findable by the visible `<label>` text next to them.
+    // Confirmed live (vantagepointmag.co.uk, a WPForms competition entry):
+    // its Phone and Postcode fields have no textual attribute hint
+    // whatsoever, so without this fallback the form's own required-field
+    // check declined an otherwise-fillable entry.
+    const fieldMap: Array<[string, string | undefined | null, boolean?, RegExp?]> = [
       [combine(FIELD_MATCHERS.email), profile.email, true],
       [combine(FIELD_MATCHERS.firstName), profile.firstName],
       [combine(FIELD_MATCHERS.lastName), profile.lastName],
       [combine(FIELD_MATCHERS.fullName), `${profile.firstName} ${profile.lastName}`],
-      [combine(FIELD_MATCHERS.phone), profile.phone],
+      [combine(FIELD_MATCHERS.phone), profile.phone, false, /^(phone|telephone|mobile)(\s*number)?\s*\*?$/i],
       [combine(FIELD_MATCHERS.addressLine1), profile.addressLine1],
       [combine(FIELD_MATCHERS.addressLine2), profile.addressLine2],
       [combine(FIELD_MATCHERS.city), profile.city],
       [combine(FIELD_MATCHERS.region), profile.region],
-      [combine(FIELD_MATCHERS.postalCode), profile.postalCode],
+      [combine(FIELD_MATCHERS.postalCode), profile.postalCode, false, /^post\s*code\s*\*?$|^postal\s*code\s*\*?$|^zip(\s*code)?\s*\*?$/i],
       [combine(FIELD_MATCHERS.country), profile.country],
       // Only input[type=date]/autocomplete=bday — both expect an
       // unambiguous YYYY-MM-DD value per the HTML spec. A freeform text
@@ -81,9 +89,12 @@ export const genericAdapter: CompetitionAdapter = {
 
     let filledCount = 0;
     let filledEmailOnly = true;
-    for (const [selector, value, isEmail] of fieldMap) {
+    for (const [selector, value, isEmail, labelPattern] of fieldMap) {
       if (!value) continue;
-      const field = form.locator(selector).first();
+      let field = form.locator(selector).first();
+      if ((await field.count()) === 0 && labelPattern) {
+        field = form.getByLabel(labelPattern).first();
+      }
       if ((await field.count()) === 0) continue;
       try {
         await field.fill(String(value));
@@ -577,6 +588,14 @@ const FIELD_MATCHERS = {
     'input[id*="first" i]',
     'input[autocomplete="given-name"]',
     'input[placeholder*="first name" i]',
+    // Gravity Forms' standard "Name" field renders its First/Last
+    // sub-inputs with bare placeholders — "First", not "First Name" — and
+    // a numeric name/id (input_X.3) that gives no textual hint at all.
+    // Confirmed live (tranquilparks.co.uk): without this, only the
+    // form's email field matched, so a genuine competition entry read as
+    // a bare newsletter signup and was wrongly declined. Exact-match only
+    // so this can't shadow an unrelated field like "First line of address".
+    'input[placeholder="First" i]',
   ],
   lastName: [
     'input[name*="last" i]',
@@ -585,6 +604,8 @@ const FIELD_MATCHERS = {
     'input[autocomplete="family-name"]',
     'input[placeholder*="last name" i]',
     'input[placeholder*="surname" i]',
+    // See firstName above — Gravity Forms' bare "Last" placeholder.
+    'input[placeholder="Last" i]',
   ],
   fullName: ['input[name="name" i]', 'input[autocomplete="name"]', 'input[placeholder*="full name" i]'],
   phone: ['input[type="tel"]', 'input[name*="phone" i]', 'input[autocomplete="tel"]'],
