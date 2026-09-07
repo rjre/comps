@@ -8,11 +8,68 @@ import { Pill } from "@/components/Pill";
 // a cached snapshot of "when did it last run" would be worse than useless.
 export const dynamic = "force-dynamic";
 
+/** First line only, and short — the rest of a Playwright timeout's call log is noise for a summary table. */
+function summarize(message: string | null): string {
+  const firstLine = (message ?? "(no message)").split("\n")[0]!.trim();
+  return firstLine.length > 90 ? `${firstLine.slice(0, 90)}…` : firstLine;
+}
+
+/**
+ * Per-adapter success/failure breakdown over a recent window, with each
+ * adapter's most common failure reason — the same shape of question ("is
+ * this adapter actually working, and if not, why") that otherwise only
+ * gets answered by hand-querying the database, which is how the DMRI
+ * consent-button bug and the generic adapter's honeypot/field-matching
+ * gaps were all actually found. Surfacing it here means the next one like
+ * it shows up on this page instead of needing that same manual audit.
+ */
+async function adapterReliability(since: Date) {
+  const entries = await prisma.entry.findMany({
+    where: { attemptedAt: { gte: since } },
+    select: { status: true, message: true, competition: { select: { adapterKey: true } } },
+  });
+
+  const byAdapter = new Map<
+    string,
+    { success: number; failed: number; skipped: number; failureReasons: Map<string, number> }
+  >();
+  for (const entry of entries) {
+    const key = entry.competition.adapterKey;
+    const row = byAdapter.get(key) ?? { success: 0, failed: 0, skipped: 0, failureReasons: new Map() };
+    if (entry.status === "SUCCESS") row.success++;
+    else if (entry.status === "FAILED") {
+      row.failed++;
+      const reason = summarize(entry.message);
+      row.failureReasons.set(reason, (row.failureReasons.get(reason) ?? 0) + 1);
+    } else row.skipped++;
+    byAdapter.set(key, row);
+  }
+
+  return [...byAdapter.entries()]
+    .map(([adapterKey, row]) => {
+      const attempts = row.success + row.failed;
+      const topReasons = [...row.failureReasons.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 2)
+        .map(([reason, count]) => `${reason} (${count})`);
+      return {
+        adapterKey,
+        success: row.success,
+        failed: row.failed,
+        skipped: row.skipped,
+        successRate: attempts > 0 ? Math.round((row.success / attempts) * 100) : null,
+        topReasons,
+      };
+    })
+    .sort((a, b) => b.failed - a.failed);
+}
+
 export default async function Dashboard() {
   const now = new Date();
   const dayAgo = new Date(now.getTime() - 86_400_000);
+  const twoWeeksAgo = new Date(now.getTime() - 14 * 86_400_000);
 
-  const [profile, byStatus, pending, health, todaysEntries, recentEntries] = await Promise.all([
+  const [profile, byStatus, pending, health, todaysEntries, recentEntries, reliability] = await Promise.all([
     prisma.profile.findFirst(),
     prisma.competition.groupBy({ by: ["status"], _count: true }),
     prisma.competition.findMany({
@@ -22,6 +79,7 @@ export default async function Dashboard() {
     getServiceHealth(),
     prisma.entry.groupBy({ by: ["status"], _count: true, where: { attemptedAt: { gte: dayAgo } } }),
     prisma.entry.findMany({ orderBy: { attemptedAt: "desc" }, take: 15, include: { competition: true } }),
+    adapterReliability(twoWeeksAgo),
   ]);
   const { lastRun, stale } = health;
 
@@ -139,6 +197,52 @@ export default async function Dashboard() {
                   <td>{competition.name}</td>
                   <td className="mono">{decision.readyAt!.toLocaleString()}</td>
                   <td>{decision.reason.split(" — due again")[0]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <h2>Adapter reliability (last 14 days)</h2>
+      {reliability.length === 0 ? (
+        <p className="empty-state">No entry attempts in this window yet.</p>
+      ) : (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Adapter</th>
+                <th>Success</th>
+                <th>Failed</th>
+                <th>Skipped</th>
+                <th>Success rate</th>
+                <th>Top failure reason(s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reliability.map((row) => (
+                <tr key={row.adapterKey}>
+                  <td className="mono">{row.adapterKey}</td>
+                  <td>{row.success}</td>
+                  <td>{row.failed}</td>
+                  <td>{row.skipped}</td>
+                  <td>
+                    {row.successRate === null ? (
+                      "—"
+                    ) : (
+                      <span className={`pill pill-${row.successRate >= 50 ? "good" : row.successRate > 0 ? "warn" : "bad"}`}>
+                        {row.successRate}%
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    {row.topReasons.length === 0 ? (
+                      "—"
+                    ) : (
+                      row.topReasons.map((reason) => <div key={reason}>{reason}</div>)
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
