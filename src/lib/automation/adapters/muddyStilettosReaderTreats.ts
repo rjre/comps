@@ -35,6 +35,8 @@ const READER_TREAT_ANSWERS: Record<string, string> = {
     "4 days", // the competition's own "Need to Know" section: runs 17-20 Sept 2026, and the prize itself is "four-day members' passes"
   "https://essex.muddystilettos.co.uk/reader-treats/win-a-firstsite-mosaic-membership-for-a-family-of-4/":
     "Simon Carter", // independently verified (Great British Life / Gazette): Frinton-based artist Simon Carter's "From the Landscape" opens at Firstsite Oct 2026 — not the two decoy names (Simon Cowell, Simon Pegg) sharing the same first name
+  "https://norfolk.muddystilettos.co.uk/reader-treats/switch-off-slow-down-win-a-two-night-slow-stay-at-the-ironmongers/":
+    "Ostlers", // the article's own body copy: "Your base will be The Ostlers, a gorgeous, character-filled room tucked above what was once the stables of a 17th-century coaching inn" — not the two decoy trade names (Florist, Cobblers)
 };
 
 export const muddyStilettosReaderTreatsAdapter: CompetitionAdapter = {
