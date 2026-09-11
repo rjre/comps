@@ -178,5 +178,11 @@
     "url": "https://www.butlins.com/",
     "adapterKey": "butlins-newsletter",
     "notes": "Official Butlin's (Bourne Leisure) footer 'SUBSCRIBE TO EMAIL' widget, first-party, no account necessary. Real server-rendered React (styled-components) markup confirmed directly: a single email input (#footer-form-email) and a 'SIGN ME UP' button (type=\"button\", its own click handler — matched by role/text, not a native submit). No separate marketing checkbox, sole purpose is the opt-in. Checked butlins.com/competitions directly: 'Sorry, there are currently no competitions or prize draws running' at time of writing — the page still serves a generic, contentless competition-entry form shell (title 'B&M Competition', empty description) for whenever one goes live, not worth tracking as a Competition row until it actually carries a real prize/closing date — newsletter only for now. OneTrust cookie banner, standard reject-all selector already used elsewhere in this project. No confirmation/error copy found in the static HTML — same never-default-to-SUCCESS caution as haven-newsletter above."
+  },
+  {
+    "name": "Woman's Weekly",
+    "url": "https://www.womansweekly.com/newsletter",
+    "adapterKey": "future-plc-newsletter",
+    "notes": "Another Future PLC title reusing the same shared 'newsletterForm' widget the future-plc-newsletter adapter already handles (added for Marie Claire, then Woman & Home/GoodTo/What's On TV) — confirmed directly by fetching this page: identical markup (input[name=MAIL], CONTACT_OTHER_BRANDS/CONTACT_PARTNERS checkboxes both left unticked, 'Sign me up' button). Distinct from the already-tracked competitions.womansweekly.com DMRI daily prize draws (dmri-comps adapter, different subdomain/platform) — this is Woman's Weekly's own newsletter signup, not a competition entry. No new adapter file needed, just this row."
   }
 ]
