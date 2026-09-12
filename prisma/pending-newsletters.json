@@ -184,5 +184,11 @@
     "url": "https://www.womansweekly.com/newsletter",
     "adapterKey": "future-plc-newsletter",
     "notes": "Another Future PLC title reusing the same shared 'newsletterForm' widget the future-plc-newsletter adapter already handles (added for Marie Claire, then Woman & Home/GoodTo/What's On TV) — confirmed directly by fetching this page: identical markup (input[name=MAIL], CONTACT_OTHER_BRANDS/CONTACT_PARTNERS checkboxes both left unticked, 'Sign me up' button). Distinct from the already-tracked competitions.womansweekly.com DMRI daily prize draws (dmri-comps adapter, different subdomain/platform) — this is Woman's Weekly's own newsletter signup, not a competition entry. No new adapter file needed, just this row."
+  },
+  {
+    "name": "Visit Cardiff",
+    "url": "https://www.visitcardiff.com/",
+    "adapterKey": "visit-cardiff-newsletter",
+    "notes": "Official Visit Cardiff (visitcardiff.com) 'STAY IN TOUCH' e-newsletter, a Mailchimp-backed widget confirmed present identically on both the homepage and this org's CMCF/Llais Festival prize-draw page (the lead that surfaced this org — that competition's own entry form is a JS-driven multi-page SnapSurveys flow (online1.snapsurveys.com) this sandbox can't render to inspect real field names, same egress-proxy limitation documented elsewhere in this file, so it wasn't built as a competition; this newsletter is a genuinely separate, fully static, first-party form, so worth having regardless). Modal-triggered (a.ModalTrigger[data-modal=register]) form: First Name, Surname, Email, plus a single checkbox that IS the newsletter opt-in itself ('Tick this box to receive emails from Visit Cardiff...'), ticked deliberately — not a bundled marketing consent. Submit is a Google reCAPTCHA v2 invisible button (bound via data-callback, not a plain submit) — not solved/evaded, adapter checks for a rendered challenge iframe after clicking and fails loudly if one appears. No cookie-consent banner found in the static HTML — worth a human's eyes on the first live run in case one renders client-side. No explicit confirmation copy present in the static page (presumably injected server-side after a real POST), so a successful HTTP response with no error text observed is treated as accepted, same convention as suffolkCoast.ts and theSuffolkCoastNewsletterAdapter."
   }
 ]
