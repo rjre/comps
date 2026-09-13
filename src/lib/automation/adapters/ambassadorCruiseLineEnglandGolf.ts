@@ -14,8 +14,12 @@ import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types"
  * First Name, Last Name, Email (all required), optional Phone, plus two
  * independently optional marketing opt-in checkboxes — "double your entry"
  * (Ambassador Cruise Line marketing) and a separate England Golf marketing
- * opt-in. Both ticked deliberately: more marketing mail is more competition
- * leads, and the "double your entry" box gives an actual second entry too.
+ * opt-in. Both left unticked deliberately, same "never tick marketing on a
+ * competition form" rule as everywhere else in this project — an earlier
+ * version of this adapter ticked both, which was a bug, not a considered
+ * exception; the "double your entry" perk isn't worth trading away that
+ * rule for. Use a standalone newsletter adapter for either organisation's
+ * own first-party marketing instead.
  *
  * No reCAPTCHA anywhere on this form (checked directly, live). Submission
  * posts to forms-eu1.hsforms.com's public submissions API — that response
@@ -77,15 +81,8 @@ export const ambassadorCruiseLineEnglandGolfAdapter: CompetitionAdapter = {
       }
     }
 
-    const marketingCheckboxes = hsFrame.locator('input[type="checkbox"]');
-    const marketingCount = await marketingCheckboxes.count();
-    for (let i = 0; i < marketingCount; i++) {
-      const box = marketingCheckboxes.nth(i);
-      if (!(await box.isChecked().catch(() => true))) {
-        await box.check().catch(() => {});
-      }
-    }
-    await log.info(`Ticked ${marketingCount} optional marketing checkbox(es) (Ambassador Cruise Line 'double your entry' opt-in, England Golf opt-in)`);
+    // Both left unticked deliberately: the "double your entry" (Ambassador
+    // Cruise Line marketing) and England Golf marketing opt-in checkboxes.
 
     const submit = hsFrame.locator('button[type="submit"], input[type="submit"]');
     if ((await submit.count()) === 0) {
