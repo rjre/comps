@@ -96,8 +96,8 @@ archives it once it's genuinely handled. Three outcomes:
 - **A possible win** — recorded to `/wins` and a notification sent.
   Archived *only if that notification succeeded*. An unnotified win stays
   in the inbox, because archiving the one email that matters would put it
-  somewhere nobody is looking. With no `NOTIFY_WEBHOOK` set, wins are
-  never archived.
+  somewhere nobody is looking. With neither `NOTIFY_WEBHOOK` nor
+  `WIN_NOTIFY_EMAIL` set, wins are never archived.
 - **Competition leads** — a newsletter carrying competition links. The
   links go through the same pipeline a feed item does (entry-URL
   resolution, SSRF check, robots.txt) and are registered for entry, then
@@ -111,9 +111,14 @@ and, when it wasn't archived, why — so "why is this still in my inbox?"
 always has an answer. Nothing is ever deleted, trashed, marked read, or
 replied to; the only mailbox change is removing the INBOX label.
 
-Set `NOTIFY_WEBHOOK` to get win alerts. An `https://ntfy.sh/<topic>` URL
-is the least-setup option (pick a topic, install the app); anything else
-receives a JSON POST, which suits Slack/Discord-style webhooks.
+Set `NOTIFY_WEBHOOK` and/or `WIN_NOTIFY_EMAIL` to get win alerts — a win is
+archived once at least one configured channel succeeds. For the webhook,
+an `https://ntfy.sh/<topic>` URL is the least-setup option (pick a topic,
+install the app); anything else receives a JSON POST, which suits
+Slack/Discord-style webhooks. `WIN_NOTIFY_EMAIL` sends through the same
+Gmail account being scanned, so it needs no extra credential — but does
+need the `gmail.send` scope, which is only in the token if
+`npm run gmail:auth` was (re-)run after that scope was added.
 
 ### Setup (one-time, needs a human in the loop)
 

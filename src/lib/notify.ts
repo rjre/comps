@@ -7,19 +7,28 @@
  * out of the inbox and put it somewhere nobody is looking — so this
  * function's return value is load-bearing, not fire-and-forget.
  *
- * Configured with a single env var, `NOTIFY_WEBHOOK`:
+ * Two independent channels, either or both configurable:
  *
- * - An ntfy.sh topic URL (https://ntfy.sh/your-topic) gets a plain-text
- *   body with ntfy's Title/Priority/Tags headers, which is what its apps
- *   render nicely. This is the least-setup option: pick a topic name,
- *   install the app, done.
- * - Anything else gets a JSON POST with both a ready-made `text` field and
- *   the structured fields, which suits Slack/Discord-style webhooks and
- *   home automation alike.
+ * - `NOTIFY_WEBHOOK` — an ntfy.sh topic URL (https://ntfy.sh/your-topic)
+ *   gets a plain-text body with ntfy's Title/Priority/Tags headers, which
+ *   is what its apps render nicely. This is the least-setup option: pick
+ *   a topic name, install the app, done. Anything else gets a JSON POST
+ *   with both a ready-made `text` field and the structured fields, which
+ *   suits Slack/Discord-style webhooks and home automation alike.
+ * - `WIN_NOTIFY_EMAIL` — sent through the same Gmail account the mailbox
+ *   pass already reads (needs the `gmail.send` scope; see GMAIL_SCOPES),
+ *   so it requires the `gmail` client the caller already has rather than
+ *   a separate credential.
  *
  * With nothing configured, notification always fails — deliberately, so
  * the caller keeps the mail in the inbox rather than silently filing it.
+ * With something configured, success means at least one channel got
+ * through — a webhook outage shouldn't hide a win that the email channel
+ * delivered fine, or vice versa.
  */
+
+import type { GmailClient } from "./gmail/client";
+import { sendMail } from "./gmail/sendMail";
 
 export interface Notification {
   title: string;
@@ -27,10 +36,15 @@ export interface Notification {
 }
 
 export function isNotifyConfigured(): boolean {
-  return Boolean(process.env.NOTIFY_WEBHOOK);
+  return Boolean(process.env.NOTIFY_WEBHOOK || process.env.WIN_NOTIFY_EMAIL);
 }
 
-export async function notify({ title, text }: Notification): Promise<boolean> {
+export async function notify(notification: Notification, gmail?: GmailClient): Promise<boolean> {
+  const results = await Promise.all([notifyWebhook(notification), notifyEmail(notification, gmail)]);
+  return results.some(Boolean);
+}
+
+async function notifyWebhook({ title, text }: Notification): Promise<boolean> {
   const webhook = process.env.NOTIFY_WEBHOOK;
   if (!webhook) return false;
 
@@ -58,6 +72,12 @@ export async function notify({ title, text }: Notification): Promise<boolean> {
     console.error("Notification webhook failed:", err instanceof Error ? err.message : err);
     return false;
   }
+}
+
+async function notifyEmail({ title, text }: Notification, gmail?: GmailClient): Promise<boolean> {
+  const to = process.env.WIN_NOTIFY_EMAIL;
+  if (!to || !gmail) return false;
+  return sendMail(gmail, to, title, text);
 }
 
 function safeHostname(url: string): string {

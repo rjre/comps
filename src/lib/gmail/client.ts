@@ -8,18 +8,22 @@ import { google } from "googleapis";
  * its INBOX label, which readonly structurally cannot do — so this is the
  * narrowest scope that supports the job.
  *
- * What `modify` grants that readonly didn't: changing labels (which is how
- * archiving works), and marking read. What it still does NOT grant:
- * sending mail, and permanently deleting it (`gmail.send` and
- * `mail.google.com` respectively). This code additionally never trashes
- * anything, never marks anything read, and never replies — the only
- * mailbox mutation anywhere in it is removing the INBOX label.
+ * What `modify` grants: changing labels (which is how archiving works),
+ * and marking read. `gmail.send` is added alongside it so a win
+ * notification can be emailed from this same account — still not
+ * permanent deletion (`mail.google.com`). This code additionally never
+ * trashes anything, never marks anything read, and never replies to a
+ * message — the only mailbox mutation anywhere in it is removing the
+ * INBOX label; sending is a new outbound message, never a reply.
  *
  * Changing this constant invalidates any existing refresh token: the token
  * carries the scopes it was granted with, so `npm run gmail:auth` has to be
  * run again after a change here.
  */
-export const GMAIL_SCOPES = ["https://www.googleapis.com/auth/gmail.modify"];
+export const GMAIL_SCOPES = [
+  "https://www.googleapis.com/auth/gmail.modify",
+  "https://www.googleapis.com/auth/gmail.send",
+];
 
 export function isGmailConfigured(): boolean {
   return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REFRESH_TOKEN);

@@ -74,7 +74,7 @@ export async function processMailbox(): Promise<{ wins: number; leads: number; a
       if (category === "WIN") {
         wins++;
         await recordWin(message);
-        heldReason = await handleWin(message);
+        heldReason = await handleWin(message, gmail);
       } else if (category === "LEADS") {
         leads++;
         linksRegistered = await registerLeads(links, message.subject);
@@ -175,15 +175,18 @@ async function recordWin(message: ParsedMessage): Promise<void> {
 }
 
 /** Returns null when the win was notified (so it can be archived), or the reason it's being held. */
-async function handleWin(message: ParsedMessage): Promise<string | null> {
+async function handleWin(message: ParsedMessage, gmail: GmailClient): Promise<string | null> {
   if (!isNotifyConfigured()) {
-    return "possible win, and no NOTIFY_WEBHOOK is configured to tell anyone — left in the inbox on purpose";
+    return "possible win, and neither NOTIFY_WEBHOOK nor WIN_NOTIFY_EMAIL is configured to tell anyone — left in the inbox on purpose";
   }
-  const sent = await notify({
-    title: "Possible competition win",
-    text: `${message.subject}\n\nFrom: ${message.from}\nReceived: ${message.receivedAt.toISOString()}\n\n${message.snippet}`,
-  });
-  if (!sent) return "possible win, but the notification webhook failed — left in the inbox until someone is told";
+  const sent = await notify(
+    {
+      title: "Possible competition win",
+      text: `${message.subject}\n\nFrom: ${message.from}\nReceived: ${message.receivedAt.toISOString()}\n\n${message.snippet}`,
+    },
+    gmail,
+  );
+  if (!sent) return "possible win, but every configured notification channel failed — left in the inbox until someone is told";
 
   await prisma.potentialWin.update({
     where: { gmailMessageId: message.id },
