@@ -8,24 +8,15 @@ import { runPrune } from "@/lib/maintenance/prune";
 import { processMailbox } from "@/lib/gmail/processMailbox";
 import { isGmailConfigured } from "@/lib/gmail/client";
 import { msUntilNextHour } from "@/lib/scheduler/dailyAt";
-
-const minutes = (name: string, fallback: number) => Number(process.env[name] ?? fallback) * 60_000;
-
-const FEED_DISCOVERY_INTERVAL_MS = minutes("DISCOVERY_INTERVAL_MINUTES", 30);
-const PLATFORM_DISCOVERY_INTERVAL_MS = minutes("PLATFORM_DISCOVERY_INTERVAL_MINUTES", 60);
-const ENTRY_INTERVAL_MS = minutes("ENTRY_INTERVAL_MINUTES", 10);
-const NEWSLETTER_INTERVAL_MS = minutes("NEWSLETTER_INTERVAL_MINUTES", 180);
-const MAIL_SCAN_INTERVAL_MS = minutes("MAIL_SCAN_INTERVAL_MINUTES", 60);
-const PRUNE_INTERVAL_MS = minutes("PRUNE_INTERVAL_MINUTES", 360);
-
-/**
- * Pin the entries loop to a specific local hour (0-23) instead of a
- * simple "every N minutes" interval — set ENTRY_RUN_HOUR to land it in a
- * quiet window (e.g. overnight) rather than whatever clock time it drifts
- * to from ENTRY_INTERVAL_MINUTES and however long each pass happens to
- * run. Unset by default: most installs don't need this.
- */
-const ENTRY_RUN_HOUR = process.env.ENTRY_RUN_HOUR !== undefined ? Number(process.env.ENTRY_RUN_HOUR) : undefined;
+import {
+  FEED_DISCOVERY_INTERVAL_MS,
+  PLATFORM_DISCOVERY_INTERVAL_MS,
+  ENTRY_INTERVAL_MS,
+  ENTRY_RUN_HOUR,
+  NEWSLETTER_INTERVAL_MS,
+  MAIL_SCAN_INTERVAL_MS,
+  PRUNE_INTERVAL_MS,
+} from "@/lib/scheduler/intervals";
 
 /**
  * Single long-running process meant to be the whole app on a Pi: no
