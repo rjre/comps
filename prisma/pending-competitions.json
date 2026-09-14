@@ -374,5 +374,45 @@
     "closesAt": "2026-12-31T23:59:00.000Z",
     "maxEntries": 1,
     "notes": "Official Best Days Out Cornwall (bestdaysoutcornwall.co.uk), run by the Cornwall Association of Tourist Attractions — a genuine regional tourism consortium (company no. 12469987), same kind of organisation as the already-tracked devons-top-attractions and north-norfolk-attractions. No purchase necessary (T&Cs clause 3: 'There is no entry fee and no purchase necessary to enter this competition'). Prize: a Golden Ticket giving four people free entry to 30+ Cornwall attractions for one year from March 2027. Closes 31 Dec 2026 (long runway); winner drawn 3 Jan 2027. Simple Elementor Forms name/email/county form, verified directly via curl (form_id 188d3752 — the page also hosts an unrelated second, email-only newsletter form further down, deliberately not targeted). Site runs the 'Simple Cloudflare Turnstile' WordPress plugin, which injects a Turnstile widget after every Elementor form ('appearance: always' per its own embedded config) — not visible in static HTML since it's added client-side, so this is a submit-time widget in the same category as park-holidays-win-a-holiday-home's invisible Turnstile, not a page-load-level block; the adapter waits for its response token to populate and only fails loudly if an actual challenge iframe renders. This sandbox's Playwright couldn't reach this domain at all (net::ERR_CONNECTION_RESET through this environment's mandatory egress proxy — the same artifact already documented on c2c/devonsTopAttractions/parkholidays.com in earlier commits, confirmed general this run: several other unrelated domains hit the identical error while curl worked fine on all of them), so the Turnstile behaviour and the two forms' relative order are verified from curl'd static HTML only — worth a human's eyes on the first live run."
+  },
+  {
+    "name": "Woman's Own Magazine — Win an Apple iPad Mini (Bad Apples)",
+    "url": "https://comps.womansownmagazine.co.uk/competition/an_apple_ipad_mini_with_new_film_bad_apples_network/123008.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-09T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New sibling DMRI (Future PLC) daily prize draw domain not yet tracked by this project: Woman's Own Magazine (comps.womansownmagazine.co.uk), found this run via competitions-whale.co.uk's per-website competition listing (used only as a lead/answer source, same role already established for the Marie Claire entries in this file — entry itself happens on Woman's Own's own domain). Shared dmri-comps adapter, no code changes needed beyond a new TRIVIA_ANSWERS entry. No purchase necessary, real registered UK publisher (Future PLC). Prize: an Apple iPad Mini 2024 Wifi 128GB, tied to the cinema release of the film Bad Apples (in cinemas from 18 Sept 2026). Page states 'This competition ends on 09/10/2026' (converted to 22:59 UTC, BST in effect on that date, same convention as this file's other DMRI entries). Trivia answer ('Saoirse Ronan') independently verified directly from the competition's own page copy ('Starring Academy Award nominee Saoirse Ronan') — a real, checkable fact (she is a genuine Academy Award nominee and the film's lead), not just the aggregator's word. maxEntries set high (30) for the same recurring-daily-draw reason documented in the dmri-comps adapter file."
+  },
+  {
+    "name": "Woman's Own Magazine — Win 4 Tickets to The Ideal Christmas Show",
+    "url": "https://comps.womansownmagazine.co.uk/competition/_tickets_to_the_ideal_christmas_show_network/122848.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-08T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on the same new comps.womansownmagazine.co.uk domain as the Bad Apples iPad Mini entry above, same shared dmri-comps adapter. No purchase necessary. Prize: 4 tickets each for 6 winners to The Ideal Christmas Show, Olympia London. Page states 'This competition ends on 08/10/2026' (22:59 UTC, same BST convention as this file's other entries). Trivia answer ('26-29 November') independently verified directly from the competition's own page copy ('Returning to Olympia London from 26–29 November, The Ideal Christmas Show is bigger, brighter, and more magical than ever') — the actual on-form question wording couldn't be confirmed without logging into a real DMRI account (same limitation already documented for most of this adapter's other whale-sourced answers), but the date itself is stated in the page's own copy, not guessed."
+  },
+  {
+    "name": "Woman's Own Magazine — Win 4 Tickets to The Cake & Bake Show",
+    "url": "https://comps.womansownmagazine.co.uk/competition/_tickets_to_the_cake__bake_show__network/122887.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-09T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on the same new comps.womansownmagazine.co.uk domain, same shared dmri-comps adapter. No purchase necessary. Prize: 4 tickets each for 6 winners to The Cake & Bake Show, Olympia London (26-29 Nov 2026). Page states 'This competition ends on 09/10/2026' (22:59 UTC). Trivia answer ('Home Bake Kitchen Stage') independently verified directly from the competition's own page copy ('discover recipes and clever baking and decorating techniques at the Home Bake Kitchen Stage') — not just the aggregator's paraphrase."
+  },
+  {
+    "name": "Woman Magazine — Win a Pet-Friendly Holiday (Neutradol)",
+    "url": "https://comps.womanmagazine.co.uk/competition/a_petfriendly_holiday_womanmagazine/122833.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-09T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New sibling DMRI (Future PLC) prize draw on comps.womanmagazine.co.uk — a genuinely separate domain from Woman's Own Magazine above and from Woman's Weekly's existing competitions.womansweekly.com entries, all sharing the same platform. No purchase necessary. Prize: a 4-night dog-friendly B&B stay for two (+ up to two dogs) at Woolley Grange, Wiltshire, sponsored by Neutradol. Page confirms directly 'This competition ends on 09/10/2026' (22:59 UTC). Trivia question ('Which of the following is NOT a breed of dog?') and its answer ('Lykoi') come from competitions-whale.co.uk (lead/answer-source only, same role as this adapter's other whale-sourced entries) and are NOT independently confirmable against this page's own copy (the real on-form question only renders after logging into a DMRI account) — but Lykoi is verifiable general knowledge (a real cat breed, the 'werewolf cat'), so this is a hand-researched fact rather than a guess, consistent with this project's quiz-answer rule."
+  },
+  {
+    "name": "What's On TV — Win an Apple iPad Mini (Bad Apples)",
+    "url": "https://comps.whatsontv.co.uk/competition/an_apple_ipad_mini_with_new_film_bad_apples_network/123005.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-09T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Same Apple iPad Mini / Bad Apples content as the Woman's Own Magazine entry above, confirmed running concurrently on What's On TV's own sibling DMRI domain (comps.whatsontv.co.uk) — identical copy and 'This competition ends on 09/10/2026' date fetched directly from that domain. A genuinely separate prize draw with its own independent winner pool (same 'concurrent but separate' pattern already documented in the dmri-comps adapter's own file-level docblock), not a duplicate entry into the Woman's Own one. What's On TV was already tracked in this project for its newsletter (future-plc-newsletter, whattowatch.com) but this is its first tracked competition. No purchase necessary. Trivia answer ('Saoirse Ronan') independently verified the same way as the Woman's Own entry above."
   }
 ]

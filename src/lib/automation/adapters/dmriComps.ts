@@ -4,9 +4,10 @@ import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types"
 /**
  * DMRI reader-competitions club sites — a white-label platform Future PLC
  * uses across several of its own magazine brands (confirmed directly:
- * comps.marieclaire.co.uk, comps.womanmagazine.co.uk and
- * comps.whatsontv.co.uk all run the identical UI/flow, sometimes even the
- * same individual competition "concurrently" across sites — but each
+ * comps.marieclaire.co.uk, comps.womanmagazine.co.uk,
+ * comps.whatsontv.co.uk and (added this run) comps.womansownmagazine.co.uk
+ * all run the identical UI/flow, sometimes even the same individual
+ * competition "concurrently" across sites — but each
  * domain has its own separate account database, a real login on one
  * doesn't carry over to another, confirmed directly). This adapter is
  * written generically against that shared platform (deriving the site's
@@ -148,6 +149,35 @@ const TRIVIA_ANSWERS: Record<string, string> = {
     "Carlotta Gagna",
   "https://comps.marieclaire.co.uk/competition/a_stellar_trip_with_spring_hotels_to_starmus_viii__marieclaire/123002.php":
     "Brian May",
+  // Found this run via competitions-whale.co.uk's per-website listings
+  // (used the same lead/answer-source-only role as above), surfacing two
+  // new sibling DMRI domains this project hadn't tracked a competition on
+  // before: Woman's Own Magazine and Woman Magazine (comps.marieclaire.co.uk
+  // and comps.womanmagazine.co.uk's "The Original Tour" entry were already
+  // the only other non-Marie-Claire domains here). "An Apple iPad Mini"
+  // is also confirmed running "concurrently" (same content, independent
+  // winners per site per the existing docblock note above) on What's On TV
+  // — see that entry lower down.
+  "https://comps.womansownmagazine.co.uk/competition/an_apple_ipad_mini_with_new_film_bad_apples_network/123008.php":
+    "Saoirse Ronan", // independently verified: Bad Apples' own page copy states "Starring Academy Award nominee Saoirse Ronan" — a real, checkable fact, not just the aggregator's word
+  "https://comps.womansownmagazine.co.uk/competition/_tickets_to_the_ideal_christmas_show_network/122848.php":
+    "26-29 November", // independently verified from the competition's own copy: "Returning to Olympia London from 26–29 November, The Ideal Christmas Show..."
+  "https://comps.womansownmagazine.co.uk/competition/_tickets_to_the_cake__bake_show__network/122887.php":
+    "Home Bake Kitchen Stage", // independently verified from the competition's own copy: "...discover recipes and clever baking and decorating techniques at the Home Bake Kitchen Stage..."
+  // Not independently cross-checked against this page's own copy (the
+  // actual trivia question only renders after logging into a real DMRI
+  // account, same limitation as most other whale-sourced answers above) —
+  // but Lykoi is externally verifiable general knowledge (a real cat breed,
+  // the "werewolf cat"), so "which of the following is NOT a dog breed"
+  // being answered "Lykoi" is a hand-researched fact, not a guess.
+  "https://comps.womanmagazine.co.uk/competition/a_petfriendly_holiday_womanmagazine/122833.php": "Lykoi",
+  // Same "An Apple iPad Mini" content/answer as the Woman's Own entry
+  // above, confirmed running concurrently on What's On TV's own sibling
+  // DMRI site (identical copy fetched directly from comps.whatsontv.co.uk,
+  // same "ends on 09/10/2026" date) — a genuinely separate draw with its
+  // own independent winner pool, not a duplicate entry into the same one.
+  "https://comps.whatsontv.co.uk/competition/an_apple_ipad_mini_with_new_film_bad_apples_network/123005.php":
+    "Saoirse Ronan",
 };
 
 /**
