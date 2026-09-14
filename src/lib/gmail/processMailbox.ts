@@ -178,7 +178,7 @@ async function recordWin(message: ParsedMessage): Promise<void> {
 /** Returns null when the win was notified (so it can be archived), or the reason it's being held. */
 async function handleWin(message: ParsedMessage, gmail: GmailClient): Promise<string | null> {
   if (!isNotifyConfigured()) {
-    return "possible win, and neither NOTIFY_WEBHOOK nor WIN_NOTIFY_EMAIL is configured to tell anyone — left in the inbox on purpose";
+    return "possible win, and WIN_NOTIFY_EMAIL isn't configured to tell anyone — left in the inbox on purpose";
   }
   const sent = await notify(
     {
@@ -187,7 +187,7 @@ async function handleWin(message: ParsedMessage, gmail: GmailClient): Promise<st
     },
     gmail,
   );
-  if (!sent) return "possible win, but every configured notification channel failed — left in the inbox until someone is told";
+  if (!sent) return "possible win, but the notification email failed to send — left in the inbox until someone is told";
 
   await prisma.potentialWin.update({
     where: { gmailMessageId: message.id },
