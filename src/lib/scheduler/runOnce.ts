@@ -8,9 +8,20 @@ import { createRunLogger } from "@/lib/logger";
 import { PageIssueCollector } from "@/lib/automation/pageNoise";
 import { decideSchedule } from "@/lib/scheduler/schedule";
 import { acquireLock } from "@/lib/scheduler/lock";
+import { withHostThrottle } from "@/lib/net/politeness";
 import type { EntryStatus } from "@/lib/status";
 
 const SCREENSHOT_DIR = path.join(process.cwd(), "data", "screenshots");
+
+/**
+ * How many competitions to attempt at once. Real parallelism only happens
+ * across *different* hosts — withHostThrottle serializes same-host
+ * attempts regardless of this number, which is what makes raising it safe:
+ * it speeds up a backlog spread across many sponsor domains (exactly what
+ * a batch of newsletter-sourced generic-adapter competitions looks like)
+ * without ever opening two sessions on the same site at once.
+ */
+const ENTRY_CONCURRENCY = Math.max(1, Number(process.env.ENTRY_CONCURRENCY ?? 2));
 
 /**
  * Hard ceiling on one competition's adapter. Nothing here is worth more
@@ -88,8 +99,8 @@ export async function runEntryPass() {
   try {
     await log.info(`Run started${dryRun ? " (dry run — no entries will be submitted)" : ""}`);
 
-    const profile = await prisma.profile.findFirst();
-    if (!profile) {
+    const profileRow = await prisma.profile.findFirst();
+    if (!profileRow) {
       await log.error("No profile configured yet — set one up at /profile first.");
       await prisma.run.update({
         where: { id: run.id },
@@ -97,6 +108,11 @@ export async function runEntryPass() {
       });
       return;
     }
+    // Re-bound as its own const so the non-null narrowing above is visible
+    // to attemptCompetition, a function declared below — TS doesn't carry
+    // flow-narrowing of an outer variable across a function boundary, only
+    // through a fresh binding like this one.
+    const profile = profileRow;
 
     const now = new Date();
     const tracked = await prisma.competition.findMany({
@@ -169,158 +185,175 @@ export async function runEntryPass() {
     await mkdir(SCREENSHOT_DIR, { recursive: true });
 
     let attempted = 0;
+    let cursor = 0;
+    let budgetWarned = false;
     const browser = await chromium.launch();
-    try {
-      for (const competition of due) {
-        if (Date.now() - startedAt > RUN_BUDGET_MS) {
-          await log.warn(
-            `Run budget of ${Math.round(RUN_BUDGET_MS / 60_000)} minutes reached — ` +
-              `${due.length - attempted} competition(s) left for the next pass, which will take them first.`,
-          );
-          break;
-        }
-        attempted += 1;
 
-        const adapter = getAdapter(competition.adapterKey);
-        if (!adapter) {
-          count("noAdapter");
-          await log.warn(`No adapter registered for "${competition.adapterKey}", skipping ${competition.name}`, competition.id);
-          continue;
-        }
-
-        await log.info(`Entering "${competition.name}" via adapter "${adapter.key}" (${competition.url})`, competition.id);
-        const page = await browser.newPage();
-
-        // Buffered rather than logged line-by-line — see pageNoise.ts.
-        const issues = new PageIssueCollector();
-        page.on("console", (msg) => {
-          if (msg.type() === "error") issues.record("console", msg.text());
-        });
-        page.on("pageerror", (err) => issues.record("pageerror", err.message));
-
-        const reportPageIssues = async () => {
-          const summary = issues.summary();
-          if (summary.length === 0) {
-            if (issues.noiseCount > 0) {
-              await log.info(`No page errors from the site itself (${issues.noiseCount} third-party ad/tracker errors ignored)`, competition.id);
-            }
-            return;
-          }
-          await log.warn(`Page errors during this attempt (${issues.noiseCount} third-party ones ignored):`, competition.id);
-          for (const line of summary) await log.warn(`  ${line}`, competition.id);
-        };
-
-        // JPEG, not PNG: a full-page shot of an ad-heavy competition page
-        // ran 1-4MB as PNG, and 281MB had accumulated on a Raspberry Pi's
-        // SD card. Quality 70 keeps form fields and error text perfectly
-        // legible at roughly a tenth of the size.
-        const captureScreenshot = async (reason: string) => {
-          const file = path.join(SCREENSHOT_DIR, `${run.id}_${competition.id}_${reason}.jpg`);
-          try {
-            await page.screenshot({ path: file, fullPage: true, type: "jpeg", quality: 70 });
-            await log.info(`Saved screenshot: ${file}`, competition.id);
-          } catch (shotErr) {
-            await log.warn(
-              `Could not capture screenshot: ${shotErr instanceof Error ? shotErr.message : String(shotErr)}`,
-              competition.id,
-            );
-          }
-        };
-
-        // Counted, real (non-dry) successes so far — the cap check itself
-        // lives in decideSchedule; this is only needed to know whether
-        // *this* success is the one that reaches it.
-        const alreadyEntered = competition.entries.filter((e) => e.status === "SUCCESS" && !e.run?.dryRun).length;
-
-        try {
-          const outcome = await withTimeout(
-            adapter.enterCompetition({
-              page,
-              competitionUrl: competition.url,
-              profile,
-              log,
-              dryRun,
-              previousOutcomes: competition.entries
-                .filter((e) => !e.run?.dryRun)
-                .sort((a, b) => b.attemptedAt.getTime() - a.attemptedAt.getTime())
-                .slice(0, 20)
-                .map((e) => ({ status: e.status as EntryStatus, message: e.message, attemptedAt: e.attemptedAt })),
-            }),
-            PER_COMPETITION_TIMEOUT_MS,
-          );
-          await log.info(`Landed on ${page.url()} ("${await page.title().catch(() => "")}") after adapter ran`, competition.id);
-          await prisma.entry.create({
-            data: {
-              competitionId: competition.id,
-              runId: run.id,
-              status: outcome.status,
-              message: "message" in outcome ? outcome.message : undefined,
-            },
-          });
-          if (outcome.status === "SUCCESS") {
-            count("entered");
-            await log.info(`Entered: ${competition.name}`, competition.id);
-            if (!dryRun) {
-              const credentialsUpdate =
-                "credentials" in outcome && outcome.credentials
-                  ? { credentials: JSON.stringify(outcome.credentials) }
-                  : {};
-              if ("credentials" in outcome && outcome.credentials) {
-                await log.info("Account credentials stored on the record, not logged", competition.id);
-              }
-              // A real success reaching the cap is the competition's final
-              // state — mark it ENTERED so it stops being re-queried.
-              if (alreadyEntered + 1 >= competition.maxEntries) {
-                await prisma.competition.update({
-                  where: { id: competition.id },
-                  data: { status: "ENTERED", ...credentialsUpdate },
-                });
-              } else if (Object.keys(credentialsUpdate).length > 0) {
-                await prisma.competition.update({ where: { id: competition.id }, data: credentialsUpdate });
-              }
-            }
-          } else {
-            count(outcome.status === "SKIPPED_ALREADY_ENTERED" ? "alreadyEntered" : "skipped");
-            await log.warn(`${outcome.status}: ${competition.name} — ${outcome.message ?? ""}`, competition.id);
-            await reportPageIssues();
-            // Screenshots are for states we can't otherwise explain. Both
-            // SKIPPED_* outcomes are ones the adapter understood and
-            // described in its own message ("already entered today's
-            // draw", "options were: X / Y / Z"), and both recur daily for
-            // the same competitions — so they'd generate a steady stream
-            // of near-identical images that add nothing to the log.
-            if (!outcome.status.startsWith("SKIPPED_")) await captureScreenshot(outcome.status.toLowerCase());
-            // A one-shot competition (maxEntries 1) whose adapter reports
-            // SKIPPED_ALREADY_ENTERED on a real run means the site itself
-            // is confirming its single entry cap was already reached by an
-            // earlier run — even if that earlier run's own Entry record
-            // never got marked SUCCESS (a confirmation-detection miss).
-            // Daily-draw adapters (maxEntries > 1) are unaffected: "already
-            // entered" there means "already entered today", and the entry
-            // interval handles the wait.
-            if (outcome.status === "SKIPPED_ALREADY_ENTERED" && !dryRun && competition.maxEntries === 1) {
-              await prisma.competition.update({ where: { id: competition.id }, data: { status: "ENTERED" } });
-              await log.info("Marking ENTERED — site confirms this one-shot competition's entry cap was already reached", competition.id);
-            }
-          }
-        } catch (err) {
-          count("failed");
-          const message =
-            err instanceof AdapterTimeout
-              ? `Timed out — ${err.message}`
-              : err instanceof Error
-                ? err.message
-                : String(err);
-          await prisma.entry.create({
-            data: { competitionId: competition.id, runId: run.id, status: "FAILED", message },
-          });
-          await log.error(`Failed: ${competition.name} — ${message}`, competition.id);
-          await reportPageIssues();
-          await captureScreenshot(err instanceof AdapterTimeout ? "timeout" : "exception");
-        } finally {
-          await page.close().catch(() => {});
-        }
+    async function attemptCompetition(competition: (typeof due)[number]) {
+      const adapter = getAdapter(competition.adapterKey);
+      if (!adapter) {
+        count("noAdapter");
+        await log.warn(`No adapter registered for "${competition.adapterKey}", skipping ${competition.name}`, competition.id);
+        return;
       }
+
+      await log.info(`Entering "${competition.name}" via adapter "${adapter.key}" (${competition.url})`, competition.id);
+      const page = await browser.newPage();
+
+      // Buffered rather than logged line-by-line — see pageNoise.ts.
+      const issues = new PageIssueCollector();
+      page.on("console", (msg) => {
+        if (msg.type() === "error") issues.record("console", msg.text());
+      });
+      page.on("pageerror", (err) => issues.record("pageerror", err.message));
+
+      const reportPageIssues = async () => {
+        const summary = issues.summary();
+        if (summary.length === 0) {
+          if (issues.noiseCount > 0) {
+            await log.info(`No page errors from the site itself (${issues.noiseCount} third-party ad/tracker errors ignored)`, competition.id);
+          }
+          return;
+        }
+        await log.warn(`Page errors during this attempt (${issues.noiseCount} third-party ones ignored):`, competition.id);
+        for (const line of summary) await log.warn(`  ${line}`, competition.id);
+      };
+
+      // JPEG, not PNG: a full-page shot of an ad-heavy competition page
+      // ran 1-4MB as PNG, and 281MB had accumulated on a Raspberry Pi's
+      // SD card. Quality 70 keeps form fields and error text perfectly
+      // legible at roughly a tenth of the size.
+      const captureScreenshot = async (reason: string) => {
+        const file = path.join(SCREENSHOT_DIR, `${run.id}_${competition.id}_${reason}.jpg`);
+        try {
+          await page.screenshot({ path: file, fullPage: true, type: "jpeg", quality: 70 });
+          await log.info(`Saved screenshot: ${file}`, competition.id);
+        } catch (shotErr) {
+          await log.warn(
+            `Could not capture screenshot: ${shotErr instanceof Error ? shotErr.message : String(shotErr)}`,
+            competition.id,
+          );
+        }
+      };
+
+      // Counted, real (non-dry) successes so far — the cap check itself
+      // lives in decideSchedule; this is only needed to know whether
+      // *this* success is the one that reaches it.
+      const alreadyEntered = competition.entries.filter((e) => e.status === "SUCCESS" && !e.run?.dryRun).length;
+
+      try {
+        const outcome = await withTimeout(
+          adapter.enterCompetition({
+            page,
+            competitionUrl: competition.url,
+            profile,
+            log,
+            dryRun,
+            previousOutcomes: competition.entries
+              .filter((e) => !e.run?.dryRun)
+              .sort((a, b) => b.attemptedAt.getTime() - a.attemptedAt.getTime())
+              .slice(0, 20)
+              .map((e) => ({ status: e.status as EntryStatus, message: e.message, attemptedAt: e.attemptedAt })),
+          }),
+          PER_COMPETITION_TIMEOUT_MS,
+        );
+        await log.info(`Landed on ${page.url()} ("${await page.title().catch(() => "")}") after adapter ran`, competition.id);
+        await prisma.entry.create({
+          data: {
+            competitionId: competition.id,
+            runId: run.id,
+            status: outcome.status,
+            message: "message" in outcome ? outcome.message : undefined,
+          },
+        });
+        if (outcome.status === "SUCCESS") {
+          count("entered");
+          await log.info(`Entered: ${competition.name}`, competition.id);
+          if (!dryRun) {
+            const credentialsUpdate =
+              "credentials" in outcome && outcome.credentials
+                ? { credentials: JSON.stringify(outcome.credentials) }
+                : {};
+            if ("credentials" in outcome && outcome.credentials) {
+              await log.info("Account credentials stored on the record, not logged", competition.id);
+            }
+            // A real success reaching the cap is the competition's final
+            // state — mark it ENTERED so it stops being re-queried.
+            if (alreadyEntered + 1 >= competition.maxEntries) {
+              await prisma.competition.update({
+                where: { id: competition.id },
+                data: { status: "ENTERED", ...credentialsUpdate },
+              });
+            } else if (Object.keys(credentialsUpdate).length > 0) {
+              await prisma.competition.update({ where: { id: competition.id }, data: credentialsUpdate });
+            }
+          }
+        } else {
+          count(outcome.status === "SKIPPED_ALREADY_ENTERED" ? "alreadyEntered" : "skipped");
+          await log.warn(`${outcome.status}: ${competition.name} — ${outcome.message ?? ""}`, competition.id);
+          await reportPageIssues();
+          // Screenshots are for states we can't otherwise explain. Both
+          // SKIPPED_* outcomes are ones the adapter understood and
+          // described in its own message ("already entered today's
+          // draw", "options were: X / Y / Z"), and both recur daily for
+          // the same competitions — so they'd generate a steady stream
+          // of near-identical images that add nothing to the log.
+          if (!outcome.status.startsWith("SKIPPED_")) await captureScreenshot(outcome.status.toLowerCase());
+          // A one-shot competition (maxEntries 1) whose adapter reports
+          // SKIPPED_ALREADY_ENTERED on a real run means the site itself
+          // is confirming its single entry cap was already reached by an
+          // earlier run — even if that earlier run's own Entry record
+          // never got marked SUCCESS (a confirmation-detection miss).
+          // Daily-draw adapters (maxEntries > 1) are unaffected: "already
+          // entered" there means "already entered today", and the entry
+          // interval handles the wait.
+          if (outcome.status === "SKIPPED_ALREADY_ENTERED" && !dryRun && competition.maxEntries === 1) {
+            await prisma.competition.update({ where: { id: competition.id }, data: { status: "ENTERED" } });
+            await log.info("Marking ENTERED — site confirms this one-shot competition's entry cap was already reached", competition.id);
+          }
+        }
+      } catch (err) {
+        count("failed");
+        const message =
+          err instanceof AdapterTimeout
+            ? `Timed out — ${err.message}`
+            : err instanceof Error
+              ? err.message
+              : String(err);
+        await prisma.entry.create({
+          data: { competitionId: competition.id, runId: run.id, status: "FAILED", message },
+        });
+        await log.error(`Failed: ${competition.name} — ${message}`, competition.id);
+        await reportPageIssues();
+        await captureScreenshot(err instanceof AdapterTimeout ? "timeout" : "exception");
+      } finally {
+        await page.close().catch(() => {});
+      }
+    }
+
+    try {
+      const workerCount = Math.max(1, Math.min(ENTRY_CONCURRENCY, due.length));
+      await Promise.all(
+        Array.from({ length: workerCount }, async () => {
+          for (;;) {
+            if (Date.now() - startedAt > RUN_BUDGET_MS) {
+              if (!budgetWarned) {
+                budgetWarned = true;
+                await log.warn(
+                  `Run budget of ${Math.round(RUN_BUDGET_MS / 60_000)} minutes reached — ` +
+                    `${due.length - attempted} competition(s) left for the next pass, which will take them first.`,
+                );
+              }
+              return;
+            }
+            const index = cursor++;
+            const competition = due[index];
+            if (!competition) return;
+            attempted += 1;
+            await withHostThrottle(competition.url, () => attemptCompetition(competition));
+          }
+        }),
+      );
     } finally {
       await browser.close();
     }

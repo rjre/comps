@@ -19,6 +19,47 @@ export async function politeDelay(url: string): Promise<void> {
   lastHitByHost.set(host, Date.now());
 }
 
+const hostQueues = new Map<string, Promise<unknown>>();
+
+/**
+ * Like politeDelay, but for a genuinely concurrent caller: politeDelay's
+ * read-then-sleep-then-set isn't atomic, so two concurrent calls for the
+ * same host could both read the same "last hit" and slip through
+ * together. This instead chains every call for a host onto the same
+ * promise, so they run one at a time with MIN_DELAY_MS between the end of
+ * one and the start of the next — not just spaced out, but never
+ * overlapping, which matters beyond politeness for something like the
+ * DMRI reader-comps sites: many competitions, one shared login, on one
+ * host, where two sessions in flight at once risks the site invalidating
+ * one out from under the other.
+ *
+ * A different host queues and runs independently, so this is where real
+ * concurrency (ENTRY_CONCURRENCY > 1) actually comes from.
+ */
+export function withHostThrottle<T>(url: string, fn: () => Promise<T>): Promise<T> {
+  const host = new URL(url).host;
+  const previous = hostQueues.get(host) ?? Promise.resolve();
+  const settled = previous.then(
+    () => {},
+    () => {},
+  );
+  const result = settled.then(async () => {
+    try {
+      return await fn();
+    } finally {
+      await new Promise((resolve) => setTimeout(resolve, MIN_DELAY_MS));
+    }
+  });
+  hostQueues.set(
+    host,
+    result.then(
+      () => {},
+      () => {},
+    ),
+  );
+  return result;
+}
+
 async function getRobotsDisallow(origin: string, userAgent?: string): Promise<string[]> {
   // Keyed by UA as well as origin: a site that serves different robots.txt
   // (or refuses it) per user agent must not have one agent's answer cached
