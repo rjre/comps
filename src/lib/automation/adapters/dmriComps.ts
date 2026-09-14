@@ -278,7 +278,7 @@ export function deriveAnswerFromCopy(
  * offers, both already handled by answerOffersAndOptin. Whichever
  * remaining radio group is largest is the quiz.
  */
-async function readQuiz(page: { evaluate: Function }): Promise<{ options: string[]; copy: string }> {
+async function readQuiz(page: { evaluate: Function }): Promise<{ options: string[]; copy: string; question: string }> {
   return (await page.evaluate(() => {
     const radios = Array.from(document.querySelectorAll<HTMLInputElement>('input[type="radio"]')).filter(
       (radio) => !/^optIn/i.test(radio.id || "") && !/^QB\[/.test(radio.name || ""),
@@ -295,13 +295,41 @@ async function readQuiz(page: { evaluate: Function }): Promise<{ options: string
       .map((radio) => document.querySelector(`label[for="${radio.id}"]`)?.textContent?.trim() ?? "")
       .filter((text) => text.length > 0);
 
+    // The question itself, read from the nearest text above the quiz
+    // radios (a <legend>, or whatever block element precedes the group).
+    // Nothing in the entry flow needs it — the derivation matches options
+    // against the copy and never looks at the question — but a decline
+    // that doesn't record what was actually being asked leaves no way to
+    // research the answer afterwards, and 158 of the 245 open daily draws
+    // are currently declined on exactly this. Recording it turns that
+    // backlog into a list someone (or a future answer source) can work
+    // through.
+    const first = largest[0] ?? null;
+    let question = "";
+    if (first) {
+      const legend = first.closest("fieldset")?.querySelector("legend");
+      if (legend) question = legend.textContent?.trim() ?? "";
+      if (!question) {
+        let node: Element | null = first.closest("div, p, li, fieldset, form") ?? first;
+        for (let hop = 0; hop < 4 && node && !question; hop++) {
+          let sibling = node.previousElementSibling;
+          while (sibling && !question) {
+            const text = (sibling.textContent ?? "").replace(/\s+/g, " ").trim();
+            if (/\?/.test(text) && text.length <= 300) question = text;
+            sibling = sibling.previousElementSibling;
+          }
+          node = node.parentElement;
+        }
+      }
+    }
+
     const clone = document.body.cloneNode(true) as HTMLElement;
     clone
       .querySelectorAll("script, style, noscript, label, nav, header, footer, select")
       .forEach((node) => node.remove());
     const copy = (clone.textContent ?? "").replace(/\s+/g, " ").trim();
-    return { options, copy };
-  })) as { options: string[]; copy: string };
+    return { options, copy, question: question.slice(0, 200) };
+  })) as { options: string[]; copy: string; question: string };
 }
 
 /** Answers the site has already told us are wrong for this competition, from earlier entry records. */
@@ -681,7 +709,7 @@ export const dmriCompsAdapter: CompetitionAdapter = {
 
     let answer = researchedAnswer;
     if (!answer) {
-      const { options, copy } = await readQuiz(page);
+      const { options, copy, question } = await readQuiz(page);
       if (options.length === 0) {
         await log.warn("No quiz options found on the entry form — page structure may have changed");
         return { status: "FAILED", message: "Quiz options not found on the entry form" };
@@ -694,11 +722,18 @@ export const dmriCompsAdapter: CompetitionAdapter = {
       if (derived.answer === null) {
         await log.warn(
           `No researched answer for this competition and could not derive one — ${derived.reason}. ` +
-            `Options offered: ${options.join(" / ")}`,
+            `Question: ${question || "(not found on the page)"} — options offered: ${options.join(" / ")}`,
         );
+        // The question goes in the Entry message, not only the run log:
+        // LogLine rows are pruned, Entry rows are kept forever, and this
+        // is the record someone researching a TRIVIA_ANSWERS entry for
+        // this competition actually needs.
         return {
           status: "SKIPPED_RULES",
-          message: `No verified answer available (${derived.reason}); options were: ${options.join(" / ")}`,
+          message:
+            `No verified answer available (${derived.reason})` +
+            `${question ? `; question was: ${question}` : ""}` +
+            `; options were: ${options.join(" / ")}`,
         };
       }
       answer = derived.answer;

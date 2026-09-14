@@ -8,6 +8,8 @@ describe("decideSchedule", () => {
   const now = new Date("2026-08-28T12:00:00Z");
   const ago = (h: number) => new Date(now.getTime() - h * 3600_000);
   const E = (status: any, h: number, dryRun = false) => ({ status, attemptedAt: ago(h), dryRun });
+  /** A decline carrying its reason — what the identical-decline give-up keys on. */
+  const D = (message: string, h: number) => ({ status: "SKIPPED_RULES" as const, message, attemptedAt: ago(h), dryRun: false });
   const daily = { maxEntries: 30, entryIntervalHours: null, closesAt: new Date("2026-09-20T00:00:00Z") };
   const once = { maxEntries: 1, entryIntervalHours: null, closesAt: null };
 
@@ -67,5 +69,32 @@ describe("decideSchedule", () => {
   });
   it("explicit 6h interval, entered 7h ago", () => {
     expect(decideSchedule({ ...daily, entryIntervalHours: 6 }, [E("SUCCESS", 7)], now).action).toBe("ENTER");
+  });
+
+  // A decline the site keeps restating verbatim is never going to become
+  // an entry, and each recheck costs a full login round-trip — see
+  // GIVE_UP_AFTER_IDENTICAL_DECLINES.
+  it("gives up after 5 identical declines", () => {
+    const history = [0, 1, 2, 3, 4].map((i) => D("CAPTCHA present", 24 * i + 1));
+    expect(decideSchedule(daily, history, now).action).toBe("GIVE_UP");
+  });
+  it("keeps rechecking while there are only 4 identical declines", () => {
+    const history = [0, 1, 2, 3].map((i) => D("CAPTCHA present", 24 * i + 25));
+    expect(decideSchedule(daily, history, now).action).toBe("ENTER");
+  });
+  it("a decline for a different reason resets the run", () => {
+    const history = [
+      D("No verified answer available (options changed)", 25),
+      ...[1, 2, 3, 4].map((i) => D("CAPTCHA present", 24 * i + 25)),
+    ];
+    expect(decideSchedule(daily, history, now).action).toBe("ENTER");
+  });
+  it("a success in between resets the run", () => {
+    const history = [
+      ...[0, 1].map((i) => D("CAPTCHA present", 24 * i + 25)),
+      E("SUCCESS", 24 * 2 + 25),
+      ...[3, 4, 5].map((i) => D("CAPTCHA present", 24 * i + 25)),
+    ];
+    expect(decideSchedule(daily, history, now).action).toBe("ENTER");
   });
 });

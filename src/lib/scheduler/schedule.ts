@@ -35,6 +35,28 @@ const BACKOFF_HOURS = [1, 2, 4, 8, 16, 24];
 export const GIVE_UP_AFTER_CONSECUTIVE_FAILURES = 12;
 
 /**
+ * After this many consecutive declines giving the *identical* reason, stop
+ * rechecking and mark the competition FAILED.
+ *
+ * SKIPPED_RULES was treated as "standing condition, recheck daily" with no
+ * end to it, and that turned out to be the single largest consumer of the
+ * entry budget: measured over three days, 127 competitions had produced
+ * 1,107 attempts whose reason (a CAPTCHA, an anti-bot page, a login wall,
+ * an ended Gleam campaign) can never change, and 158 DMRI daily draws were
+ * each paying a full login round-trip every day only to re-derive the same
+ * "no verified answer available". None of that can ever become an entry,
+ * and all of it crowds out draws that would.
+ *
+ * Matched on the reason being *identical*, not merely on the status: a
+ * decline for a new reason (the page changed, the quiz is now different)
+ * resets the count and gets its own fresh run of attempts, so this only
+ * ever gives up on a conclusion the site has restated verbatim for days.
+ * FAILED is recoverable — set the row back to PENDING once whatever
+ * blocked it (a researched quiz answer, a new adapter) is in place.
+ */
+export const GIVE_UP_AFTER_IDENTICAL_DECLINES = 5;
+
+/**
  * How long to wait after an adapter declines to enter (SKIPPED_RULES) —
  * an unknown quiz answer, a rule the profile doesn't satisfy. These are
  * standing conditions rather than transient faults, so re-checking daily
@@ -54,6 +76,8 @@ export const DEFAULT_REPEATABLE_INTERVAL_HOURS = 24;
 export interface EntryHistoryItem {
   status: EntryStatus;
   attemptedAt: Date;
+  /** The adapter's own reason, used to spot a decline the site keeps restating verbatim. */
+  message?: string | null;
   /** Dry-run attempts are excluded by the caller; kept explicit so that stays visible here. */
   dryRun: boolean;
 }
@@ -138,6 +162,23 @@ export function decideSchedule(
       action: "GIVE_UP",
       reason: `${consecutiveFailures} consecutive failures with no success in between`,
     };
+  }
+
+  // The same run, for declines the adapter keeps reaching identically —
+  // see GIVE_UP_AFTER_IDENTICAL_DECLINES.
+  if (real[0]?.status === "SKIPPED_RULES") {
+    const reason = real[0].message ?? "";
+    let identicalDeclines = 0;
+    for (const entry of real) {
+      if (entry.status !== "SKIPPED_RULES" || (entry.message ?? "") !== reason) break;
+      identicalDeclines += 1;
+    }
+    if (identicalDeclines >= GIVE_UP_AFTER_IDENTICAL_DECLINES) {
+      return {
+        action: "GIVE_UP",
+        reason: `declined ${identicalDeclines} times running for the same unchanging reason: ${reason}`,
+      };
+    }
   }
 
   // Two independent waits, whichever lands later wins: a failure part-way

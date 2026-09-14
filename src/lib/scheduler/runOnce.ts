@@ -48,6 +48,23 @@ const RUN_BUDGET_MS = Number(process.env.RUN_BUDGET_MS ?? 40 * 60_000);
 
 class AdapterTimeout extends Error {}
 
+/**
+ * Ordering tier for a competition, lowest first:
+ *
+ *   0 — has produced a real entry before, so it demonstrably works
+ *   1 — never attempted, so its yield is still unknown and worth finding out
+ *   2 — attempted before, never once succeeded
+ *
+ * Tier 2 isn't abandoned — it still gets whatever budget tiers 0 and 1
+ * leave, and schedule.ts retires its members on their own terms (backoff,
+ * consecutive failures, repeated identical declines). It just stops
+ * outbidding a working daily draw for the same minute of browser time.
+ */
+function yieldTier(entries: { status: string; run: { dryRun: boolean } | null }[]): number {
+  if (entries.some((e) => e.status === "SUCCESS" && !e.run?.dryRun)) return 0;
+  return entries.length === 0 ? 1 : 2;
+}
+
 /** Most recent attempt on a competition, or 0 for one never attempted (so those sort first). */
 function lastAttemptTime(entries: { attemptedAt: Date }[]): number {
   return entries.reduce((latest, e) => Math.max(latest, e.attemptedAt.getTime()), 0);
@@ -128,6 +145,7 @@ export async function runEntryPass() {
       const history = competition.entries.map((e) => ({
         status: e.status as EntryStatus,
         attemptedAt: e.attemptedAt,
+        message: e.message,
         dryRun: e.run?.dryRun ?? false,
       }));
       const decision = decideSchedule(competition, history, now);
@@ -166,12 +184,21 @@ export async function runEntryPass() {
       }
     }
 
-    // Least-recently-attempted first. Once discovery started finding
-    // competitions in bulk (57 on its first pass), a pass can no longer
-    // get through everything that's due inside its budget — and in DB
-    // insertion order that would mean the same head of the list is
-    // entered every time while the tail is never reached at all.
-    due.sort((a, b) => lastAttemptTime(a.entries) - lastAttemptTime(b.entries));
+    // By yield first, then least-recently-attempted within each tier.
+    //
+    // There is always more due than fits the budget, so this ordering *is*
+    // the hit rate: whatever sorts last is simply not entered today, and
+    // for a daily draw a day not entered is an entry permanently lost.
+    // Recency alone shared the budget out evenly between competitions that
+    // reliably produce entries and ones that never have — measured over
+    // three days, competitions that had never once succeeded took 2,444 of
+    // the 3,279 attempts and returned nothing at all, while the draws that
+    // do work went unentered for want of the time those consumed.
+    //
+    // Within a tier it stays least-recently-attempted, which is what keeps
+    // a partial pass making progress round the whole tier rather than
+    // re-entering its head every time.
+    due.sort((a, b) => yieldTier(a.entries) - yieldTier(b.entries) || lastAttemptTime(a.entries) - lastAttemptTime(b.entries));
 
     await prisma.run.update({ where: { id: run.id }, data: { candidateCount: due.length } });
 
