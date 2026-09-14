@@ -57,6 +57,16 @@ const SEED_ORIGINS = [
   "https://competitions.amateurgardening.com",
   "https://competitions.220triathlon.com",
   "https://competitions.amateurphotographer.com",
+  // Found by listing every distinct host behind a `/competition/<slug>/<id>.php`
+  // link across competitions-whale.co.uk's own listing pages and diffing that
+  // against this list — the same lead-source-only role that aggregator already
+  // plays for TRIVIA_ANSWERS, and a more reliable way to find siblings than
+  // guessing at brand subdomains. Both verified directly before being added:
+  // robots.txt allows everything (`Disallow:` with no value), the index 200s,
+  // and a sample competition page carries the platform's own `<h1>`,
+  // "This competition ends on DD/MM/YYYY", "Log In Now" and DMRI footer.
+  "https://competitions.idealhome.co.uk",
+  "https://competitions.worldsoccer.com",
 ];
 
 /**

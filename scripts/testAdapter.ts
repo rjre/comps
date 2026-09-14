@@ -39,6 +39,7 @@ async function main() {
       log: consoleLogger,
       dryRun: true,
       previousOutcomes: [],
+    peerOutcomes: [],
     });
     console.log("\nOUTCOME:", JSON.stringify(outcome, null, 2));
   } finally {

@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types";
+import type { EntryStatus } from "@/lib/status";
 
 /**
  * DMRI reader-competitions club sites — a white-label platform Future PLC
@@ -220,14 +221,86 @@ export function looksLikeDmriUrl(url: string): boolean {
   }
 }
 
+/** Does `needle` occur in `haystack` as a whole word/phrase rather than inside a longer one? */
+function occursAsWord(needle: string, haystack: string): boolean {
+  return new RegExp(`(^|[^a-z0-9])${escapeForRegex(needle)}([^a-z0-9]|$)`, "i").test(haystack);
+}
+
 /** Does `option` appear in the competition's own descriptive copy, as a whole word/phrase? */
 export function appearsInCopy(option: string, copy: string): boolean {
   const haystack = normaliseText(copy);
-  return answerVariants(option).some((variant) => {
-    const pattern = new RegExp(`(^|[^a-z0-9])${escapeForRegex(variant)}([^a-z0-9]|$)`, "i");
-    return pattern.test(haystack);
-  });
+  return answerVariants(option).some((variant) => occursAsWord(variant, haystack));
 }
+
+/**
+ * Words that carry no information about which option is which — matching
+ * on them would make every option look partly present.
+ */
+const OPTION_STOPWORDS = new Set([
+  "a", "an", "the", "and", "or", "of", "in", "on", "at", "to", "with", "for", "from", "by",
+  "its", "it", "is", "are", "was", "were", "be", "plus", "your", "you", "our", "we",
+]);
+
+/** An option's distinguishing words, normalised and de-duplicated. */
+function contentTokens(option: string): string[] {
+  const tokens = normaliseText(option)
+    .replace(/[^a-z0-9'\s-]/g, " ")
+    .split(/[\s-]+/)
+    .map((token) => token.replace(/^'+|'+$/g, ""))
+    .filter((token) => token.length > 0 && !OPTION_STOPWORDS.has(token));
+  return [...new Set(tokens)];
+}
+
+/** A token and the forms the copy might spell it in — "3" for "three", and back. */
+function tokenVariants(token: string): string[] {
+  const variants = new Set([token]);
+  const asWord = NUMBER_WORDS[token];
+  if (asWord) variants.add(asWord);
+  for (const [digit, word] of Object.entries(NUMBER_WORDS)) {
+    if (word === token) variants.add(digit);
+  }
+  return [...variants];
+}
+
+/**
+ * What fraction of an option's distinguishing words the copy actually
+ * contains, 0..1.
+ *
+ * Exact whole-phrase matching alone was declining draws whose answer is
+ * plainly in the copy, just not worded identically — confirmed live on a
+ * Neutradol draw offering "Fresh Pink, Original and Super Fresh" against
+ * copy reading "available from Neutradol in Original and Pink Fresh
+ * fragrances". The answer is there; the option list just reorders and
+ * extends it. Scoring the overlap instead of demanding the exact string
+ * reads that correctly (0.75 against 0.2 and 0.17 for the two wrong
+ * options) without loosening anything into a guess — see
+ * deriveAnswerFromCopy for the thresholds that keep it honest.
+ */
+export function copyOverlap(option: string, copy: string): number {
+  const tokens = contentTokens(option);
+  if (tokens.length === 0) return 0;
+  const haystack = normaliseText(copy);
+  const present = tokens.filter((token) => tokenVariants(token).some((v) => occursAsWord(v, haystack)));
+  return present.length / tokens.length;
+}
+
+/**
+ * How much of the winning option the copy must contain, and by how much it
+ * must beat the runner-up, before an overlap score counts as having
+ * settled the answer.
+ *
+ * Both are needed, and both are deliberately strict. On the Holiday Inn
+ * Oxford draw — options "The City of Dreaming Spires" (the true answer,
+ * general knowledge, absent from the page) against "The City of Seven
+ * Hills" and "The Emerald City" — the top score is "The Emerald City" on
+ * 0.5, purely because both it and the copy contain the word "city". The
+ * floor rejects it for being mostly absent, and the margin rejects it for
+ * being barely ahead of a rival. Either one alone would have submitted a
+ * wrong answer; together they decline, which is the correct outcome for a
+ * question the copy genuinely doesn't answer.
+ */
+export const OVERLAP_FLOOR = 0.6;
+export const OVERLAP_MARGIN = 0.3;
 
 /**
  * Answers a competition's quiz question from the competition page's own
@@ -253,17 +326,44 @@ export function deriveAnswerFromCopy(
   options: string[],
   copy: string,
   rejected: Set<string>,
-): { answer: string } | { answer: null; reason: string } {
+): { answer: string; how: string } | { answer: null; reason: string } {
   const usable = options.filter((option) => !rejected.has(option.trim().toLowerCase()));
   if (usable.length === 0) {
     return { answer: null, reason: "every offered option has already been rejected as incorrect by the site" };
   }
   const matches = usable.filter((option) => appearsInCopy(option, copy));
-  if (matches.length === 1) return { answer: matches[0]! };
-  if (matches.length === 0) {
-    return { answer: null, reason: `none of the options (${usable.join(" / ")}) appear in the competition's own copy` };
+  if (matches.length === 1) return { answer: matches[0]!, how: "it is the only option quoted in the copy" };
+  if (matches.length > 1) {
+    // Two options both quoted verbatim means the copy mentions both and
+    // the question is what separates them — which this doesn't read. Still
+    // a decline; the overlap score below would only be picking between two
+    // phrases the copy equally contains.
+    return { answer: null, reason: `the copy is ambiguous — ${matches.join(" and ")} all appear in it` };
   }
-  return { answer: null, reason: `the copy is ambiguous — ${matches.join(" and ")} all appear in it` };
+
+  // No option is quoted word-for-word. Fall back to which option the copy
+  // most nearly contains — see copyOverlap, OVERLAP_FLOOR, OVERLAP_MARGIN.
+  const scored = usable
+    .map((option) => ({ option, score: copyOverlap(option, copy) }))
+    .sort((a, b) => b.score - a.score);
+  const top = scored[0]!;
+  const runnerUp = scored[1];
+  const margin = runnerUp ? top.score - runnerUp.score : 1;
+  if (top.score >= OVERLAP_FLOOR && margin >= OVERLAP_MARGIN) {
+    return {
+      answer: top.option,
+      how:
+        `the copy contains ${Math.round(top.score * 100)}% of it` +
+        `${runnerUp ? `, against ${Math.round(runnerUp.score * 100)}% for the next closest option` : ""}`,
+    };
+  }
+  return {
+    answer: null,
+    reason:
+      `none of the options (${usable.join(" / ")}) appear in the competition's own copy` +
+      ` (closest was "${top.option}" at ${Math.round(top.score * 100)}%` +
+      `${runnerUp ? `, next ${Math.round(runnerUp.score * 100)}%` : ""})`,
+  };
 }
 
 /**
@@ -330,6 +430,73 @@ async function readQuiz(page: { evaluate: Function }): Promise<{ options: string
     const copy = (clone.textContent ?? "").replace(/\s+/g, " ").trim();
     return { options, copy, question: question.slice(0, 200) };
   })) as { options: string[]; copy: string; question: string };
+}
+
+/**
+ * A question's identity, for recognising the same competition running on a
+ * sibling site.
+ *
+ * The option set, normalised and sorted: sorted because sibling sites do
+ * not render the options in a fixed order, and normalised so a curly
+ * apostrophe or an "&" against an "and" doesn't make the same question
+ * look like two. Three identical free-text options occurring together by
+ * coincidence on two unrelated competitions isn't a real risk, and if it
+ * ever did happen the wrong answer would be rejected once and then
+ * excluded on both — the same self-correction that already covers a wrong
+ * derivation.
+ */
+export function questionKey(options: string[]): string {
+  return options
+    .map((option) => normaliseText(option))
+    .filter((option) => option.length > 0)
+    .sort()
+    .join(" / ");
+}
+
+/** How an outcome message records the answer it used, so a sibling site can read it back. */
+const ANSWER_NOTE = /\[answer "(.+?)" from options: (.+?)\]/;
+const REJECTED_NOTE = /^Answer "(.+?)" was rejected as incorrect \(options: (.+?)\)/;
+
+/** Renders the note the two patterns above parse. Kept next to them so the pair can't drift apart. */
+export function answerNote(answer: string, options: string[]): string {
+  return `[answer "${answer}" from options: ${options.join(" / ")}]`;
+}
+
+/**
+ * What sibling sites have already established about this same question:
+ * an answer one of them had confirmed correct, and every answer any of
+ * them has had rejected.
+ *
+ * A confirmed answer is only taken from a real SUCCESS — the site itself
+ * saying "your answer was correct" — never from another site merely
+ * having tried something.
+ */
+export function sharedAnswerFor(
+  options: string[],
+  peers: { status: EntryStatus; message: string | null }[],
+): { confirmed: string | null; rejected: Set<string> } {
+  const key = questionKey(options);
+  const rejected = new Set<string>();
+  let confirmed: string | null = null;
+
+  for (const peer of peers) {
+    const message = peer.message ?? "";
+    const wrong = REJECTED_NOTE.exec(message);
+    if (wrong && questionKey(wrong[2]!.split(" / ")) === key) {
+      rejected.add(wrong[1]!.trim().toLowerCase());
+      continue;
+    }
+    if (peer.status !== "SUCCESS") continue;
+    const right = ANSWER_NOTE.exec(message);
+    if (right && questionKey(right[2]!.split(" / ")) === key && !confirmed) {
+      confirmed = right[1]!;
+    }
+  }
+
+  // A sibling confirming an answer that another sibling later had rejected
+  // is contradictory; trust neither rather than submitting a known-bad one.
+  if (confirmed && rejected.has(confirmed.trim().toLowerCase())) confirmed = null;
+  return { confirmed, rejected };
 }
 
 /** Answers the site has already told us are wrong for this competition, from earlier entry records. */
@@ -525,18 +692,39 @@ async function clickThroughConsent(
   page: import("playwright").Page,
   log: AdapterContext["log"],
 ): Promise<void> {
-  try {
-    await locator.click({ timeout: 8000 });
-  } catch {
-    await dismissSourcepointConsent(page, log);
-    await locator.click();
+  // Three attempts, not two: the modal re-rendering once was already
+  // known, and a single dismiss-then-retry still left this the largest
+  // single cause of DMRI failures (87 of 835 attempts over three days,
+  // all of them "waiting for getByText('Log In Now')" timing out on a
+  // button that had resolved). Each retry is only paid on a page that
+  // would otherwise have failed outright.
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await locator.click({ timeout: 8000 });
+      return;
+    } catch (err) {
+      if (attempt === 3) throw err;
+      await dismissSourcepointConsent(page, log);
+      // The CMP can leave its own container in the DOM, still intercepting
+      // pointer events, after its Agree button has gone — remove what's
+      // left rather than dismiss-and-hope a third time. Same shape as
+      // generic.ts's overlay removal before its submit retry.
+      await page
+        .evaluate(() => {
+          document.querySelectorAll("[id^='sp_message_container'], .sp-message-open").forEach((el) => el.remove());
+          document.documentElement.style.overflow = "";
+          document.body.style.overflow = "";
+        })
+        .catch(() => {});
+      await page.waitForTimeout(500);
+    }
   }
 }
 
 export const dmriCompsAdapter: CompetitionAdapter = {
   key: "dmri-comps",
   siteName: "DMRI Reader Competitions (Future PLC)",
-  async enterCompetition({ page, competitionUrl, profile, log, dryRun, previousOutcomes }: AdapterContext): Promise<EntryOutcome> {
+  async enterCompetition({ page, competitionUrl, profile, log, dryRun, previousOutcomes, peerOutcomes }: AdapterContext): Promise<EntryOutcome> {
     // A hand-researched answer always wins. Where there isn't one — which
     // is every competition the discovery pass finds on its own — the
     // answer is derived from the competition page's own copy further down,
@@ -707,16 +895,29 @@ export const dmriCompsAdapter: CompetitionAdapter = {
       return { status: "SKIPPED_ALREADY_ENTERED", message: "Already entered today's draw" };
     }
 
+    // Read unconditionally, not only when an answer has to be derived: the
+    // option set is this question's identity across sibling sites, and a
+    // researched answer that goes on to be confirmed is exactly the answer
+    // most worth handing to the other ten sites running the same draw.
+    const { options, copy, question } = await readQuiz(page);
+
+    const shared = sharedAnswerFor(options, peerOutcomes);
     let answer = researchedAnswer;
+    if (!answer && shared.confirmed) {
+      answer = shared.confirmed;
+      await log.info(`Using answer "${answer}", already confirmed correct by a sibling site running this same question`);
+    }
     if (!answer) {
-      const { options, copy, question } = await readQuiz(page);
       if (options.length === 0) {
         await log.warn("No quiz options found on the entry form — page structure may have changed");
         return { status: "FAILED", message: "Quiz options not found on the entry form" };
       }
       const rejected = rejectedAnswers(previousOutcomes);
+      for (const wrong of shared.rejected) rejected.add(wrong);
       if (rejected.size > 0) {
-        await log.info(`Excluding ${rejected.size} option(s) this site already marked wrong: ${[...rejected].join(", ")}`);
+        await log.info(
+          `Excluding ${rejected.size} option(s) already marked wrong here or on a sibling site: ${[...rejected].join(", ")}`,
+        );
       }
       const derived = deriveAnswerFromCopy(options, copy, rejected);
       if (derived.answer === null) {
@@ -737,10 +938,15 @@ export const dmriCompsAdapter: CompetitionAdapter = {
         };
       }
       answer = derived.answer;
-      await log.info(`Derived quiz answer "${answer}" from the competition's own copy (options: ${options.join(" / ")})`);
+      await log.info(
+        `Derived quiz answer "${answer}" from the competition's own copy — ${derived.how} (options: ${options.join(" / ")})`,
+      );
     }
 
-    const answerLabel = page.locator("label").filter({ hasText: new RegExp(`^${answer}$`) }).first();
+    // Escaped: option labels really do contain regex metacharacters —
+    // "(RRP £50)", "2 – 5 December 2026 (Fri–Mon)" — and an unescaped one
+    // either throws or silently matches the wrong label.
+    const answerLabel = page.locator("label").filter({ hasText: new RegExp(`^${escapeForRegex(answer)}$`) }).first();
     if ((await answerLabel.count()) === 0) {
       await log.warn(`Expected answer option "${answer}" not found among the quiz choices — page may have changed`);
       return { status: "FAILED", message: "Expected quiz answer option not found" };
@@ -835,9 +1041,14 @@ export const dmriCompsAdapter: CompetitionAdapter = {
     if (await success.first().isVisible().catch(() => false)) {
       const text = (await success.first().innerText().catch(() => "")).trim();
       await log.info(`Confirmed: ${text}`);
+      // The answer note is what lets every sibling site running this same
+      // question skip straight to a known-correct answer — see
+      // sharedAnswerFor. Appended rather than replacing the site's own
+      // confirmation text, which is what a human reading /runs wants.
+      const note = options.length > 0 ? ` ${answerNote(answer, options)}` : "";
       return {
         status: "SUCCESS",
-        message: text || "Entered",
+        message: `${text || "Entered"}${note}`,
         credentials: { username: profile.email, password },
       };
     }
@@ -850,6 +1061,15 @@ export const dmriCompsAdapter: CompetitionAdapter = {
         ? `Quiz answer "${answer}" was marked wrong by the site — the researched answer may be stale`
         : `Derived quiz answer "${answer}" was marked wrong by the site — it won't be tried again for this competition`,
     );
-    return { status: "FAILED", message: `Answer "${answer}" was rejected as incorrect` };
+    // Format matters twice over: rejectedAnswers() parses it back out of
+    // this competition's own history on the next day's draw, and
+    // sharedAnswerFor() reads the options suffix to rule the same answer
+    // out on every sibling site running this question.
+    return {
+      status: "FAILED",
+      message:
+        `Answer "${answer}" was rejected as incorrect` +
+        `${options.length > 0 ? ` (options: ${options.join(" / ")})` : ""}`,
+    };
   },
 };

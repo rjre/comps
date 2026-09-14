@@ -86,6 +86,13 @@ export interface SchedulableCompetition {
   maxEntries: number;
   entryIntervalHours: number | null;
   closesAt: Date | null;
+  /**
+   * When this competition was deliberately given a fresh start. Declines
+   * at or before it don't count towards GIVE_UP_AFTER_IDENTICAL_DECLINES —
+   * see the schema comment. Optional so existing callers and tests that
+   * don't care need not supply it.
+   */
+  declinesResetAt?: Date | null;
 }
 
 export type ScheduleAction =
@@ -168,9 +175,17 @@ export function decideSchedule(
   // see GIVE_UP_AFTER_IDENTICAL_DECLINES.
   if (real[0]?.status === "SKIPPED_RULES") {
     const reason = real[0].message ?? "";
+    const resetAt = competition.declinesResetAt ?? null;
     let identicalDeclines = 0;
     for (const entry of real) {
       if (entry.status !== "SKIPPED_RULES" || (entry.message ?? "") !== reason) break;
+      // Declines from before a deliberate fresh start describe what an
+      // older version of the adapter concluded, not what this one would.
+      // Without this, resetting a row to PENDING after improving the
+      // adapter retired it again on the very next pass, before the new
+      // code had run even once — which is exactly what happened when the
+      // overlap quiz matcher landed.
+      if (resetAt && entry.attemptedAt <= resetAt) break;
       identicalDeclines += 1;
     }
     if (identicalDeclines >= GIVE_UP_AFTER_IDENTICAL_DECLINES) {

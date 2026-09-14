@@ -9,6 +9,7 @@ import { PageIssueCollector } from "@/lib/automation/pageNoise";
 import { decideSchedule } from "@/lib/scheduler/schedule";
 import { acquireLock } from "@/lib/scheduler/lock";
 import { withHostThrottle } from "@/lib/net/politeness";
+import { ENTRY_INTERVAL_MS } from "@/lib/scheduler/intervals";
 import type { EntryStatus } from "@/lib/status";
 
 const SCREENSHOT_DIR = path.join(process.cwd(), "data", "screenshots");
@@ -35,16 +36,22 @@ const PER_COMPETITION_TIMEOUT_MS = Number(process.env.COMP_TIMEOUT_MS ?? 6 * 60_
 
 /**
  * Ceiling on the whole pass, so a run always finishes well inside its own
- * (hourly) timer interval rather than overlapping the next one, leaving
- * room for the discovery, newsletter and prune stages of the same cycle.
+ * timer interval rather than overlapping the next one, leaving room for
+ * the discovery, newsletter and prune stages of the same cycle.
  *
- * There is normally more due than fits: ~60-90s per DMRI entry against 50+
- * open daily draws is over an hour of work. That's fine — competitions are
- * taken least-recently-attempted first, so a partial pass always makes
- * progress on whatever the last one didn't reach, and every daily draw
- * still comes round well inside its 24h window.
+ * Derived from the entry loop's actual cadence rather than fixed, because
+ * the two have to move together and didn't. This was a flat 40 minutes,
+ * sized for the old 10-minute loop where it was generous. Pinning entries
+ * to one run a day (ENTRY_RUN_HOUR) left that 40 minutes as the whole
+ * day's budget: ~75s per DMRI entry at ENTRY_CONCURRENCY=3 is about 95
+ * entries, against 245 open daily draws. The rest would simply not be
+ * entered, and a daily draw missed today is an entry that can't be made up
+ * tomorrow — the draw has moved on.
+ *
+ * Three quarters of the interval leaves the other stages their room; the
+ * 4h cap keeps a once-a-day pass from running into the morning.
  */
-const RUN_BUDGET_MS = Number(process.env.RUN_BUDGET_MS ?? 40 * 60_000);
+const RUN_BUDGET_MS = Number(process.env.RUN_BUDGET_MS ?? Math.min(ENTRY_INTERVAL_MS * 0.75, 4 * 60 * 60_000));
 
 class AdapterTimeout extends Error {}
 
@@ -202,6 +209,28 @@ export async function runEntryPass() {
 
     await prisma.run.update({ where: { id: run.id }, data: { candidateCount: due.length } });
 
+    // Outcomes that recorded which answer they used, across every
+    // competition — the raw material for AdapterContext.peerOutcomes. Only
+    // messages carrying an "(options: ...)" note can tell a peer anything,
+    // so the filter keeps this to a few hundred rows rather than the whole
+    // entry log, and it's read once per pass rather than per competition.
+    const answerBearing: Array<{
+      adapterKey: string;
+      competitionId: string;
+      status: string;
+      message: string | null;
+      attemptedAt: Date;
+    }> = await prisma.$queryRawUnsafe(
+      `select c.adapterKey, e.competitionId, e.status, e.message, e.attemptedAt
+         from Entry e
+         join Competition c on c.id = e.competitionId
+         left join Run r on r.id = e.runId
+        where e.message like '%options: %'
+          and coalesce(r.dryRun, 0) = 0
+        order by e.attemptedAt desc
+        limit 1000`,
+    );
+
     if (due.length === 0) {
       await log.info(`No competitions due this pass (${tracked.length} tracked).`);
       await prisma.run.update({ where: { id: run.id }, data: { status: "COMPLETED", finishedAt: new Date() } });
@@ -281,6 +310,13 @@ export async function runEntryPass() {
               .sort((a, b) => b.attemptedAt.getTime() - a.attemptedAt.getTime())
               .slice(0, 20)
               .map((e) => ({ status: e.status as EntryStatus, message: e.message, attemptedAt: e.attemptedAt })),
+            peerOutcomes: answerBearing
+              .filter((e) => e.adapterKey === competition.adapterKey && e.competitionId !== competition.id)
+              .map((e) => ({
+                status: e.status as EntryStatus,
+                message: e.message,
+                attemptedAt: new Date(e.attemptedAt),
+              })),
           }),
           PER_COMPETITION_TIMEOUT_MS,
         );

@@ -65,6 +65,14 @@ model Competition {
   entryIntervalHours Int?
   status      String   @default("PENDING") // PENDING | ENTERED | SKIPPED | FAILED | CLOSED
   notes       String?
+  // Set when a competition is deliberately given a fresh start — typically
+  // after an adapter change that means an earlier run of declines no
+  // longer reflects what this code would decide now. Declines recorded at
+  // or before this moment don't count towards the "declined N times for
+  // the same reason, give up" rule in src/lib/scheduler/schedule.ts, so a
+  // row put back to PENDING actually gets retried instead of being retired
+  // again on the strength of the evidence it was just rescued from.
+  declinesResetAt DateTime?
   // Set only for sites that require a real account to enter — JSON string,
   // e.g. {"username","password"}. Same pattern as NewsletterSource.credentials.
   credentials String?

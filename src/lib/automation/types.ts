@@ -27,6 +27,22 @@ export interface AdapterContext {
    * marked wrong on a previous day's draw. Empty on a first attempt.
    */
   previousOutcomes: PreviousOutcome[];
+  /**
+   * Recent outcomes recorded on OTHER competitions this same adapter
+   * handles, newest first.
+   *
+   * The DMRI platform runs one competition concurrently across its sibling
+   * magazine sites — the identical question and options, on up to eleven
+   * domains at once, each drawing its own winners. Establishing the answer
+   * on one of them therefore establishes it on all of them, and a wrong
+   * answer rejected by one site is wrong on all of them too. Without this
+   * every sibling re-derived the same question from scratch and, when the
+   * derivation couldn't settle it, declined all eleven.
+   *
+   * Empty for adapters whose sites have nothing in common; it's up to each
+   * adapter to decide what, if anything, a peer's outcome tells it.
+   */
+  peerOutcomes: PreviousOutcome[];
   /** Log to the current run — use liberally, this is what makes an adapter debuggable later. */
   log: RunLogger;
   /**

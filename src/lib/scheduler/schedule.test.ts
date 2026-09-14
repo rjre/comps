@@ -97,4 +97,16 @@ describe("decideSchedule", () => {
     ];
     expect(decideSchedule(daily, history, now).action).toBe("ENTER");
   });
+
+  it("declines from before a deliberate fresh start don't count towards giving up", () => {
+    const history = [0, 1, 2, 3, 4].map((i) => D("CAPTCHA present", 24 * i + 25));
+    const reset = { ...daily, declinesResetAt: ago(24) };
+    expect(decideSchedule(daily, history, now).action).toBe("GIVE_UP");
+    expect(decideSchedule(reset, history, now).action).toBe("ENTER");
+  });
+  it("declines recorded after the fresh start count again", () => {
+    const history = [0, 1, 2, 3, 4].map((i) => D("CAPTCHA present", 24 * i + 1));
+    const reset = { ...daily, declinesResetAt: ago(24 * 6) };
+    expect(decideSchedule(reset, history, now).action).toBe("GIVE_UP");
+  });
 });
