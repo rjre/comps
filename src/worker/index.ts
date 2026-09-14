@@ -7,6 +7,7 @@ import { runNewsletterPass } from "@/lib/scheduler/subscribeNewsletters";
 import { runPrune } from "@/lib/maintenance/prune";
 import { processMailbox } from "@/lib/gmail/processMailbox";
 import { isGmailConfigured } from "@/lib/gmail/client";
+import { msUntilNextHour } from "@/lib/scheduler/dailyAt";
 
 const minutes = (name: string, fallback: number) => Number(process.env[name] ?? fallback) * 60_000;
 
@@ -16,6 +17,15 @@ const ENTRY_INTERVAL_MS = minutes("ENTRY_INTERVAL_MINUTES", 10);
 const NEWSLETTER_INTERVAL_MS = minutes("NEWSLETTER_INTERVAL_MINUTES", 180);
 const MAIL_SCAN_INTERVAL_MS = minutes("MAIL_SCAN_INTERVAL_MINUTES", 60);
 const PRUNE_INTERVAL_MS = minutes("PRUNE_INTERVAL_MINUTES", 360);
+
+/**
+ * Pin the entries loop to a specific local hour (0-23) instead of a
+ * simple "every N minutes" interval — set ENTRY_RUN_HOUR to land it in a
+ * quiet window (e.g. overnight) rather than whatever clock time it drifts
+ * to from ENTRY_INTERVAL_MINUTES and however long each pass happens to
+ * run. Unset by default: most installs don't need this.
+ */
+const ENTRY_RUN_HOUR = process.env.ENTRY_RUN_HOUR !== undefined ? Number(process.env.ENTRY_RUN_HOUR) : undefined;
 
 /**
  * Single long-running process meant to be the whole app on a Pi: no
@@ -48,18 +58,39 @@ async function loop(name: string, intervalMs: number, fn: () => Promise<unknown>
   }
 }
 
+/**
+ * Like loop(), but waits for a specific local hour before each run instead
+ * of a fixed interval after the last one — so, unlike loop(), it does NOT
+ * run immediately on startup. A restart shouldn't count as "the quiet
+ * window arrived"; only the clock reaching that hour should.
+ */
+async function dailyLoop(name: string, hour: number, fn: () => Promise<unknown>) {
+  for (;;) {
+    await new Promise((resolve) => setTimeout(resolve, msUntilNextHour(hour)));
+    const startedAt = Date.now();
+    try {
+      await fn();
+    } catch (err) {
+      console.error(`[${name}] pass failed:`, err);
+    }
+    console.log(`[${name}] pass finished in ${Math.round((Date.now() - startedAt) / 1000)}s`);
+  }
+}
+
 async function main() {
   const loops = [
     loop("feed-discovery", FEED_DISCOVERY_INTERVAL_MS, runDiscovery),
     loop("platform-discovery", PLATFORM_DISCOVERY_INTERVAL_MS, runPlatformDiscovery),
-    loop("entries", ENTRY_INTERVAL_MS, runEntryPass),
+    ENTRY_RUN_HOUR !== undefined
+      ? dailyLoop("entries", ENTRY_RUN_HOUR, runEntryPass)
+      : loop("entries", ENTRY_INTERVAL_MS, runEntryPass),
     loop("newsletters", NEWSLETTER_INTERVAL_MS, runNewsletterPass),
     loop("prune", PRUNE_INTERVAL_MS, runPrune),
   ];
   const schedule = [
     `feed discovery ${FEED_DISCOVERY_INTERVAL_MS / 60_000}min`,
     `platform discovery ${PLATFORM_DISCOVERY_INTERVAL_MS / 60_000}min`,
-    `entries ${ENTRY_INTERVAL_MS / 60_000}min`,
+    ENTRY_RUN_HOUR !== undefined ? `entries daily at ${ENTRY_RUN_HOUR}:00` : `entries ${ENTRY_INTERVAL_MS / 60_000}min`,
     `newsletters ${NEWSLETTER_INTERVAL_MS / 60_000}min`,
     `prune ${PRUNE_INTERVAL_MS / 60_000}min`,
   ];
