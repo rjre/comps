@@ -148,6 +148,14 @@ export async function runEntryPass() {
     // settle the terminal states (closed / cap met / given up) as we go so
     // they stop being re-queried on every future pass.
     const due: typeof tracked = [];
+    // Counted, not logged line by line. One "Not due" line per waiting
+    // competition per pass came to 1.23 million rows — 90% of every log
+    // line ever written, and the whole reason the database reached 415MB
+    // in three weeks. Nobody reads 552 near-identical lines a pass; the
+    // count and the next time anything is due is the part worth keeping,
+    // and the decision itself is a pure function of entry history, so it
+    // can always be re-derived for a competition someone asks about.
+    let soonestDue: Date | null = null;
     for (const competition of tracked) {
       const history = competition.entries.map((e) => ({
         status: e.status as EntryStatus,
@@ -163,7 +171,7 @@ export async function runEntryPass() {
           break;
         case "WAIT":
           count("waiting");
-          await log.info(`Not due: ${competition.name} — ${decision.reason}`, competition.id);
+          if (decision.readyAt && (!soonestDue || decision.readyAt < soonestDue)) soonestDue = decision.readyAt;
           break;
         case "CLOSE":
           count("closed");
@@ -206,6 +214,13 @@ export async function runEntryPass() {
     // a partial pass making progress round the whole tier rather than
     // re-entering its head every time.
     due.sort((a, b) => yieldTier(a.entries) - yieldTier(b.entries) || lastAttemptTime(a.entries) - lastAttemptTime(b.entries));
+
+    if (tally.waiting) {
+      await log.info(
+        `${tally.waiting} competition(s) not due yet` +
+          `${soonestDue ? `, next at ${soonestDue.toISOString().slice(0, 16).replace("T", " ")}Z` : ""}.`,
+      );
+    }
 
     await prisma.run.update({ where: { id: run.id }, data: { candidateCount: due.length } });
 

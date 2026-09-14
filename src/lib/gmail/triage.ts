@@ -52,19 +52,33 @@ const NOT_A_WIN_PATTERNS: RegExp[] = [
   /\bwin\s+a\b/i,
 ];
 
+/**
+ * Sentence-ish fragments. Marketing copy and a real announcement live in
+ * the same email constantly, so the two have to be judged apart rather
+ * than by whether the whole message contains a given phrase anywhere.
+ */
+function fragments(text: string): string[] {
+  return text
+    .split(/[.!?\n\r]+|<\/?(?:p|div|br|td|tr|li|h[1-6])[^>]*>/i)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+}
+
 export function looksLikeWin({ subject, body }: TriageInput): boolean {
-  const haystack = `${subject}\n${body}`;
-  const hasWinPhrase = WIN_PATTERNS.some((re) => re.test(haystack));
-  if (!hasWinPhrase) return false;
-
-  // A genuine win notification can still contain "win a" further down (a
-  // footer promoting the next draw), so a marketing phrase only overrides
-  // when there's no win phrase in the subject line itself — the subject is
-  // where a real notification says so.
-  const subjectSaysWon = WIN_PATTERNS.some((re) => re.test(subject));
-  if (subjectSaysWon) return true;
-
-  return !NOT_A_WIN_PATTERNS.some((re) => re.test(haystack));
+  // Judged per fragment, not across the whole message. Comping emails
+  // almost always promote the next draw somewhere ("Next month: win a spa
+  // break"), and matching the veto against the entire text let that footer
+  // cancel out a genuine "you have won" earlier in the body. The only
+  // reason that wasn't losing wins outright was a carve-out for the phrase
+  // appearing in the subject line — which a real notification doesn't
+  // always put there. A win is a fragment that says this recipient won and
+  // is not itself marketing copy.
+  for (const fragment of [subject, ...fragments(subject), ...fragments(body)]) {
+    if (!WIN_PATTERNS.some((re) => re.test(fragment))) continue;
+    if (NOT_A_WIN_PATTERNS.some((re) => re.test(fragment))) continue;
+    return true;
+  }
+  return false;
 }
 
 /** Link-shortener and tracking hosts whose targets we can't judge without following them. */

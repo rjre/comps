@@ -86,7 +86,7 @@ async function pruneScreenshots(): Promise<void> {
   );
 }
 
-async function pruneLogLines(): Promise<void> {
+async function pruneLogLines(): Promise<number> {
   const noise = await prisma.logLine.deleteMany({
     where: { OR: NOISE_PREFIXES.map((prefix) => ({ message: { startsWith: prefix } })) },
   });
@@ -94,11 +94,38 @@ async function pruneLogLines(): Promise<void> {
   console.log(
     `Log lines: removed ${noise.count} third-party page-noise line(s) and ${old.count} line(s) older than ${LOG_MAX_AGE_DAYS} days.`,
   );
+  return noise.count + old.count;
 }
+
+/**
+ * Rows deleted above free pages inside the database file, but SQLite never
+ * returns them to the filesystem on its own — so the file only ever sits
+ * at its high-water mark, which on a Pi's SD card is the number that
+ * actually matters. Reclaiming 1.2 million pruned rows took a 396MB file
+ * back to 41MB.
+ *
+ * Only run after a substantial prune: VACUUM rewrites the whole file and
+ * takes an exclusive lock, which isn't worth doing six times a day to
+ * reclaim a few hundred rows.
+ */
+const VACUUM_AFTER_DELETIONS = 50_000;
 
 export async function runPrune() {
   await pruneScreenshots();
-  await pruneLogLines();
+  const deleted = await pruneLogLines();
+  if (deleted >= VACUUM_AFTER_DELETIONS) {
+    const before = await databaseSizeMb();
+    await prisma.$executeRawUnsafe("VACUUM");
+    console.log(`Reclaimed database file space after ${deleted} deletion(s): ${before}MB -> ${await databaseSizeMb()}MB.`);
+  }
+}
+
+/** Size of the SQLite file itself, as SQLite reports it. */
+async function databaseSizeMb(): Promise<number> {
+  const rows = await prisma.$queryRawUnsafe<{ bytes: number }[]>(
+    "select page_count * page_size as bytes from pragma_page_count(), pragma_page_size()",
+  );
+  return Math.round(Number(rows[0]?.bytes ?? 0) / 1_048_576);
 }
 
 if (require.main === module) {

@@ -28,6 +28,45 @@ describe("looksLikeWin", () => {
     ).toBe(true);
   });
 
+  // The case that mattered most and was being missed: comping emails put
+  // the announcement in the body and promote the next draw in the footer,
+  // and the footer was cancelling out the announcement. A win archived as
+  // "nothing" is the one failure this whole mailbox pass exists to avoid.
+  it("catches a body-only win whose footer promotes the next draw", () => {
+    expect(
+      looksLikeWin(
+        input(
+          "Marie Claire Competitions",
+          "Congratulations, you have won our Tewkesbury Park prize draw! Next month: win a spa break.",
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it("catches a body-only claim-your-prize among promotional copy", () => {
+    expect(
+      looksLikeWin(input("Your account", "Enter now for a chance to win a car. Please claim your prize within 14 days.")),
+    ).toBe(true);
+  });
+
+  // Still must not fire when the win-shaped phrase and the marketing
+  // phrase are the same sentence — that sentence is the marketing.
+  it("does not fire when the win phrase is itself the marketing copy", () => {
+    expect(looksLikeWin(input("Newsletter", "Congratulations, you have a chance to win a car."))).toBe(false);
+  });
+
+  it("does not treat an announcement about someone else as a win", () => {
+    expect(
+      looksLikeWin(input("This month's winner", "Congratulations to our winner Jane. You could win next time!")),
+    ).toBe(false);
+  });
+
+  it("splits on HTML block tags, not just punctuation", () => {
+    expect(
+      looksLikeWin(input("Newsletter", "<p>You have won the hamper</p><p>Win a break next month</p>")),
+    ).toBe(true);
+  });
+
   it("ignores an unrelated email", () => {
     expect(looksLikeWin(input("Your order has shipped", "Tracking number 12345."))).toBe(false);
   });
