@@ -1,3 +1,4 @@
+import "@/lib/loadEnv";
 import Parser from "rss-parser";
 import { prisma } from "@/lib/db";
 import { resolveEntryUrl } from "./resolveEntryUrl";

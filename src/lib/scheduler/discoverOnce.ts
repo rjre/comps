@@ -1,3 +1,4 @@
+import "@/lib/loadEnv";
 import { prisma } from "@/lib/db";
 import { createRunLogger } from "@/lib/logger";
 import { getAdapter } from "@/lib/automation/registry";

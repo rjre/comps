@@ -1,3 +1,4 @@
+import "@/lib/loadEnv";
 import http from "node:http";
 import { google } from "googleapis";
 import { GMAIL_SCOPES } from "@/lib/gmail/client";

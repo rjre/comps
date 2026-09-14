@@ -1,3 +1,4 @@
+import "@/lib/loadEnv";
 import { chromium } from "playwright";
 import { mkdir } from "fs/promises";
 import path from "path";

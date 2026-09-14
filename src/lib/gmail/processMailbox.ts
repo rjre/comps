@@ -1,3 +1,4 @@
+import "@/lib/loadEnv";
 import { prisma } from "@/lib/db";
 import { archiveMessage, getGmailClient, isGmailConfigured, type GmailClient } from "./client";
 import { categorise, type ExtractedLink } from "./triage";

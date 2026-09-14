@@ -1,3 +1,4 @@
+import "@/lib/loadEnv";
 import { readdir, stat, unlink } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/db";
