@@ -2,6 +2,7 @@ import "@/lib/loadEnv";
 import { prisma } from "@/lib/db";
 import { runDiscovery } from "@/lib/discovery/runDiscovery";
 import { runPlatformDiscovery } from "@/lib/scheduler/discoverOnce";
+import { syncQuizAnswers } from "@/lib/answers/syncAnswers";
 import { runEntryPass } from "@/lib/scheduler/runOnce";
 import { runNewsletterPass } from "@/lib/scheduler/subscribeNewsletters";
 import { runPrune } from "@/lib/maintenance/prune";
@@ -71,7 +72,13 @@ async function dailyLoop(name: string, hour: number, fn: () => Promise<unknown>)
 async function main() {
   const loops = [
     loop("feed-discovery", FEED_DISCOVERY_INTERVAL_MS, runDiscovery),
-    loop("platform-discovery", PLATFORM_DISCOVERY_INTERVAL_MS, runPlatformDiscovery),
+    // Discovery then answers, in that order and on one loop: a competition
+    // registered this pass can have its published answer looked up in the
+    // same pass, rather than waiting a full cycle to become enterable.
+    loop("platform-discovery", PLATFORM_DISCOVERY_INTERVAL_MS, async () => {
+      await runPlatformDiscovery();
+      await syncQuizAnswers();
+    }),
     ENTRY_RUN_HOUR !== undefined
       ? dailyLoop("entries", ENTRY_RUN_HOUR, runEntryPass)
       : loop("entries", ENTRY_INTERVAL_MS, runEntryPass),

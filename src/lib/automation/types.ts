@@ -43,6 +43,13 @@ export interface AdapterContext {
    * adapter to decide what, if anything, a peer's outcome tells it.
    */
   peerOutcomes: PreviousOutcome[];
+  /**
+   * An answer to this competition's own question, established outside the
+   * adapter — see Competition.quizAnswer and src/lib/answers. Null when
+   * nothing has been established, which is the normal case for a
+   * competition nobody publishes an answer for.
+   */
+  knownAnswer: string | null;
   /** Log to the current run — use liberally, this is what makes an adapter debuggable later. */
   log: RunLogger;
   /**

@@ -40,6 +40,7 @@ async function main() {
       dryRun: true,
       previousOutcomes: [],
     peerOutcomes: [],
+    knownAnswer: null,
     });
     console.log("\nOUTCOME:", JSON.stringify(outcome, null, 2));
   } finally {

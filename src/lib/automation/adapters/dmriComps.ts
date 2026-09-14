@@ -499,6 +499,92 @@ export function sharedAnswerFor(
   return { confirmed, rejected };
 }
 
+/**
+ * Which answer to submit, given everything established outside the page
+ * itself, or null when the page's own copy has to settle it.
+ *
+ * Order: a hand-researched TRIVIA_ANSWERS entry, then an answer published
+ * for this exact competition (Competition.quizAnswer), then one a sibling
+ * site has had confirmed correct for this same question.
+ *
+ * The rejection check applies to all three, which it previously did not: a
+ * researched answer was submitted unconditionally, so an answer the site
+ * had already graded wrong went back in every single day. That was
+ * tolerable while the map was thirteen hand-checked entries; it is not
+ * once answers are being read off an aggregator in bulk, where a wrong one
+ * would otherwise burn that draw's daily entry for the rest of its life.
+ */
+export function chooseEstablishedAnswer(
+  candidates: { researched?: string; published?: string | null; confirmedBySibling?: string | null },
+  rejected: Set<string>,
+): { answer: string; how: string } | null {
+  const ordered: Array<[string | null | undefined, string]> = [
+    [candidates.researched, "hand-researched for this competition"],
+    [candidates.published, "published for this competition by an answer source"],
+    [candidates.confirmedBySibling, "already confirmed correct by a sibling site running this same question"],
+  ];
+  for (const [answer, how] of ordered) {
+    if (!answer) continue;
+    if (rejected.has(answer.trim().toLowerCase())) continue;
+    return { answer, how };
+  }
+  return null;
+}
+
+/**
+ * Maps an answer established elsewhere onto the exact option label the
+ * page is rendering, or null if it doesn't clearly correspond to one.
+ *
+ * An answer from outside the page is free text and won't necessarily be
+ * spelled the way the option is: "12 months" against "12 Months", "Sub 1G"
+ * against "Sub-1G", "Café" against "Cafe". Selecting the option works by
+ * matching its visible label, so without this the answer is simply
+ * reported missing and the entry fails — having had the right answer all
+ * along.
+ *
+ * The containment fallback is deliberately only taken when exactly one
+ * option matches: an answer of "5" against options "5", "15" and "25"
+ * matches all three and settles nothing, so it declines rather than
+ * picking one.
+ */
+export function resolveToOption(answer: string, options: string[]): string | null {
+  // Punctuation collapsed to spaces on both sides, so the separator an
+  // answer source happens to use doesn't decide the match — the live case
+  // was "Sub 1G" against the page's "Sub-1G".
+  const key = (value: string) =>
+    normaliseText(value)
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  const want = key(answer);
+  if (!want) return null;
+  const exact = options.filter((option) => key(option) === want);
+  if (exact.length === 1) return exact[0]!;
+  if (exact.length > 1) return null;
+  const overlapping = options.filter((option) => {
+    const label = key(option);
+    return label.includes(want) || want.includes(label);
+  });
+  if (overlapping.length === 1) return overlapping[0]!;
+
+  // Last resort, for an answer source that transcribed the option
+  // slightly wrong: "Your favourite picture or videos" against the page's
+  // "Your favourite pictures or videos" — one character, and the draw ran
+  // on eight sibling sites. Scored with the same overlap measure and the
+  // same thresholds used to read an answer out of the page's copy, so a
+  // near-miss is taken only when one option is clearly the intended one
+  // and the rest are nowhere near. An answer belonging to some other
+  // question entirely ("Winchester" against Seen / Scene / Scenic, seen
+  // live) scores zero on every option and is still refused.
+  const scored = options
+    .map((option) => ({ option, score: copyOverlap(option, answer) }))
+    .sort((a, b) => b.score - a.score);
+  const top = scored[0];
+  const runnerUp = scored[1];
+  if (!top) return null;
+  const margin = runnerUp ? top.score - runnerUp.score : 1;
+  return top.score >= OVERLAP_FLOOR && margin >= OVERLAP_MARGIN ? top.option : null;
+}
+
 /** Answers the site has already told us are wrong for this competition, from earlier entry records. */
 export function rejectedAnswers(previousOutcomes: { message: string | null }[]): Set<string> {
   const rejected = new Set<string>();
@@ -724,7 +810,7 @@ async function clickThroughConsent(
 export const dmriCompsAdapter: CompetitionAdapter = {
   key: "dmri-comps",
   siteName: "DMRI Reader Competitions (Future PLC)",
-  async enterCompetition({ page, competitionUrl, profile, log, dryRun, previousOutcomes, peerOutcomes }: AdapterContext): Promise<EntryOutcome> {
+  async enterCompetition({ page, competitionUrl, profile, log, dryRun, previousOutcomes, peerOutcomes, knownAnswer }: AdapterContext): Promise<EntryOutcome> {
     // A hand-researched answer always wins. Where there isn't one — which
     // is every competition the discovery pass finds on its own — the
     // answer is derived from the competition page's own copy further down,
@@ -902,22 +988,41 @@ export const dmriCompsAdapter: CompetitionAdapter = {
     const { options, copy, question } = await readQuiz(page);
 
     const shared = sharedAnswerFor(options, peerOutcomes);
-    let answer = researchedAnswer;
-    if (!answer && shared.confirmed) {
-      answer = shared.confirmed;
-      await log.info(`Using answer "${answer}", already confirmed correct by a sibling site running this same question`);
+    const rejected = rejectedAnswers(previousOutcomes);
+    for (const wrong of shared.rejected) rejected.add(wrong);
+    if (rejected.size > 0) {
+      await log.info(
+        `Excluding ${rejected.size} option(s) already marked wrong here or on a sibling site: ${[...rejected].join(", ")}`,
+      );
     }
+
+    const established = chooseEstablishedAnswer(
+      { researched: researchedAnswer, published: knownAnswer, confirmedBySibling: shared.confirmed },
+      rejected,
+    );
+    let answer: string | undefined;
+    if (established) {
+      // Resolved against the options actually on the page, not used raw —
+      // see resolveToOption. Falls through to deriving from the copy if it
+      // doesn't correspond to anything on offer, which is a better outcome
+      // than failing the entry on an answer that may simply be spelled
+      // differently.
+      const resolved = options.length > 0 ? resolveToOption(established.answer, options) : established.answer;
+      if (resolved) {
+        answer = resolved;
+        await log.info(`Using answer "${resolved}" — ${established.how}`);
+      } else {
+        await log.warn(
+          `An answer was established for this competition ("${established.answer}", ${established.how}) but it doesn't ` +
+            `match any option on offer (${options.join(" / ")}) — deriving from the page's own copy instead`,
+        );
+      }
+    }
+
     if (!answer) {
       if (options.length === 0) {
         await log.warn("No quiz options found on the entry form — page structure may have changed");
         return { status: "FAILED", message: "Quiz options not found on the entry form" };
-      }
-      const rejected = rejectedAnswers(previousOutcomes);
-      for (const wrong of shared.rejected) rejected.add(wrong);
-      if (rejected.size > 0) {
-        await log.info(
-          `Excluding ${rejected.size} option(s) already marked wrong here or on a sibling site: ${[...rejected].join(", ")}`,
-        );
       }
       const derived = deriveAnswerFromCopy(options, copy, rejected);
       if (derived.answer === null) {

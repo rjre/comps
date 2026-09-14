@@ -310,6 +310,7 @@ export async function runEntryPass() {
               .sort((a, b) => b.attemptedAt.getTime() - a.attemptedAt.getTime())
               .slice(0, 20)
               .map((e) => ({ status: e.status as EntryStatus, message: e.message, attemptedAt: e.attemptedAt })),
+            knownAnswer: competition.quizAnswer,
             peerOutcomes: answerBearing
               .filter((e) => e.adapterKey === competition.adapterKey && e.competitionId !== competition.id)
               .map((e) => ({

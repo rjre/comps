@@ -16,6 +16,7 @@
     "sync:competitions": "tsx scripts/syncCompetitions.ts",
     "sync:newsletters": "tsx scripts/syncNewsletters.ts",
     "discover:competitions": "tsx src/lib/scheduler/discoverOnce.ts",
+    "sync:answers": "tsx src/lib/answers/syncAnswers.ts",
     "run:discovery": "tsx src/lib/discovery/runDiscovery.ts",
     "run:entries": "tsx src/lib/scheduler/runOnce.ts",
     "subscribe:newsletters": "tsx src/lib/scheduler/subscribeNewsletters.ts",

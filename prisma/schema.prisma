@@ -73,6 +73,14 @@ model Competition {
   // row put back to PENDING actually gets retried instead of being retired
   // again on the strength of the evidence it was just rescued from.
   declinesResetAt DateTime?
+  // An answer to this competition's own quiz question, established outside
+  // the adapter — currently by src/lib/answers, which reads what a
+  // competitions aggregator publishes. The adapter prefers it over
+  // deriving one from the page, but never over an answer the site has
+  // already rejected. quizAnswerSource records where it came from, because
+  // an unattributed answer is one nobody can later check.
+  quizAnswer       String?
+  quizAnswerSource String?
   // Set only for sites that require a real account to enter — JSON string,
   // e.g. {"username","password"}. Same pattern as NewsletterSource.credentials.
   credentials String?

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { answerNote, appearsInCopy, copyOverlap, deriveAnswerFromCopy, questionKey, rejectedAnswers, sharedAnswerFor } from "./dmriComps";
+import { answerNote, appearsInCopy, chooseEstablishedAnswer, copyOverlap, resolveToOption, deriveAnswerFromCopy, questionKey, rejectedAnswers, sharedAnswerFor } from "./dmriComps";
 
 // The copy below is verbatim from a live comps.marieclaire.co.uk
 // competition page (122488, the Hyllside Spa Suite draw), so these test
@@ -198,5 +198,86 @@ describe("DMRI cross-site answer sharing", () => {
   });
   it("an unparseable peer message is ignored rather than throwing", () => {
     expect(sharedAnswerFor(OPTIONS, [peer("SUCCESS", "Entered"), peer("FAILED", null as any)]).confirmed).toEqual(null);
+  });
+});
+
+describe("DMRI answer precedence", () => {
+  const none = new Set<string>();
+  it("a hand-researched answer outranks a published one", () => {
+    const chosen = chooseEstablishedAnswer({ researched: "93", published: "94" }, none);
+    expect(chosen?.answer).toEqual("93");
+  });
+  it("a published answer is used when nothing is hand-researched", () => {
+    expect(chooseEstablishedAnswer({ published: "Cornwall" }, none)?.answer).toEqual("Cornwall");
+  });
+  it("a sibling's confirmed answer is the last resort before deriving", () => {
+    const chosen = chooseEstablishedAnswer({ confirmedBySibling: "Smoothies" }, none);
+    expect(chosen?.answer).toEqual("Smoothies");
+  });
+  it("nothing established means derive from the page", () => {
+    expect(chooseEstablishedAnswer({ published: null, confirmedBySibling: null }, none)).toEqual(null);
+  });
+
+  // The whole reason the rejection check had to cover researched answers
+  // too: an answer the site has already graded wrong can never become an
+  // entry, and resubmitting it daily burns that draw for the rest of
+  // its life.
+  it("an answer the site already rejected is skipped, whatever established it", () => {
+    const rejected = new Set(["93"]);
+    expect(chooseEstablishedAnswer({ researched: "93" }, rejected)).toEqual(null);
+  });
+  it("and the next-best established answer is used instead", () => {
+    const chosen = chooseEstablishedAnswer({ researched: "93", published: "94" }, new Set(["93"]));
+    expect(chosen?.answer).toEqual("94");
+  });
+  it("rejection matching ignores case and surrounding space", () => {
+    expect(chooseEstablishedAnswer({ published: "  Cornwall " }, new Set(["cornwall"]))).toEqual(null);
+  });
+  it("says which source the answer came from, for the run log", () => {
+    expect(chooseEstablishedAnswer({ published: "Cornwall" }, none)?.how).toContain("answer source");
+  });
+});
+
+// An answer from an aggregator or a sibling site is free text; the option
+// it has to select is whatever the page renders. These are the real
+// mismatches seen in the harvested answers.
+describe("DMRI answer-to-option resolution", () => {
+  const OPTIONS = ["Sub-1G", "Bluetooth", "NFC"];
+  it("matches an option spelled differently", () => {
+    expect(resolveToOption("Sub 1G", OPTIONS)).toEqual("Sub-1G");
+  });
+  it("matches regardless of case", () => {
+    expect(resolveToOption("12 months", ["12 Months", "6 Months"])).toEqual("12 Months");
+  });
+  it("matches an accented option from its decoded answer", () => {
+    expect(resolveToOption("Café-quality coffees", ["Café-quality coffees", "Smoothies"])).toEqual(
+      "Café-quality coffees",
+    );
+  });
+  it("takes the distinctive part of a longer option label", () => {
+    expect(resolveToOption("Cinderella", ["A Cinderella pantomime", "A circus", "A concert"])).toEqual(
+      "A Cinderella pantomime",
+    );
+  });
+  it("an exact match is unambiguous even beside options containing it", () => {
+    expect(resolveToOption("5", ["5", "15", "25"])).toEqual("5");
+  });
+  it("but an answer that only part-matches, and matches several, settles nothing", () => {
+    expect(resolveToOption("5", ["15", "25", "35"])).toEqual(null);
+  });
+  it("an answer matching no option at all is rejected", () => {
+    expect(resolveToOption("Zigbee", OPTIONS)).toEqual(null);
+  });
+  // Both live, from the harvested answers: a source that transcribed the
+  // option slightly wrong, and a source that answered a different question.
+  it("tolerates a source's one-character transcription slip", () => {
+    const options = ["Your favourite pictures or videos", "A balloon", "A teddy bear"];
+    expect(resolveToOption("Your favourite picture or videos", options)).toEqual("Your favourite pictures or videos");
+  });
+  it("still refuses an answer belonging to a different question", () => {
+    expect(resolveToOption("Winchester", ["Seen", "Scene", "Scenic"])).toEqual(null);
+  });
+  it("an empty answer is rejected rather than matching everything", () => {
+    expect(resolveToOption("   ", OPTIONS)).toEqual(null);
   });
 });
