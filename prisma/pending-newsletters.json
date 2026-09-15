@@ -202,5 +202,11 @@
     "url": "https://bestdaysoutcornwall.co.uk/competitions/",
     "adapterKey": "best-days-out-cornwall-newsletter",
     "notes": "Org already tracked via the best-days-out-cornwall-golden-ticket competition adapter, but a genuinely separate Elementor Forms widget further down the same /competitions/ page (form_id 19623c7, vs the competition's own 188d3752 — confirmed directly via curl). Single required email field, no name/county fields and no marketing checkbox — this form's sole purpose is the newsletter opt-in itself. Same site-wide 'Simple Cloudflare Turnstile' plugin already documented on the competition adapter (confirmed its config applies to every Elementor form on the site, not just that one) — handled the same non-interactive-token-wait way, only failing loudly on an actual visible challenge. Same sandbox-networking caveat as other entries in this file (curl-verified static HTML only, no live Playwright render this session)."
+  },
+  {
+    "name": "Leeds Castle",
+    "url": "https://www.leeds-castle.com/contact/signup/",
+    "adapterKey": "leeds-castle-newsletter",
+    "notes": "New org this run: Leeds Castle (Kent, run by the Leeds Castle Foundation charity) — genuinely separate from the already-excluded multi-attraction 'Kent Attractions' consortium, a single organiser's own site. Real static (server-rendered, not JS-only) footer 'join our digital family' form confirmed directly via curl: single required email field, GET-submitted to /contact/signup/ (used here as sourceUrl since it serves the identical footer form on its own dedicated page), no marketing-partner checkbox — the sign-up itself is the form's sole purpose. No confirmation/error copy found anywhere in the static HTML, so the adapter never defaults an errorless response to SUCCESS (same caution as haven-newsletter/butlins-newsletter) — worth a human's eyes on the first live run to confirm the real wording. No live no-purchase-necessary competition found on this org's own domain at time of writing (the one linked 'Leeds Castle Competition' page is a stale 2022 fireworks-tickets draw additionally gated behind client-side JS, not independently verifiable) — newsletter only for now."
   }
 ]
