@@ -178,6 +178,17 @@ const TRIVIA_ANSWERS: Record<string, string> = {
   // own independent winner pool, not a duplicate entry into the same one.
   "https://comps.whatsontv.co.uk/competition/an_apple_ipad_mini_with_new_film_bad_apples_network/123005.php":
     "Saoirse Ronan",
+  // GoodTo (Future PLC's own competitions.goodto.com — a new DMRI sibling
+  // domain found this run) runs the exact same Cake & Bake Show / Ideal
+  // Christmas Show content as the Woman's Own entries above (identical
+  // page copy fetched directly from both domains), so the same
+  // independently-verified answers apply — each is still a genuinely
+  // separate draw with its own winner pool per the platform's documented
+  // "concurrent but separate" behaviour, not a duplicate entry.
+  "https://competitions.goodto.com/competition/a_pair_of_tickets_to_the_cake__bake_show_goodtoknow/122881.php":
+    "Home Bake Kitchen Stage",
+  "https://competitions.goodto.com/competition/a_pair_of_tickets_to_the_ideal_christmas_show_goodtoknow/122842.php":
+    "26-29 November",
 };
 
 /**

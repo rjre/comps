@@ -414,5 +414,45 @@
     "closesAt": "2026-10-09T22:59:00.000Z",
     "maxEntries": 30,
     "notes": "Same Apple iPad Mini / Bad Apples content as the Woman's Own Magazine entry above, confirmed running concurrently on What's On TV's own sibling DMRI domain (comps.whatsontv.co.uk) — identical copy and 'This competition ends on 09/10/2026' date fetched directly from that domain. A genuinely separate prize draw with its own independent winner pool (same 'concurrent but separate' pattern already documented in the dmri-comps adapter's own file-level docblock), not a duplicate entry into the Woman's Own one. What's On TV was already tracked in this project for its newsletter (future-plc-newsletter, whattowatch.com) but this is its first tracked competition. No purchase necessary. Trivia answer ('Saoirse Ronan') independently verified the same way as the Woman's Own entry above."
+  },
+  {
+    "name": "GoodTo — Win a Family Palace and Play Pass to Blenheim Palace",
+    "url": "https://competitions.goodto.com/competition/a_family_palace_and_play_pass_to_blenheim_palace_goodtoknow/122901.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-04T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New DMRI (Future PLC) sibling domain not yet tracked by this project: GoodTo (competitions.goodto.com) — org already tracked for its newsletter (future-plc-newsletter) but not previously for a competition. Confirmed directly the site runs the identical DMRI reader-comps platform ('Log In Now or Create a FREE account and start entering DAILY competitions NOW!') as the already-tracked Marie Claire/Woman/Woman's Own/What's On TV sibling sites, so no adapter changes needed beyond registering this origin — the shared dmri-comps adapter picks up any other open competition on this domain automatically from here (its origin is derived from tracked Competition rows at discovery time, confirmed directly against discoverOnce.ts, no seed-list edit required). No purchase necessary, real registered UK publisher. Prize: a family 'Palace and Play Pass' to Blenheim Palace (Oxfordshire) for two winning families, sponsored by Blenheim Estate Homes. Page states 'This competition ends on 04/10/2026' (converted to 22:59 UTC, BST in effect on that date, same convention as this file's other DMRI entries). No hand-researched TRIVIA_ANSWERS entry added — the actual on-form quiz question only renders after logging into a real GoodTo account, so this relies on the adapter's own existing deriveAnswerFromCopy safety net (only answers when exactly one offered option appears unambiguously in the competition's own descriptive copy, declines otherwise) rather than a guess."
+  },
+  {
+    "name": "GoodTo — Win a Pair of Tickets to The Cake & Bake Show",
+    "url": "https://competitions.goodto.com/competition/a_pair_of_tickets_to_the_cake__bake_show_goodtoknow/122881.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-09T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on the newly-tracked comps.goodto.com domain (see the Blenheim Palace entry above for how this origin was found/verified), shared dmri-comps adapter. No purchase necessary. Prize: 4 pairs of tickets each for 8 winners to The Cake & Bake Show, Olympia London (26-29 Nov 2026) — identical content/copy to the already-tracked Woman's Own Magazine entry for the same show, confirmed directly by fetching both pages (same 'discover recipes and clever baking and decorating techniques at the Home Bake Kitchen Stage' wording), so the same independently-verified answer ('Home Bake Kitchen Stage') is reused in dmriComps.ts's TRIVIA_ANSWERS — a genuinely separate prize draw with its own independent winner pool on this platform (documented 'concurrent but separate' behaviour), not a duplicate entry into the Woman's Own one. Page states 'This competition ends on 09/10/2026' (22:59 UTC)."
+  },
+  {
+    "name": "GoodTo — Win a Pair of Tickets to The Ideal Christmas Show",
+    "url": "https://competitions.goodto.com/competition/a_pair_of_tickets_to_the_ideal_christmas_show_goodtoknow/122842.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-08T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on the newly-tracked comps.goodto.com domain, shared dmri-comps adapter. No purchase necessary. Prize: a pair of tickets each for 8 winners to The Ideal Christmas Show, Olympia London (26-29 Nov 2026) — identical content/copy to the already-tracked Woman's Own Magazine entry for the same show, confirmed directly by fetching both pages (same 'Returning to Olympia London from 26–29 November' wording), so the same independently-verified answer ('26-29 November') is reused in dmriComps.ts's TRIVIA_ANSWERS — a genuinely separate prize draw on this platform, not a duplicate entry. Page states 'This competition ends on 08/10/2026' (22:59 UTC)."
+  },
+  {
+    "name": "GoodTo — Win £50 to Spend on Heavenly Feet",
+    "url": "https://competitions.goodto.com/competition/_win_aw_collection_heavenly_feet_goodtoknow/122701.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-30T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on the newly-tracked comps.goodto.com domain, shared dmri-comps adapter. No purchase necessary. Prize: a £50 Heavenly Feet footwear voucher for 6 winners, tied to the brand's new autumn/winter collection launch. Page states 'This competition ends on 30/09/2026' (22:59 UTC) — tight, worth registering promptly. No hand-researched answer added; relies on the adapter's own deriveAnswerFromCopy safety net (declines rather than guessing if the copy doesn't settle it unambiguously) since the real quiz question only renders after account login."
+  },
+  {
+    "name": "GoodTo — Win £300 Towards Music Programmes at School of Rock",
+    "url": "https://competitions.goodto.com/competition/music_programmes_at_school_of_rock_goodtoknow/122953.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-02T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on the newly-tracked comps.goodto.com domain, shared dmri-comps adapter. No purchase necessary. Prize: a £300 voucher towards Music programmes at School of Rock's new Bayswater, London branch. Page states 'This competition ends on 02/10/2026' (22:59 UTC). No hand-researched answer added; relies on the adapter's own deriveAnswerFromCopy safety net, same reasoning as the Heavenly Feet entry above."
   }
 ]
