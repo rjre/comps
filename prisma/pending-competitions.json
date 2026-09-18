@@ -454,5 +454,14 @@
     "closesAt": "2026-10-02T22:59:00.000Z",
     "maxEntries": 30,
     "notes": "Sibling DMRI (Future PLC) daily prize draw on the newly-tracked comps.goodto.com domain, shared dmri-comps adapter. No purchase necessary. Prize: a £300 voucher towards Music programmes at School of Rock's new Bayswater, London branch. Page states 'This competition ends on 02/10/2026' (22:59 UTC). No hand-researched answer added; relies on the adapter's own deriveAnswerFromCopy safety net, same reasoning as the Heavenly Feet entry above."
+  },
+  {
+    "name": "Kent Attractions — Win a Kent Attractions Pass",
+    "url": "https://kentattractions.co.uk/competitions/",
+    "adapterKey": "kent-attractions",
+    "closesAt": null,
+    "maxEntries": 24,
+    "entryIntervalHours": 720,
+    "notes": "This org's own competition page was previously excluded here as the 'Kent Attractions consortium', noted elsewhere in this file (Leeds Castle newsletter entry) as bot-protected on page load. Re-verified directly this run: that no longer reproduces (plain curl fetch returns the full real page, 200 OK, real Gravity Forms markup) — a temporary/lifted block, not a structural aggregator-hub problem (this is a genuine single regional-tourism-consortium organiser's own domain, same category this project already accepts for Devon's Top Attractions/North Norfolk Attractions). No purchase necessary, real T&Cs. No fixed closing date — page states 'a winner will be chosen every month' at the same URL (unlike tui-monthly-giveaway's per-month page), so modelled as a repeatable draw (entryIntervalHours=720 ≈ 30 days); maxEntries=24 is just a generous cap (~2 years), not a stated limit. Gravity Forms (id 1): name, email, a required trivia multi-select ('...how many years of jousting?' re: Hever Castle's 2026 season — options 20/60/10/40/30, answer 40 confirmed directly against Hever Castle's own news pages: the jousting tournament started in 1986, making 2026 its 40th-anniversary season), and a required T&Cs checkbox with an independently optional newsletter checkbox left unticked. The remaining real block is a visible (explicit-render, not invisible) Google reCAPTCHA v2 gating the final submit (data-sitekey present in the page's own markup) — adapter built up to and including that check, fails loudly there rather than solving/evading it, same category as c2c-blowout-company. Note for next time: re-check the trivia answer once this jousting season closes, since '40' won't stay correct forever."
   }
 ]

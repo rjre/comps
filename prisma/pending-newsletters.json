@@ -220,5 +220,17 @@
     "url": "https://www.visitgreatyarmouth.co.uk/visitor-information/enewsletter-sign-up",
     "adapterKey": "visit-great-yarmouth-newsletter",
     "notes": "New org this run: official Visit Great Yarmouth tourism board e-newsletter signup, same NewMind/eCMS platform already tracked via visit-essex-gardeners-world and north-norfolk-attractions (confirmed directly: identical window.NewMind config object and NewMind.ETWP.Forms.* calls in the served HTML). Title (optional), first name/last name/email/confirm email (all required, confirmed via each field's own mandatory marker) plus a single required 'I am happy to be emailed by Visit Great Yarmouth' consent checkbox — this page's sole purpose, ticked deliberately. Fronted by an invisible reCAPTCHA v2 (NewMind.ETWP.Forms.SetupRecaptcha) — not solved or evaded, submitted normally and fails loudly if it blocks the automated browser. This org's own seasonal 'Golden Ticket Competition' (visitgreatyarmouth.co.uk/whats-on/golden-ticket-competition) was checked the same run but had already closed for 2026 (entry window was 15 Jul-10 Aug) — worth rechecking next summer. Same sandbox-networking caveat as other entries in this file (curl-verified static HTML only, no live Playwright render this session)."
+  },
+  {
+    "name": "Ideal Home",
+    "url": "https://www.idealhome.co.uk/newsletter",
+    "adapterKey": "future-plc-newsletter",
+    "notes": "Another Future PLC title running the exact same shared 'newsletterForm' widget already tracked for Marie Claire/Woman & Home/GoodTo/What's On TV — confirmed directly via curl (widget id slice-container-newsletterForm-1873428891, NEWSLETTER_CODE=XIH-X, real input[name=MAIL], both optional other-brands/partners checkboxes present and left unticked, 'Sign me up' submit). Trivial addition: same future-plc-newsletter adapter, new URL, no new code."
+  },
+  {
+    "name": "c2c",
+    "url": "https://cloud.mail-c2c-online.co.uk/preferences",
+    "adapterKey": "c2c-newsletter",
+    "notes": "c2c's own first-party newsletter, distinct from the already-tracked c2c-blowout-company and c2c-wilko-love-and-death-and-rock-n-roll competitions on the same organiser. c2c's own /sign-up/ page advertises the newsletter but serves no actual form (confirmed directly via curl: an empty container, just a heading and benefit blurbs) — it links out to 'Email preferences', which resolves to this real Salesforce Marketing Cloud SmartCapture page instead. That page has the genuine form: a single email field, no consent checkboxes at all (nothing bundled, nothing to leave unticked). Double opt-in — the form's own embedded confirmationMessage config (read directly from its JS, not guessed) says a link must still be clicked in the inbox to activate: 'Thank you for your submission. Please check your inbox for a link to modify your contact preferences.'"
   }
 ]
