@@ -109,4 +109,22 @@ describe("decideSchedule", () => {
     const reset = { ...daily, declinesResetAt: ago(24 * 6) };
     expect(decideSchedule(reset, history, now).action).toBe("GIVE_UP");
   });
+
+  // Same fresh-start reasoning, for the consecutive-failures give-up
+  // rather than identical-declines — a competition already auto-marked
+  // FAILED by 12 straight failures must actually be retried once put back
+  // to PENDING after the bug causing those failures is fixed, not walked
+  // straight back into GIVE_UP on the strength of failures the fix
+  // addressed.
+  it("failures from before a deliberate fresh start don't count towards giving up", () => {
+    const history = Array.from({ length: 12 }, (_, i) => E("FAILED", 30 + i * 24));
+    const reset = { ...daily, declinesResetAt: ago(24) };
+    expect(decideSchedule(daily, history, now).action).toBe("GIVE_UP");
+    expect(decideSchedule(reset, history, now).action).toBe("ENTER");
+  });
+  it("failures recorded after the fresh start count again", () => {
+    const history = Array.from({ length: 12 }, (_, i) => E("FAILED", 24 * i + 1));
+    const reset = { ...daily, declinesResetAt: ago(24 * 15) };
+    expect(decideSchedule(reset, history, now).action).toBe("GIVE_UP");
+  });
 });

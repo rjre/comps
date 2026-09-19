@@ -31,6 +31,10 @@ const BACKOFF_HOURS = [1, 2, 4, 8, 16, 24];
  * do have bad days, and the muddy-stilettos row alone accumulated 39
  * failures interleaved with 21 real successes, which this must not
  * mistake for a dead competition (only *consecutive* failures count).
+ *
+ * Also respects declinesResetAt, same as GIVE_UP_AFTER_IDENTICAL_DECLINES
+ * below: a failure from before a deliberate fresh start doesn't count,
+ * because it describes what an older, since-fixed adapter did.
  */
 export const GIVE_UP_AFTER_CONSECUTIVE_FAILURES = 12;
 
@@ -158,9 +162,17 @@ export function decideSchedule(
   // the adapter declined to enter (an unknown quiz answer, say), which is
   // a standing condition rather than a flaky site, and shouldn't decay
   // into an exponential retry curve — it gets its own flat recheck below.
+  const resetAt = competition.declinesResetAt ?? null;
   let consecutiveFailures = 0;
   for (const entry of real) {
     if (entry.status !== "FAILED") break;
+    // A failure from before a deliberate fresh start describes what an
+    // older version of the adapter did, not what this one would — same
+    // reasoning as the identical-declines loop below, and needed for the
+    // same reason: resetting a row to PENDING after fixing what was
+    // actually failing it must not walk straight back into GIVE_UP on the
+    // strength of failures the fix was made to stop.
+    if (resetAt && entry.attemptedAt <= resetAt) break;
     consecutiveFailures += 1;
   }
 
@@ -175,16 +187,9 @@ export function decideSchedule(
   // see GIVE_UP_AFTER_IDENTICAL_DECLINES.
   if (real[0]?.status === "SKIPPED_RULES") {
     const reason = real[0].message ?? "";
-    const resetAt = competition.declinesResetAt ?? null;
     let identicalDeclines = 0;
     for (const entry of real) {
       if (entry.status !== "SKIPPED_RULES" || (entry.message ?? "") !== reason) break;
-      // Declines from before a deliberate fresh start describe what an
-      // older version of the adapter concluded, not what this one would.
-      // Without this, resetting a row to PENDING after improving the
-      // adapter retired it again on the very next pass, before the new
-      // code had run even once — which is exactly what happened when the
-      // overlap quiz matcher landed.
       if (resetAt && entry.attemptedAt <= resetAt) break;
       identicalDeclines += 1;
     }

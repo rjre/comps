@@ -723,8 +723,10 @@ const USER_AGENT =
 const LOG_OUT_TEXT = /log\s*out/i;
 
 /**
- * Every DMRI sibling site runs the same Sourcepoint consent CMP, but
- * confirmed directly: not all of them serve its iframe from
+ * Most DMRI sibling sites run the Sourcepoint consent CMP — but not all
+ * of them do, and the ones that don't are handled by
+ * dismissQuantcastConsent / dismissConsentManagerConsent below. Of the
+ * Sourcepoint ones, confirmed directly: not all serve its iframe from
  * privacy-mgmt.com — topsante.co.uk (and, going by the same pattern,
  * presumably other siblings) proxies it from its own `consent.<site>`
  * subdomain instead (e.g. `consent.topsante.co.uk/index.html`, no
@@ -764,6 +766,81 @@ async function dismissSourcepointConsent(page: import("playwright").Page, log: A
 }
 
 /**
+ * Not every DMRI sibling runs Sourcepoint. Measured over seven days, 104
+ * of the 189 "Log In Now" click-timeouts came from three siblings —
+ * comps.recombu.com, comps.trustedreviews.com and comps.pickmypostcode.com
+ * — whose intercepting overlay is Quantcast Choice, and another 23 from
+ * competitions.houseofcoco.net, whose is consentmanager.net. Neither is a
+ * Sourcepoint frame, so dismissSourcepointConsent returned without doing
+ * anything and every retry below met the same overlay: the entry was lost
+ * on a site we hold a working account for and would otherwise have
+ * entered. Each is handled here in its own right.
+ *
+ * Quantcast renders into the main document (`#qc-cmp2-ui` inside
+ * `#qc-cmp2-container`), not an iframe — which is exactly why the
+ * frame-based lookup above never saw it.
+ */
+async function dismissQuantcastConsent(page: import("playwright").Page, log: AdapterContext["log"]) {
+  const dialog = page.locator("#qc-cmp2-ui");
+  if (!(await dialog.isVisible().catch(() => false))) return;
+  // Unlike Sourcepoint, Quantcast's summary screen often does carry a
+  // one-click refusal ("DISAGREE"), so prefer it — clicking Agree is the
+  // fallback for the configurations that offer only "MORE OPTIONS"
+  // alongside it, the same choice dismissSourcepointConsent already makes.
+  const rejected = await clickFirst(dialog, /^(Disagree|Reject All|Do Not Consent)$/i);
+  if (rejected) {
+    await log.info("Dismissed consent modal (Disagree)");
+    return;
+  }
+  if (await clickFirst(dialog, /^(Agree|Accept All)$/i)) {
+    await log.info("Dismissed consent modal (Agree/Accept All — no one-click reject-all offered)");
+  }
+}
+
+/**
+ * consentmanager.net, which renders its box inside `#cmpwrapper` — often
+ * behind an open shadow root, which Playwright's CSS engine pierces.
+ * Observed live on houseofcoco: the wrapper can stay in the document,
+ * still intercepting pointer events, after its box has gone, so the
+ * removal in clickThroughConsent matters here as much as this click does.
+ */
+async function dismissConsentManagerConsent(page: import("playwright").Page, log: AdapterContext["log"]) {
+  const wrapper = page.locator("#cmpwrapper");
+  if ((await wrapper.count()) === 0) return;
+  // This CMP does offer a one-click refusal of its own (`.cmpboxbtnno`).
+  const reject = wrapper.locator(".cmpboxbtnno").first();
+  if (await reject.click({ timeout: 3000 }).then(() => true).catch(() => false)) {
+    await log.info("Dismissed consent modal (Reject all)");
+    return;
+  }
+  const accept = wrapper.locator(".cmpboxbtnyes").first();
+  if (await accept.click({ timeout: 3000 }).then(() => true).catch(() => false)) {
+    await log.info("Dismissed consent modal (Accept all — no one-click reject-all offered)");
+  }
+}
+
+/** Clicks the first button under `root` whose accessible name matches, reporting whether it did. */
+function clickFirst(root: import("playwright").Locator, name: RegExp): Promise<boolean> {
+  return root
+    .getByRole("button", { name })
+    .first()
+    .click({ timeout: 3000 })
+    .then(() => true)
+    .catch(() => false);
+}
+
+/**
+ * Every consent overlay known to sit on top of this platform's own
+ * buttons. Called wherever one of those buttons is clicked, because which
+ * CMP a given sibling site runs isn't knowable from the URL.
+ */
+async function dismissConsent(page: import("playwright").Page, log: AdapterContext["log"]) {
+  await dismissSourcepointConsent(page, log);
+  await dismissQuantcastConsent(page, log);
+  await dismissConsentManagerConsent(page, log);
+}
+
+/**
  * Confirmed directly, on marieclaire.co.uk: the consent modal can
  * re-render more than the twice already anticipated above — the exact
  * same click, re-attempted moments later with no other change, can meet a
@@ -790,14 +867,18 @@ async function clickThroughConsent(
       return;
     } catch (err) {
       if (attempt === 3) throw err;
-      await dismissSourcepointConsent(page, log);
+      await dismissConsent(page, log);
       // The CMP can leave its own container in the DOM, still intercepting
       // pointer events, after its Agree button has gone — remove what's
       // left rather than dismiss-and-hope a third time. Same shape as
       // generic.ts's overlay removal before its submit retry.
       await page
         .evaluate(() => {
-          document.querySelectorAll("[id^='sp_message_container'], .sp-message-open").forEach((el) => el.remove());
+          document
+            .querySelectorAll(
+              "[id^='sp_message_container'], .sp-message-open, #qc-cmp2-container, .qc-cmp-cleanslate, #cmpwrapper",
+            )
+            .forEach((el) => el.remove());
           document.documentElement.style.overflow = "";
           document.body.style.overflow = "";
         })
@@ -823,7 +904,7 @@ export const dmriCompsAdapter: CompetitionAdapter = {
     await page.goto(competitionUrl, { waitUntil: "load", timeout: 45000 });
     await page.waitForTimeout(1500);
 
-    await dismissSourcepointConsent(page, log);
+    await dismissConsent(page, log);
     await page.waitForTimeout(500);
 
     const password = derivedPassword(profile.email);
