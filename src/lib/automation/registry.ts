@@ -17,7 +17,7 @@ import { officialLondonTheatreHeathersAdapter } from "./adapters/officialLondonT
 import { parkHolidaysWinAHolidayHomeAdapter } from "./adapters/parkHolidaysWinAHolidayHome";
 import { ambassadorCruiseLineEnglandGolfAdapter } from "./adapters/ambassadorCruiseLineEnglandGolf";
 import { advantageTravelAmbassadorCaribbeanAdapter } from "./adapters/advantageTravelAmbassadorCaribbean";
-import { dmriCompsAdapter } from "./adapters/dmriComps";
+import { dmriCompsAdapter, looksLikeDmriUrl } from "./adapters/dmriComps";
 import { gleamAdapter } from "./adapters/gleam";
 import { kingSumoAdapter } from "./adapters/kingSumo";
 
@@ -63,4 +63,30 @@ export const adapterRegistry = new Map(adapters.map((a) => [a.key, a]));
  */
 export function getAdapter(key: string): CompetitionAdapter | undefined {
   return adapterRegistry.get(key);
+}
+
+/**
+ * Which adapter a bare entry URL belongs to, for the shared giveaway
+ * platforms this project has a dedicated adapter for — DMRI (by URL
+ * shape, since it's many magazine-branded siblings rather than one
+ * domain — see dmriComps.ts's looksLikeDmriUrl), Gleam.io and KingSumo
+ * (by host, since each is a single domain).
+ *
+ * Previously duplicated three ways (runDiscovery.ts, the one-off
+ * backfillAdapterKeys.ts script, and processMailbox.ts not doing this
+ * check at all) — every one of those getting out of sync is exactly how
+ * an email-discovered DMRI/Gleam/KingSumo lead kept being born as
+ * "generic", which cannot get past DMRI's login wall or Gleam's
+ * headless-UA block, and wrongly declines a real KingSumo entry that only
+ * asks for an email. One function, so a fourth platform only needs
+ * adding here.
+ */
+export function detectAdapterKey(url: string): string {
+  if (looksLikeDmriUrl(url)) return "dmri-comps";
+  try {
+    const host = new URL(url).hostname;
+    if (host === "gleam.io") return "gleam";
+    if (host === "kingsumo.com") return "kingsumo";
+  } catch {}
+  return "generic";
 }

@@ -1,11 +1,11 @@
 import { prisma } from "../src/lib/db";
-import { looksLikeDmriUrl } from "../src/lib/automation/adapters/dmriComps";
+import { detectAdapterKey } from "../src/lib/automation/registry";
 
 /**
  * One-off (but safe to re-run) fix for Competition rows that were
- * discovered before runDiscovery.ts learned to recognise three shared
- * giveaway platforms it has dedicated adapters for: DMRI (by URL shape —
- * see dmriComps.ts's looksLikeDmriUrl), Gleam.io and KingSumo (by host).
+ * discovered before runDiscovery.ts (and, until the same fix,
+ * processMailbox.ts) learned to recognise three shared giveaway platforms
+ * they have dedicated adapters for — see registry.ts's detectAdapterKey.
  * All of these got created as adapterKey "generic", which cannot get past
  * DMRI's login wall or Gleam's headless-UA block, and wrongly declines a
  * real KingSumo entry that only asks for an email — so every one of them
@@ -18,13 +18,8 @@ import { looksLikeDmriUrl } from "../src/lib/automation/adapters/dmriComps";
  * happened to find.
  */
 function correctAdapterFor(url: string): string | null {
-  if (looksLikeDmriUrl(url)) return "dmri-comps";
-  try {
-    const host = new URL(url).hostname;
-    if (host === "gleam.io") return "gleam";
-    if (host === "kingsumo.com") return "kingsumo";
-  } catch {}
-  return null;
+  const key = detectAdapterKey(url);
+  return key === "generic" ? null : key;
 }
 
 async function main() {

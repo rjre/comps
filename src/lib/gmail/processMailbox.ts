@@ -6,6 +6,7 @@ import { notify, isNotifyConfigured } from "@/lib/notify";
 import { resolveEntryUrl } from "@/lib/discovery/resolveEntryUrl";
 import { isSafeExternalUrl } from "@/lib/net/ssrf";
 import { acquireLock } from "@/lib/scheduler/lock";
+import { detectAdapterKey } from "@/lib/automation/registry";
 
 /**
  * Reads the inbox, decides what each message is, acts on it, and archives
@@ -210,8 +211,20 @@ async function registerLeads(links: ExtractedLink[], subject: string): Promise<n
     }
     if (await prisma.competition.findUnique({ where: { url: link.url } })) continue;
 
-    const entryUrl = (await resolveEntryUrl(link.url).catch(() => null)) ?? link.url;
-    if (!isSafeExternalUrl(entryUrl)) continue;
+    // A link this can't resolve is never stored as-is: `link.url` itself
+    // is very often the sender's own tracking-redirect, not a real entry
+    // page (confirmed directly: news.giveawaytreasures-mail.co.uk sends a
+    // fresh per-recipient tracking link on every send, and disallows all
+    // crawling in its own robots.txt, so resolution correctly always
+    // declines it). Falling back to that raw link used to still create a
+    // Competition row from it — measured directly, 0 of 189 rows created
+    // this way, across every host it happened on, ever produced a single
+    // successful entry, only repeated HTTP-403s until the row expired.
+    const entryUrl = await resolveEntryUrl(link.url).catch(() => null);
+    if (!entryUrl || !isSafeExternalUrl(entryUrl)) {
+      console.log(`  could not resolve a real entry URL for ${link.url}, skipping`);
+      continue;
+    }
     if (await prisma.competition.findUnique({ where: { url: entryUrl } })) continue;
 
     try {
@@ -219,7 +232,7 @@ async function registerLeads(links: ExtractedLink[], subject: string): Promise<n
         data: {
           name: `From email: ${subject}`.slice(0, 200),
           url: entryUrl,
-          adapterKey: "generic",
+          adapterKey: detectAdapterKey(entryUrl),
           sourceListingUrl: link.url,
           notes: `Found in an email (${link.reason}). Entry URL resolved from ${link.url}.`,
         },

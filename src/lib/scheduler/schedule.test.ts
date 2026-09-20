@@ -127,4 +127,27 @@ describe("decideSchedule", () => {
     const reset = { ...daily, declinesResetAt: ago(24 * 15) };
     expect(decideSchedule(reset, history, now).action).toBe("GIVE_UP");
   });
+
+  // gleam.io is confirmed blocked at the platform level — see
+  // SLOW_RECHECK_HOURS_BY_ADAPTER — so an attempt within its 7-day
+  // recheck window should wait even though the normal daily-decline
+  // recheck would otherwise say it's due.
+  it("gleam waits out its slow recheck window after a decline", () => {
+    const gleam = { ...daily, adapterKey: "gleam" };
+    expect(decideSchedule(gleam, [D("Campaign has ended", 25)], now).action).toBe("WAIT");
+  });
+  it("gleam is due again once its slow recheck window has passed", () => {
+    const gleam = { ...daily, adapterKey: "gleam" };
+    expect(decideSchedule(gleam, [D("Campaign has ended", 24 * 8)], now).action).toBe("ENTER");
+  });
+  it("a rare gleam success isn't slow-rechecked once it counts as a success", () => {
+    const gleam = { ...daily, adapterKey: "gleam" };
+    expect(decideSchedule(gleam, [E("SUCCESS", 25)], now).action).toBe("ENTER");
+  });
+  it("other adapters aren't subject to the slow recheck", () => {
+    const decision = decideSchedule(daily, [D("Campaign has ended", 5)], now);
+    expect(decision.action).toBe("WAIT");
+    // Confirms the daily-decline recheck (24h), not the gleam-only 7-day one, governs here.
+    expect(decision.readyAt?.getTime()).toBe(ago(-19).getTime());
+  });
 });

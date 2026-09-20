@@ -77,6 +77,27 @@ export const DECLINED_RECHECK_HOURS = 24;
  */
 export const DEFAULT_REPEATABLE_INTERVAL_HOURS = 24;
 
+/**
+ * Adapters confirmed to be blocked at the platform level in a way this
+ * project doesn't attempt to work around — see gleam.ts: gleam.io itself
+ * silently no-ops its own entry submission for automated traffic (no
+ * error, no network request even fires), most likely Cloudflare's
+ * invisible bot-scoring rather than anything a click sequence can fix.
+ * Confirmed over 2,015 attempts across ~150 gleam-hosted sites: 1 success.
+ *
+ * GIVE_UP never fires for these on its own, because the decline's own
+ * message keeps changing shape (an anti-bot page one day, a disabled
+ * submit control the next, "no confirmation" the day after) rather than
+ * repeating identically — so rather than special-case gleam deep in the
+ * give-up logic, this just makes it far rarer to even attempt: every
+ * browser session spent here is a login/click sequence for close to zero
+ * chance of an entry, crowding out adapters that actually convert
+ * attempts into entries.
+ */
+const SLOW_RECHECK_HOURS_BY_ADAPTER: Record<string, number> = {
+  gleam: 24 * 7,
+};
+
 export interface EntryHistoryItem {
   status: EntryStatus;
   attemptedAt: Date;
@@ -90,6 +111,8 @@ export interface SchedulableCompetition {
   maxEntries: number;
   entryIntervalHours: number | null;
   closesAt: Date | null;
+  /** Which adapter handles this competition — see SLOW_RECHECK_HOURS_BY_ADAPTER. */
+  adapterKey?: string;
   /**
    * When this competition was deliberately given a fresh start. Declines
    * at or before it don't count towards GIVE_UP_AFTER_IDENTICAL_DECLINES —
@@ -227,6 +250,14 @@ export function decideSchedule(
     waits.push({
       readyAt: addHours(real[0].attemptedAt, DECLINED_RECHECK_HOURS),
       reason: `adapter declined to enter last time — rechecking every ${DECLINED_RECHECK_HOURS}h`,
+    });
+  }
+
+  const slowRecheckHours = competition.adapterKey ? SLOW_RECHECK_HOURS_BY_ADAPTER[competition.adapterKey] : undefined;
+  if (slowRecheckHours != null && real.length > 0 && successes === 0) {
+    waits.push({
+      readyAt: addHours(real[0]!.attemptedAt, slowRecheckHours),
+      reason: `${competition.adapterKey} is known to rarely convert attempts into entries — rechecking every ${slowRecheckHours}h`,
     });
   }
 
