@@ -238,5 +238,11 @@
     "url": "https://www.banhamzoo.co.uk/sign-up",
     "adapterKey": "banham-zoo-newsletter",
     "notes": "Banham Zoo (Norfolk), run by the Zoological Society of East Anglia (ZSEA) — genuinely separate from the already-tracked village-people-banham-zoo and sibling competitions (a third party's joint Banham Zoo/Africa Alive giveaways). This is the zoo's own first-party 'Wild & Wonderful Updates' newsletter, found directly on its own site. Plain static Webflow form verified directly from the served HTML: First-Name/Last-Name/Email required, Postcode optional, no marketing checkbox at all (the form's only purpose is this newsletter). No cookie banner or reCAPTCHA found in the static page. Africa Alive's own /sign-up (same org) redirects to a separate, heavier Ember.js app (zsea.org, on a goods.co.uk/visitwonders.com commerce platform) with a real reCAPTCHA site key embedded — not built this round, worth a future look if that stack turns out to be avoidable."
+  },
+  {
+    "name": "Kent Attractions",
+    "url": "https://kentattractions.co.uk/",
+    "adapterKey": "kent-attractions-newsletter",
+    "notes": "The Kent Attractions consortium's own site-wide footer newsletter ('Get seasonal events and offers delivered straight to your inbox'), genuinely separate from that org's own competition entry form's independently-optional newsletter checkbox already tracked as a competition (kent-attractions, added a previous run once the org's earlier bot-block turned out to no longer reproduce). Standard Mailchimp classic embedded form confirmed directly via curl: single required email field, a standard Mailchimp honeypot text input (name starting 'b_') left blank, target=\"_blank\" posts to a kentattractions.us13.list-manage.com hosted response page. No reCAPTCHA on this particular form at all (that's only on the competition's separate Gravity Forms page) — a genuinely easier surface than the competition despite being the same domain."
   }
 ]
