@@ -27,6 +27,7 @@ import { visitNorthumberlandAdapter } from "./adapters/visitNorthumberland";
 import { visitEastOfEnglandAdapter } from "./adapters/visitEastOfEngland";
 import { bauerCompetitionFormAdapter } from "./adapters/bauerCompetitionForm";
 import { wightlinkParkdeanResortsAdapter } from "./adapters/wightlinkParkdeanResorts";
+import { wightlinkParkdeanCompetitionAdapter } from "./adapters/wightlinkParkdeanCompetition";
 import { bestDaysOutCornwallGoldenTicketAdapter } from "./adapters/bestDaysOutCornwallGoldenTicket";
 import { kentAttractionsAdapter } from "./adapters/kentAttractions";
 
@@ -61,6 +62,7 @@ const adapters: CompetitionAdapter[] = [
   visitEastOfEnglandAdapter,
   bauerCompetitionFormAdapter,
   wightlinkParkdeanResortsAdapter,
+  wightlinkParkdeanCompetitionAdapter,
   bestDaysOutCornwallGoldenTicketAdapter,
   kentAttractionsAdapter,
 ];
