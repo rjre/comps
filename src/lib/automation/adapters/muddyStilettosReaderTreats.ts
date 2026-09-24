@@ -37,6 +37,19 @@ const READER_TREAT_ANSWERS: Record<string, string> = {
     "Simon Carter", // independently verified (Great British Life / Gazette): Frinton-based artist Simon Carter's "From the Landscape" opens at Firstsite Oct 2026 — not the two decoy names (Simon Cowell, Simon Pegg) sharing the same first name
   "https://norfolk.muddystilettos.co.uk/reader-treats/switch-off-slow-down-win-a-two-night-slow-stay-at-the-ironmongers/":
     "Ostlers", // the article's own body copy: "Your base will be The Ostlers, a gorgeous, character-filled room tucked above what was once the stables of a 17th-century coaching inn" — not the two decoy trade names (Florist, Cobblers)
+  "https://muddystilettos.co.uk/reader-treats/win-two-night-stay-the-pig-cotswolds/":
+    "Arts & Crafts", // the article's own body copy: "THE PIG-in-the-Cotswolds is a Grade II-listed 17th-century beauty with famous Arts and Crafts gardens by Rosemary Verey" — not the two decoy garden styles (English Cottage, French Formal)
+  // A sibling Reader Treat on the same page ("Win two Delta Roam Beaumont
+  // Robes", asking how many "signature colours" the Beaumont Robe comes in,
+  // options Three/Five/Seven) was found and deliberately NOT added here:
+  // fetching Delta Roam's own product site directly (deltaroam.com) shows
+  // six real colour variants currently for sale (Forest Green, Anthracite
+  // Black, Admiral Navy, Warm Sand, Chestnut Brown, Opal Grey), not
+  // matching any of the three offered options — the Muddy article's own
+  // "shades including Forest Green, Admiral Navy and Chestnut Brown" names
+  // three of those six as *examples*, not an exhaustive count, so "Three"
+  // would be a guess dressed up as a fact. Declined per README's "never
+  // guesses a quiz answer" rule rather than assumed.
 };
 
 export const muddyStilettosReaderTreatsAdapter: CompetitionAdapter = {
