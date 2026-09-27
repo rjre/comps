@@ -1,35 +1,47 @@
 import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types";
 
 /**
- * Visit North Devon's NewMind/eCMS prize draw — "Win a stay at Woolacombe
- * Bay Hotel" (visitdevon.co.uk/northdevon/.../win-a-stay-at-woolacombe-bay-hotel/),
- * run directly by Visit North Devon (part of the official Visit Devon
- * tourism board network). Same underlying eCMS as visitEssexGardenersWorld.ts
- * and northNorfolkAttractions.ts, but this org embeds the actual form as a
+ * The Visit Devon tourism board network's NewMind/eCMS prize draws —
+ * originally written for Visit North Devon's "Win a stay at Woolacombe Bay
+ * Hotel" (visitdevon.co.uk/northdevon/.../win-a-stay-at-woolacombe-bay-hotel/),
+ * generalized this run to also cover the parent "Visit Devon" brand's own
+ * county-wide competitions page (visitdevon.co.uk/competitions/...) once a
+ * second live competition ("Win a short break at Riviera Bay Coastal
+ * Retreat") turned up there with an identical form shape — same domain,
+ * same underlying platform, just a different microsite section of the same
+ * organisation. Same underlying eCMS as visitEssexGardenersWorld.ts and
+ * northNorfolkAttractions.ts, but this org embeds the actual form as a
  * cross-origin <iframe id="embedForm"> pointing at visitdevon-ws.newmindmedia.com
  * rather than serving it same-origin — confirmed directly, so this one needs
  * a frameLocator (same technique as diggerlandPrizeDraw.ts) instead of
- * querying the top-level page.
+ * querying the top-level page. Kept the original "visit-north-devon"
+ * adapter key/siteName rather than renaming to avoid orphaning the
+ * already-registered Woolacombe Bay Hotel row (an adapterKey rename would
+ * leave it pointing at nothing).
  *
- * No quiz question on this one — "question 1" is a single checkbox whose
- * label *is* the entry action itself ("By ticking this box you are
- * agreeing to enter this competition"), confirmed from the form's own
- * markup, not a marketing opt-in. Two further, genuinely-optional
- * marketing checkboxes (Visit North Devon / the prize provider) are left
- * unticked; the form's own onQuestionnaireSubmit() script (read directly)
- * only warns via a #policy-warning/Proceed panel when both are left
- * blank — same non-blocking pattern as the sibling adapters. Protected by
- * an invisible reCAPTCHA v2 — not solved or evaded, just submitted
- * normally.
+ * No quiz question on either competition — "question 1" is a single
+ * checkbox whose label *is* the entry action itself ("By ticking this box
+ * you are agreeing to enter this competition"), confirmed identical
+ * wording on both competitions' own markup (though each has its own
+ * numeric field id — #question-91425-1 vs #question-91415-1 — so matched
+ * by label text instead of a hardcoded id, letting this one adapter cover
+ * both and whatever future competition reuses the same wording), not a
+ * marketing opt-in. Two further, genuinely-optional marketing checkboxes
+ * (Visit Devon/Visit North Devon / the prize provider) are left unticked;
+ * the form's own onQuestionnaireSubmit() script (read directly, present
+ * verbatim on both) only warns via a #policy-warning/Proceed panel when
+ * both are left blank — same non-blocking pattern as the sibling adapters.
+ * Protected by an invisible reCAPTCHA v2 — not solved or evaded, just
+ * submitted normally.
  *
- * This competition's page states no closing date at all (confirmed by
- * reading the full page and linked T&Cs directly) — entered on an ongoing
- * basis until it's next found closed/replaced by another Visit Devon
+ * Neither competition's page states a closing date (confirmed by reading
+ * each page and its linked T&Cs directly) — entered on an ongoing basis
+ * until next found closed/replaced by another Visit Devon network
  * microsite competition.
  */
 export const visitNorthDevonAdapter: CompetitionAdapter = {
   key: "visit-north-devon",
-  siteName: "Visit North Devon",
+  siteName: "Visit Devon",
   async enterCompetition({ page, competitionUrl, profile, log, dryRun }: AdapterContext): Promise<EntryOutcome> {
     await log.info(`Navigating to ${competitionUrl}`);
     await page.goto(competitionUrl, { waitUntil: "load", timeout: 45000 });
@@ -72,18 +84,20 @@ export const visitNorthDevonAdapter: CompetitionAdapter = {
     }
     await log.info(`Filled ${filledFields}`);
 
-    const enterCheckbox = form.locator("#question-91425-1");
+    const enterCheckboxLabel = /By ticking this box you are agreeing to enter this competition/i;
+    const enterCheckbox = form.getByLabel(enterCheckboxLabel);
     if ((await enterCheckbox.count()) === 0) {
-      await log.warn("Expected entry checkbox (#question-91425-1) not found — page may have changed");
+      await log.warn("Expected entry checkbox (labelled 'By ticking this box you are agreeing to enter this competition') not found — page may have changed");
       return { status: "FAILED", message: "Entry checkbox not found on page" };
     }
-    await enterCheckbox.check();
+    await enterCheckbox.first().check();
     await log.info("Ticked 'By ticking this box you are agreeing to enter this competition' — the entry action itself, not marketing");
 
-    // Both left unticked deliberately: consent value=13481 ("contacted by
-    // Visit North Devon with offers, competitions and information"),
-    // value=13491 ("contacted by the prize provider"). See NewsletterAdapter
-    // for opting into either via a standalone signup instead.
+    // Both left unticked deliberately: the org's own "contacted by [Visit
+    // Devon/Visit North Devon] with offers, competitions and information"
+    // consent checkbox, and "contacted by the prize provider". See
+    // NewsletterAdapter for opting into the first via a standalone signup
+    // instead.
 
     await dismissCookieBanner(3000);
 
