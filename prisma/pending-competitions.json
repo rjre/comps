@@ -567,5 +567,237 @@
     "closesAt": "2026-10-25T23:45:00.000Z",
     "maxEntries": 1,
     "notes": "Sibling competition on the same Reach plc reader-competitions widget as the new Butlin's row above (see that entry's notes for the full platform description) — confirmed directly via the live iframe's served HTML, identical field ids. This instance additionally carries a brand-specific optional checkbox (name=q157_oakFurnitureland[], 'Yes I am happy to hear from Oak Furnitureland by email') — confirmed directly its underlying <input> carries no HTML `required` attribute despite the label's asterisk, so it's left unticked same as every other optional checkbox on this platform; worth re-checking after a real run in case client-side JS enforces it despite the missing attribute. Same required T&Cs radio, same visible reCAPTCHA v2 at submit, same CIPA cookie notice, same reachplc-competition adapter (no new code). Closing date from the page's own copy: 23:45 UK time, 25 October 2026."
+  },
+  {
+    "name": "Muddy Stilettos Reader Treat — Win a Stay at The July London Victoria (dinner & theatre)",
+    "url": "https://muddystilettos.co.uk/reader-treats/win-a-stay-at-the-july-london-victoria/",
+    "adapterKey": "muddy-stilettos-reader-treats",
+    "closesAt": "2026-10-05T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "New national-edition Reader Treat, found this run via the web sweep. Same shared muddyStilettosReaderTreats.ts template/adapter as the other tracked entries (name/email/county/trivia, T&Cs checkbox) — no code changes needed beyond adding this URL's answer to READER_TREAT_ANSWERS, done this run. Prize: a stay at The July London Victoria hotel with dinner for two at its restaurant and a £150 West End theatre voucher. Trivia ('What's the name of The July London Victoria's restaurant?', options The Idler/The Idol/The Idiot) answered 'The Idler', stated directly in the page's own body copy twice and independently confirmed as the hotel's real restaurant at thejuly.com/restaurants/the-idler (the page's own hyperlink) — the other two options are wordplay decoys, not real venues. Page's own embedded config gives closing date as 2026-10-05 (23:59 UK/BST time = 22:59 UTC, same convention as this file's other Reader Treats)."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a family 'Palace & Play Pass' to Blenheim Palace",
+    "url": "https://comps.marieclaire.co.uk/competition/a_family_palace__play_pass_to_blenheim_palace_marieclaire/122814.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-13T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 13/10/2026'). No hand-researched trivia answer added; the adapter's own deriveAnswerFromCopy runtime fallback will answer from the competition's own descriptive copy if exactly one offered option matches, and declines rather than guessing otherwise."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a NETGEAR Nighthawk M7 Pro mobile hotspot",
+    "url": "https://comps.marieclaire.co.uk/competition/a_netgear_nighthawk_m_pro_mobile_hotspot_marieclaire/123175.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-23T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 23/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback (see the Blenheim Palace row above for how it works)."
+  },
+  {
+    "name": "Marie Claire Competitions — Win an AlcoSense Elite 3 for Autumn",
+    "url": "https://comps.marieclaire.co.uk/competition/alcosense_marieclaire/122988.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-14T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 14/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a £250 Shopping Spree with Cotton Traders",
+    "url": "https://comps.marieclaire.co.uk/competition/cotton_traders_marieclaire/122138.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-22T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 22/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win Jeulia Eternal Heart Twist Jewellery & £250 E-Gift Card",
+    "url": "https://comps.marieclaire.co.uk/competition/jeulia_eternal_heart_twist_jewellery___egift_card_marieclaire/123190.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-26T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 26/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a Magical Storytelling Bundle for the Whole Family",
+    "url": "https://comps.marieclaire.co.uk/competition/win_a_magical_storytelling_bundle_for_the_whole_family_marieclaire/123250.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-16T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 16/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win an Oliver! The Musical and London Sightseeing Experience",
+    "url": "https://comps.marieclaire.co.uk/competition/the-original-tour-win%E2%80%93oliver-musical-tickets-two-day-family-hop-on-hop-off-london_marieclaire/123156.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-21T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes). Prize is Oliver! Musical tickets (Gielgud Theatre, West End) plus a family 2-day Original Tour hop-on-hop-off London bus tour — genuinely London-relevant. Confirmed directly via curl: the page's own visible copy says 'This competition ends on 21/10/2026' (used here per this file's standing convention of trusting that visible text), but the T&Cs modal's own prose separately states the 'Competition Period... closes at 23:59 on 13/10/2026' — a genuine discrepancy on the page itself, worth a human's eyes / a live re-check rather than assumed resolved. No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win tickets to South West Homebuilding & Renovating Show",
+    "url": "https://competitions.goodto.com/competition/tickets_to_south_west_homebuilding__renovating_show_goodtoknow/122911.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-02T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 02/10/2026' — tight runway). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback. Sibling instance also found on competitions.topsante.co.uk (added separately below), same content, independently-verified separate draw per this platform's documented 'concurrent but separate' behaviour."
+  },
+  {
+    "name": "GoodTo — Win £500 of HexClad Kitchenware with SPAR's Fresh Pasta",
+    "url": "https://competitions.goodto.com/competition/_of_hexclad_kitchenware_with_spars_fresh_pasta_goodtoknow/123332.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-23T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 23/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win A Muddy Puddles £100 Gift Card",
+    "url": "https://competitions.goodto.com/competition/muddy_puddles__gift_card_goodtoknow/123128.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-15T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 15/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win a Back-to-School Kids Yogurt Bundle from The Collective",
+    "url": "https://competitions.goodto.com/competition/the_collective_goodtoknow/123018.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-10T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 10/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win a £50 voucher for XY London",
+    "url": "https://competitions.goodto.com/competition/a__voucher_for_xy_london_goodtoknow/123091.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-11T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes), London-relevant prize. Confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 11/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win a year of calm and joy with Amplify",
+    "url": "https://competitions.topsante.co.uk/competition/a_year_of_calm_and_joy_with_amplify__topsante/123107.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-13T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 13/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win 2 months supply Qsilica Hair Supplements worth £100",
+    "url": "https://competitions.topsante.co.uk/competition/_2months_supply_qsilica_hair_supplements_%26pound;100_topsante/122898.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-03T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 03/10/2026' — tight runway). URL's own raw HTML entity ('&pound;', unescaped in the site's own markup) kept literally/percent-encoded as served rather than 'corrected', since that's the real link. No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win a Medisana Winter Wellness Bundle worth £120",
+    "url": "https://competitions.topsante.co.uk/competition/a_medisana_winter_wellness_bundle_worth__topsante/123179.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-24T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 24/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win a Nurosym by Parasym (vagus nerve stimulation device)",
+    "url": "https://competitions.topsante.co.uk/competition/a_nurosym_by_parasym_a_vagus_nerve_stimulation_device_topsante/122905.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-05T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 05/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win an Anita Active Sports Bra",
+    "url": "https://competitions.topsante.co.uk/competition/an_anita_active_sports_bra_topsante/123157.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-23T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 23/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win a six-month supply of Nutri-Ice fortified ice cream",
+    "url": "https://competitions.topsante.co.uk/competition/nutri_ice_topsante/122933.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-02T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 02/10/2026' — tight runway). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win a Guided Nervous System Reset (Safe and Sound Protocol) worth £380",
+    "url": "https://competitions.topsante.co.uk/competition/safe-and-sound-protocol_topsante/122899.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-09T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 09/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a copy of John Steinbeck's East of Eden",
+    "url": "https://comps.whatsontv.co.uk/competition/a_copy_of_john_steinbecks_east_of_eden_whatsontv/123214.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-22T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 22/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win a Spa Day and a Japanese Head Spa for Two with Polytar",
+    "url": "https://comps.womanmagazine.co.uk/competition/a_spa_day_and_a_japanese_head_spa_for_two_with_polytar_network/123277.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-17T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 17/10/2026'). Sibling instances of the same content also live on comps.whatsontv.co.uk (123276) and comps.womansownmagazine.co.uk (123279) at time of writing — not added this run to keep this batch to a reasonable size, worth adding on a future pass if still open (independently-verified separate draws per this platform's documented behaviour, not duplicates). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win 3 Months of IntimX or VirilX with Aiku",
+    "url": "https://comps.whatsontv.co.uk/competition/_intimate_pleasure_with_aiku_network/123086.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-11T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1 'Win 3 Months of IntimX or VirilX with Aiku', 'This competition ends on 11/10/2026'). A men's supplement brand giveaway, same legitimate no-purchase-necessary platform-wide T&Cs as every other tracked DMRI row — nothing about the prize itself excludes it. No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win Ray-Ban Sunglasses and TheraTears Screen Eyes",
+    "url": "https://comps.womanmagazine.co.uk/competition/rayban_sunglasses_and_theratears_screen_eyes_2026_network/123353.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-21T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 21/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win an ECOVACS WINBOT W2S PRO OMNI Robotic Window Cleaner",
+    "url": "https://comps.whatsontv.co.uk/competition/an_ecovacs_winbot_ws_pro_omni_robotic_window_cleaner_network/122963.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-12T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 12/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a spooky signed copy of Kay's Gruesome Games",
+    "url": "https://comps.whatsontv.co.uk/competition/_a_spooky_signed_copy_of_kays_gruesome_games_network/123131.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-18T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 18/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win 1 of 4 £125 Jeulia E-Gift Cards",
+    "url": "https://comps.whatsontv.co.uk/competition/_of___jeulia_egift_cards_network/123185.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-26T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 26/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win 1 of 2 £250 Vouchers for Woven Woven's Weighted Blanket",
+    "url": "https://comps.whatsontv.co.uk/competition/best_kids_weighted_blanket_network/121771.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-02T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 02/10/2026' — tight runway). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win 4 Tickets to The Ideal Christmas Show",
+    "url": "https://comps.womanmagazine.co.uk/competition/_tickets_to_the_ideal_christmas_show_network/122846.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-07T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 07/10/2026'). A genuinely separate draw ID from the already-tracked GoodTo Ideal Christmas Show entry, per this platform's documented per-domain-independent-winners behaviour. No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
   }
 ]

@@ -39,6 +39,8 @@ const READER_TREAT_ANSWERS: Record<string, string> = {
     "Ostlers", // the article's own body copy: "Your base will be The Ostlers, a gorgeous, character-filled room tucked above what was once the stables of a 17th-century coaching inn" — not the two decoy trade names (Florist, Cobblers)
   "https://muddystilettos.co.uk/reader-treats/win-two-night-stay-the-pig-cotswolds/":
     "Arts & Crafts", // the article's own body copy: "THE PIG-in-the-Cotswolds is a Grade II-listed 17th-century beauty with famous Arts and Crafts gardens by Rosemary Verey" — not the two decoy garden styles (English Cottage, French Formal)
+  "https://muddystilettos.co.uk/reader-treats/win-a-stay-at-the-july-london-victoria/":
+    "The Idler", // the article's own body copy, twice: "dinner for two ... at The Idler" and "heading downstairs to The Idler to sample the pre-theatre menu" — also independently confirmed as the hotel's real restaurant at thejuly.com/restaurants/the-idler, the page's own hyperlink; the other two options ("The Idol", "The Idiot") are wordplay decoys, not real venues
   // A sibling Reader Treat on the same page ("Win two Delta Roam Beaumont
   // Robes", asking how many "signature colours" the Beaumont Robe comes in,
   // options Three/Five/Seven) was found and deliberately NOT added here:
