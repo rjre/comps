@@ -19,6 +19,7 @@ import { solmarVillasBritishTravelAwardsAdapter } from "./adapters/solmarVillasB
 import { visitLakeDistrictAdapter } from "./adapters/visitLakeDistrict";
 import { muddyStilettosReaderTreatsAdapter } from "./adapters/muddyStilettosReaderTreats";
 import { officialLondonTheatreHeathersAdapter } from "./adapters/officialLondonTheatreHeathers";
+import { officialLondonTheatreIntoTheWoodsAdapter } from "./adapters/officialLondonTheatreIntoTheWoods";
 import { parkHolidaysWinAHolidayHomeAdapter } from "./adapters/parkHolidaysWinAHolidayHome";
 import { ambassadorCruiseLineEnglandGolfAdapter } from "./adapters/ambassadorCruiseLineEnglandGolf";
 import { advantageTravelAmbassadorCaribbeanAdapter } from "./adapters/advantageTravelAmbassadorCaribbean";
@@ -56,6 +57,7 @@ const adapters: CompetitionAdapter[] = [
   visitLakeDistrictAdapter,
   muddyStilettosReaderTreatsAdapter,
   officialLondonTheatreHeathersAdapter,
+  officialLondonTheatreIntoTheWoodsAdapter,
   parkHolidaysWinAHolidayHomeAdapter,
   ambassadorCruiseLineEnglandGolfAdapter,
   advantageTravelAmbassadorCaribbeanAdapter,
