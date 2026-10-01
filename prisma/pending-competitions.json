@@ -206,5 +206,894 @@
     "closesAt": "2026-09-24T22:59:00.000Z",
     "maxEntries": 30,
     "notes": "Sibling DMRI (Future PLC) daily prize draw on comps.marieclaire.co.uk, shared dmri-comps adapter. No purchase necessary. Prize: a trip with Spring Hotels to the Starmus VIII science/music festival in Tenerife. Closes '24th Sept 2026' per the lead source, no exact time given — 23:59 UK time assumed. maxEntries set high (30) for the daily-draw reason documented in the adapter file. Trivia answer ('Brian May', Starmus festival co-founder) sourced from competitions-whale.co.uk (lead/answer source only) — not independently cross-checked."
+  },
+  {
+    "name": "Coast Magazine — Win a Luxury Family Holiday in Cornwall (Carbis Bay Estate)",
+    "url": "https://www.coastmagazine.co.uk/competitions/win-a-luxury-family-holiday-in-cornwall/",
+    "adapterKey": "coast-magazine-carbis-bay",
+    "closesAt": "2026-09-30T23:00:00.000Z",
+    "maxEntries": 1,
+    "notes": "Same Kelsey Media / Coast Magazine dotdigital platform as the existing coast-magazine-suffolk-coast adapter (coast.kelseydirect.com/p/5D8F-KQW/carbis-bay is the real entry form, found via the article's outbound link). No purchase necessary, UK residents (Kelsey's own T&Cs say 21+, though the form's own age question only asks 'aged 18 or over?' — filled as the form itself asks). Prize: four-night stay for up to 12 people (+1 dog) at the Carbis Bay Estate, Cornwall (managed by Beach Retreats). Quiz question ('What is the name of St Ives' most famous gallery?') answered A) Tate St Ives — a real, independently verifiable fact, not taken from the competition's own copy. Closes midnight 30 Sept 2026 UK time."
+  },
+  {
+    "name": "The Suffolk Coast — \"Gather Prizes\" First Package (Feast)",
+    "url": "https://www.thesuffolkcoast.co.uk/competition-entry",
+    "adapterKey": "suffolk-coast",
+    "closesAt": "2026-08-31T07:00:00.000Z",
+    "maxEntries": 1,
+    "notes": "A second, genuinely separate 'Gather Prizes' draw run directly by The Suffolk Coast Ltd on their own site, sibling to the already-tracked competition-entry-2 ('Roam' / second package) that the suffolk-coast adapter was built against. Confirmed by fetching both pages directly: identical ASP.NET WebForms markup and control IDs (#ctl00_contentBody_panelFormFoodDrink, #ctl00_contentBody_chkAgree, #ctl00_contentBody_btEstablishmentSend, etc) on both /competition-entry and /competition-entry-2 — same template, different prize copy — so the existing adapter needs no code changes, just this second Competition row pointed at the sibling URL (same reuse pattern as dmri-comps and muddy-stilettos-reader-treats). Prize ('first package'): 2-night dinner/B&B for 2 at The Brudenell Hotel Aldeburgh, a Lady Florence river-cruise dining experience for 2, full-day hire of 2 EEZYBIKEs, 2 Snape Maltings Concert Hall tickets, a Suffolk Food Hall hamper and a Pump Street chocolate bundle. No purchase necessary, one entry per person, real T&Cs on the page itself (opened 13 July 2026). Closing time stated on the page as '8am on 31 August 2026' (BST) = 07:00 UTC — a tight window from when this syncs, flagging that explicitly since it may already have closed by the time a run picks it up."
+  },
+  {
+    "name": "Village People Magazine — Win an Ultimate Ears BOOM 4 Portable Speaker (with John Lewis Norwich)",
+    "url": "https://www.village-people.info/enter-our-competition/#wpcf7-f105434-p346-o2",
+    "adapterKey": "village-people-ultimate-ears",
+    "closesAt": "2026-11-23T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Same page/site as the already-tracked village-people-banham-zoo competition, but a genuinely separate Contact Form 7 instance (id 105434, confirmed by fetching the real page and matching the form's own hidden _wpcf7 value) — two winners, John Lewis Norwich tie-in. No purchase necessary. Closes 23 Nov 2026 (no exact time stated — 23:59 UK time assumed). Identical field shape to the Banham Zoo form (name/single address textarea/phone/email), no marketing checkbox. This site's CF7 install has already been root-caused (on the Banham Zoo form) to consistently score-reject every submission via reCAPTCHA v3 regardless of a valid-looking token — since that's a site-wide plugin setting rather than per-form, the same rejection is expected here; built anyway per this project's 'submit-time reCAPTCHA, still worth building' policy, so worth confirming on the first live run whether this specific form is affected the same way. URL carries a #wpcf7-... fragment (the form's own real anchor, harmless at goto time — fragments aren't sent to the server, so the browser loads the identical page) purely so this row's url differs from village-people-banham-zoo's and village-people-elemis-pamper's below — Competition.url is @unique in the schema and all three competitions genuinely live on the exact same page URL, which the existing Banham Zoo row didn't have to account for since it was the only one at the time."
+  },
+  {
+    "name": "Village People Magazine — Win the Ultimate Elemis Pamper Experience at John Lewis Norwich",
+    "url": "https://www.village-people.info/enter-our-competition/#wpcf7-f103089-p346-o3",
+    "adapterKey": "village-people-elemis-pamper",
+    "closesAt": "2026-09-28T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Third form on the same village-people.info page (Contact Form 7 id 103089, confirmed directly), two winners, Elemis/John Lewis Norwich tie-in — expert consultation, tailored facial, goody bag and cream tea for two. No purchase necessary. Closes 28 Sept 2026 (no exact time stated — 23:59 UK time assumed). Same field shape and same site-wide reCAPTCHA v3 spam-rejection caveat as village-people-ultimate-ears above. Same #wpcf7-... fragment reasoning as that row: distinguishes this Competition.url from its two siblings on the same physical page (unique constraint), harmless at goto time."
+  },
+  {
+    "name": "Diggerland UK — Monthly Prize Draw (August 2026: myFirst Insta 20 Camera)",
+    "url": "https://www.diggerland.com/prize-draw/",
+    "adapterKey": "diggerland-prize-draw",
+    "closesAt": "2026-08-31T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Diggerland UK (H E Group) monthly prize draw, no purchase necessary — genuinely recurring ('Each month, Diggerland UK Theme Park give you the opportunity to win a fantastic prize', confirmed from the page's own schema.org description), so modelled the same way as tui-monthly-giveaway: register a fresh 'Diggerland UK — Monthly Prize Draw (<Month> <Year>)' row once this closes, reusing the same adapter, rather than expecting this row to re-enter itself. This specific instance's prize is a myFirst Insta 20 kids' camera, closing date stated on the page as 'Monday 31 August 2026' (no exact time — 23:59 UK time assumed = 22:59 UTC) — i.e. today, the same day this was added, so it may well have already closed by the time a run picks it up; flagging that tightness explicitly rather than hiding it. Entry is a Google Form embedded via iframe (confirmed directly from the served HTML and the form's own embedded JSON config) with a fresh form id expected each month, so the adapter reads whichever iframe is currently on the page rather than a hardcoded form URL. Two fields (Name, Email Address) plus two independently-REQUIRED Yes/No marketing questions ('receive prize draw info from Diggerland/myFirst via email?') — answering 'No' to both (required to submit at all either way) is the correct no-auto-consent choice here, not an opt-in. Complianz cookie banner. No CAPTCHA on this specific form (the site's reCAPTCHA v2 elsewhere is scoped to WooCommerce checkout only, confirmed not present on this page)."
+  },
+  {
+    "name": "Diggerland UK — Monthly Prize Draw (September 2026: ORIDA Maidstone one-night stay)",
+    "url": "https://www.diggerland.com/prize-draw/#september-2026",
+    "adapterKey": "diggerland-prize-draw",
+    "closesAt": "2026-09-30T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Fresh monthly row per the reuse pattern documented on the August entry above — same page, same diggerland-prize-draw adapter (still reads whichever Google Form iframe is currently embedded, so no code changes needed), just this month's prize/closing date. Re-fetched the live page directly (curl) and confirmed this month's prize is a one-night stay at the ORIDA Maidstone hotel, and the page's own text states 'the closing date for the competition is Wednesday 30th September 2026'. Competition.url is @unique and physically identical to the August row's URL, so a harmless '#september-2026' fragment (never sent to the server, and this page has no hash-routing to worry about) disambiguates it, same trick already used for the Village People sibling forms."
+  },
+  {
+    "name": "Muddy Stilettos Reader Treat — Agria Blenheim Palace International Horse Trials Fashion Competition",
+    "url": "https://muddystilettos.co.uk/reader-treats/agria-blenheim-palace-international-horse-trials-fashion-competition/",
+    "adapterKey": "muddy-stilettos-reader-treats",
+    "closesAt": "2026-09-05T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Found this run: the muddyStilettosReaderTreats.ts adapter file already carries a researched, verified answer ('4 days') for this exact URL in its READER_TREAT_ANSWERS map, but no Competition row for it was ever appended to this pending file — a gap from whichever earlier session added the code, now closed. Same national muddystilettos.co.uk Reader Treats form/template as the already-tracked Fortnum & Mason hamper entry (name/email/county/trivia, T&Cs checkbox), no code changes needed beyond what's already there. Prize: four-day members' passes to the Agria Blenheim Palace International Horse Trials (17-20 Sept 2026) plus a fashion bundle. Trivia ('How many days does the Agria Blenheim Palace International Horse Trials run for?', options 2/4/5 days) answered '4 days' directly from the event's own dates on the competition page's 'Need to Know' section. Page's own embedded config gives closing date as 2026-09-05 (assumed 23:59 UK time = 22:59 UTC, same convention as this file's other Reader Treats) — tight, four days after this was added."
+  },
+  {
+    "name": "Muddy Stilettos Reader Treat — Win a Firstsite Mosaic Membership for a Family of 4",
+    "url": "https://essex.muddystilettos.co.uk/reader-treats/win-a-firstsite-mosaic-membership-for-a-family-of-4/",
+    "adapterKey": "muddy-stilettos-reader-treats",
+    "closesAt": "2026-09-26T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "New Essex-edition Reader Treat, found via this run's own web sweep (not Gmail). Same shared muddyStilettosReaderTreats.ts template/adapter as the other entries in this file — no code changes needed beyond adding this URL's answer to READER_TREAT_ANSWERS, done this run. Prize: a year's family (4-person) membership to Firstsite, Colchester's contemporary art gallery — genuinely local to this Essex-based profile. Trivia ('Who has a new exhibition at Firstsite called 'From the Landscape'?', options Simon Carter/Simon Cowell/Simon Pegg — all sharing the first name 'Simon' by design) answered 'Simon Carter', independently verified via web search (Great British Life / Colchester Gazette both report Frinton-based artist Simon Carter's 'From the Landscape' opening at Firstsite in Oct 2026), not guessed from the page's own copy. Page's own embedded config gives closing date as 2026-09-26 (23:59 UK time assumed = 22:59 UTC)."
+  },
+  {
+    "name": "Visit Northumberland — Win a Food Lovers Break",
+    "url": "https://www.visitnorthumberland.com/inspire-me/competitions/win-a-food-lovers-break",
+    "adapterKey": "visit-northumberland",
+    "closesAt": "2027-01-31T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Visit Northumberland (visitnorthumberland.com) competition, run directly by the Northumberland DMO, no purchase necessary (confirmed from the page's own T&Cs). Prize: a 1-night stay for two at The Tempus (Superior Room or Lakeside Cabin), dinner at The Orangery (£35pp allowance), B&B, plus a 'Meet the Makers Northumberland' food tour for two. Closes midnight Sunday 31 Jan 2027 per the page's own text. New adapter (visit-northumberland) built and verified against the real served HTML/JS (its own '.js-competitionform-wrapper' component, distinct from the NewMind/eCMS engine used by Visit Essex/North Norfolk/Lake District) — see the adapter file's own docblock for the full technical writeup, including a same-page 'Newsletter Sign Up' modal that turned out to be a copy-pasted duplicate of this same competition form (not a genuine separate newsletter) rather than something worth tracking for Part B. Only firstName/lastName/email/addressLine1/city/region/postalCode required, all already set on this profile. Invisible reCAPTCHA v3 — not solved/evaded, just submitted normally. This sandbox's own Playwright couldn't render this or any other external domain today (proxy-level connection reset, the same documented sandbox artifact as several other entries in this file) — curl fetched the real page/JS bundle cleanly, but the first live run is still worth a human's eyes on the resulting screenshot."
+  },
+  {
+    "name": "Visit Northumberland — Win a Short Break in a Northumberland Coastal Cottage",
+    "url": "https://www.visitnorthumberland.com/inspire-me/competitions/win-a-short-break-in-a-northumberland-coastal-cottage",
+    "adapterKey": "visit-northumberland",
+    "closesAt": "2026-10-04T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Sibling competition to the Food Lovers Break above — same site, same visit-northumberland adapter, same form/JS component (only the hidden Pure360ListName value differs, 'LittleHideaways_Aug2026', which the adapter reads from the page itself rather than hardcoding). Official Visit Northumberland (visitnorthumberland.com) competition, no purchase necessary. Prize: up to 3 nights at a Little Hideaways dog-friendly cottage in Seahouses (Oct 2026-Feb 2027, blackout dates excluded). Closes midnight Sunday 4 Oct 2026 per the page's own text (converted to 22:59 UTC, BST in effect on that date) — tighter runway than its sibling, worth a relatively prompt first run."
+  },
+  {
+    "name": "Visit East of England — Win a Coastal Stay at The Grove and £50 to Spend at YALM",
+    "url": "https://visiteastofengland.com/competitions/win-a-coastal-stay-at-the-grove-and--50-to-spend-at-yalm",
+    "adapterKey": "visit-east-of-england",
+    "closesAt": "2026-09-29T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Visit East of England (visiteastofengland.com) competition — the regional DMO covering Norfolk and Suffolk, genuinely East Anglian and a new platform for this project (Destination Core/Craft CMS with the Solspace Freeform plugin, distinct from the NewMind/eCMS engine on visitessex.com/visitnorthnorfolk.com). New visit-east-of-england adapter built and verified directly against the served HTML/JS: a single data-freeform form (firstName/email required, lastName/telephone/postcode optional), two required checkboxes that are entry acceptance not marketing (privacyPolicy, termsAndConditions), and one genuinely optional marketing checkbox (marketingMaterial) left unticked. No trivia question. AJAX submit with fixed confirmation/error copy read directly from the form's own data-success-message/data-error-message attributes. Invisible reCAPTCHA v3 — not solved/evaded, just executed. No cookie-consent banner script found anywhere in the served HTML/JS for this site (checked directly). Both Visit Norfolk (visitnorfolk.co.uk/competitions) and Visit Suffolk (visitsuffolk.com/competitions) — sibling DMOs on what looks like the same underlying platform/vendor — were checked directly this run and currently show 'no live competitions right now' placeholder text, so nothing to register there yet; visitsuffolk.com's own /visit_suffolk_competition.aspx legacy URL 403s but /competitions on the same domain loads fine, so not a genuine site-wide block. Prize: one night for two at The Grove hotel, Cromer, plus a £50 YALM (Norwich) voucher and a pair of Norwich Theatre tickets. Closes '29th Sept 2026' per the page's own text, no exact time given — 23:59 UK time assumed = 22:59 UTC. No purchase necessary — a plain free-entry form, no purchase referenced anywhere on the page."
+  },
+  {
+    "name": "Visit East of England — Win a Luxury Spa Break and Suffolk Vineyard Experience for Two",
+    "url": "https://visiteastofengland.com/competitions/win-a-luxury-spa-break-and-suffolk-vineyard-experience-for-two",
+    "adapterKey": "visit-east-of-england",
+    "closesAt": "2026-09-29T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Sibling competition to the Grove/YALM entry above — identical form/field structure on the same visiteastofengland.com Freeform widget, confirmed directly field-by-field, no adapter changes needed. Prize: a luxury spa break plus a Suffolk vineyard experience for two. Closes '29th Sept 2026' per the page's own text (23:59 UK time assumed = 22:59 UTC), no purchase necessary."
+  },
+  {
+    "name": "Visit East of England — Win up to £1,000 Towards a Norfolk Broads Boating Holiday",
+    "url": "https://visiteastofengland.com/competitions/win-up-to-1-000-towards-a-norfolk-broads-boating-holiday",
+    "adapterKey": "visit-east-of-england",
+    "closesAt": "2026-09-29T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Third sibling competition on the same visiteastofengland.com Freeform widget, identical form/field structure confirmed directly, no adapter changes needed. Prize: up to £1,000 towards a Norfolk Broads boating holiday with Barnes Brinkcraft. Closes '29th Sept 2026' per the page's own text (23:59 UK time assumed = 22:59 UTC), no purchase necessary."
+  },
+  {
+    "name": "Visit North Norfolk — Win a Winter Shepherd Hut Stay at The Victoria, Holkham",
+    "url": "https://www.visitnorthnorfolk.com/win-a-stay-in-a-shepherd-hut-at-the-victoria-holkham",
+    "adapterKey": "north-norfolk-attractions",
+    "closesAt": "2026-09-30T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "New sibling prize draw on Visit North Norfolk's own site (visitnorthnorfolk.com), same official DMO already tracked via the north-norfolk-attractions adapter, no purchase necessary (same legitimacy basis already established for that sibling). Prize: a self-catering stay for two people (+ up to two dogs) in one of The Victoria's shepherd huts near Holkham Beach — a 4-night midweek or 3-night weekend stay, redeemable by 31 Jan 2027. Closes 23:59 UK time 30 Sept 2026 per the page's own text (converted to 22:59 UTC). Confirmed directly (curl) this is the same NewMind/eCMS questionnaire engine as the existing sibling (forename/surname/email + the same 'Have you ever visited North Norfolk before?' Yes/No question, answered truthfully not researched) but with a different internal question field id (question-28931 here vs question-27021 on the Attractions page) and two consent checkboxes (Visit North Norfolk, Holkham) rather than one — so the existing adapter was generalized this run to match the question by its own row text instead of a hardcoded field id, rather than forking a near-duplicate adapter file. Both consent checkboxes left unticked deliberately. No code changes needed beyond that generalization; no new selectors to verify for this row specifically."
+  },
+  {
+    "name": "Fate & Fortune — Win The Angel Almanac by Angela McGerr",
+    "url": "https://www.fateandfortunemagazine.co.uk/competitions/latest-competitions/fate-fortune-october/",
+    "adapterKey": "bauer-competition-form",
+    "closesAt": "2026-10-01T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "H Bauer Publishing's own magazine site (fateandfortunemagazine.co.uk), a genuine reputable UK publisher — real T&Cs at bauerlegal.co.uk/competition-terms.html confirm 'free to enter'. Found via a MoneySavingExpert Competitions Time lead, verified directly on the publisher's own domain. This one page actually bundles five unrelated competitions into a single shared form (one answer text-field per competition, id=114028/110486/110499/110512/110525) — only the Angel Almanac one is entered: its answer ('ANGEL') is given verbatim in the page's own copy ('Please answer ANGEL to enter'), the other four (a Prize Sudoku, a Skeleton Puzzle, a Star Chart, and a Crystal Healing course) need the physical magazine to solve and are deliberately left blank, never guessed. Three marketing opt-in checkboxes (brand/group/partner) left unticked; only the required T&Cs checkbox is ticked. No client-visible confirmation text could be confirmed without a live submission (never done from this environment), so the adapter reads the raw HTTP response and fails loudly with the response logged if it can't recognise either a confirmation or error phrase — expect this to need a follow-up tweak once a real run's log shows the actual copy. This page/URL rotates monthly (was 'fate-fortune-september', now 'fate-fortune-october') — re-check whether a new issue needs its own new pending-competition row with a freshly researched directly-stated answer, don't assume this URL stays valid past its closesAt."
+  },
+  {
+    "name": "Wightlink Ferries — Win a Parkdean Resorts holiday worth £750",
+    "url": "https://form.wightlink.co.uk/cn/aojq7/parkdean",
+    "adapterKey": "wightlink-parkdean-resorts",
+    "closesAt": "2026-09-30T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Wightlink Ltd (company no. 01059267, the Isle of Wight ferry operator) prize draw, co-branded with Parkdean Resorts UK Limited as the voucher prize provider, found via web search rather than the MSE/Loquax leads (both scanned this run — a Center Parcs 'win a break' page had gone 404, a Visit Cornwall competition turned out to require following/liking its Facebook page rather than a web form, and a Go North Wales competition was checked and rejected: its entry form has a *required* 'I agree to receive Go North Wales newsletters' checkbox, so there's no way to enter it without ticking marketing consent — not built, per this project's no-auto-consent rule). Confirmed directly from the listing page's own T&Cs accordion (wightlink.co.uk/ways-to-save/competitions/parkdean-resorts): no purchase necessary with either Wightlink or the prize providers, online-only, 18+, entries open 1 July 2026 and must be received by 23:59 on 30 Sept 2026 (converted from the site's displayed UK time; tight — 23 days after this was added). Prize: a Parkdean Resorts holiday voucher up to £500 plus £300 of Wightlink ferry travel. The real entry form is a ClickDimensions (Dynamics 365 Marketing) form hosted on Wightlink's own form.wightlink.co.uk subdomain, embedded via an iframe on the listing page — this adapter navigates straight to the form URL itself rather than the embedding page, avoiding the iframe. Minimal form: first name, last name, email, postcode — no marketing checkbox on this form to leave unticked. Confirmed directly from the form's own client-side submit script that it does a real full-page form POST (not AJAX), so outcome needs reading from wherever the browser navigates to afterward, not a same-page DOM swap — same PRG-style handling as theSuffolkCoast.ts's newsletter form. No cookie banner present on this bare form subdomain page (checked directly)."
+  },
+  {
+    "name": "Visit Essex — Win a meal for two at Downham Hall",
+    "url": "https://www.visitessex.com/inspire-me/competitions/win-a-meal-for-two-at-downham-hall",
+    "adapterKey": "visit-essex-gardeners-world",
+    "closesAt": "2026-09-16T16:00:00.000Z",
+    "maxEntries": 1,
+    "notes": "Sibling prize draw on the same NewMind/eCMS platform as the already-tracked BBC Gardeners' World Autumn Fair competition (visit-essex-gardeners-world adapter, now generalized to cover both by matching each competition's quiz question/answer per-URL). Confirmed directly from the live page (visitessex.com/inspire-me/competitions/win-a-meal-for-two-at-downham-hall): a 3-course meal for two at Downham Hall, no purchase necessary, closes Wednesday 16 Sept 2026, 5pm BST (winner chosen at random, contacted by email). Same #quesionaireform engine, but this form has no County field (Gardeners' World's does) — the adapter now fills it only when present. One multiple-choice question (\"What is the name of Downham Hall's Restaurant?\"), answer \"North Wing Restaurant\" taken verbatim from the page's own description (\"...meal for two people in the North Wing Restaurant\"), not guessed. Same two optional e-newsletter consent checkboxes left unticked, same invisible reCAPTCHA (not solved/evaded), same CookieScript CMP. Found via research sweep of Visit Essex's other live competitions, prioritised as an Essex-based lead per this project's search order; closes in 8 days so worth registering promptly."
+  },
+  {
+    "name": "Muddy Stilettos Reader Treat — Win a Two-Night Slow Stay at The Ironmongers (Aylsham, Norfolk)",
+    "url": "https://norfolk.muddystilettos.co.uk/reader-treats/switch-off-slow-down-win-a-two-night-slow-stay-at-the-ironmongers/",
+    "adapterKey": "muddy-stilettos-reader-treats",
+    "closesAt": "2026-10-18T23:00:00.000Z",
+    "maxEntries": 1,
+    "notes": "New Reader Treat on the already-tracked Muddy Stilettos Reader Treats template (this profile's Norfolk edition, reachable from Essex/East Anglia) — a two-night stay in 'The Ostlers' room at The Ironmongers boutique guesthouse, Aylsham. Confirmed directly from the live page: no purchase necessary, real T&Cs, closes midnight Sun 18 Oct 2026 (page's own embedded config: endDate 2026-10-19, so 23:00 UTC on the 18th per this project's existing 'UK midnight' convention). Same form template as the existing entries in muddyStilettosReaderTreats.ts (name/email/county + trivia dropdown + required T&Cs + optional third-party marketing checkbox, left unticked) — just a new READER_TREAT_ANSWERS entry, no adapter code changes needed. Trivia dropdown answer 'Ostlers' verified directly from the article's own body copy (\"Your base will be The Ostlers, a gorgeous, character-filled room tucked above what was once the stables of a 17th-century coaching inn\"), not the two decoy trade-name options (Florist, Cobblers)."
+  },
+  {
+    "name": "c2c — Wilko: Love And Death And Rock 'N' Roll",
+    "url": "https://www.c2c-online.co.uk/destinations-offers/competitions/wilko-love-and-death-and-rock-n-roll/",
+    "adapterKey": "c2c-wilko-love-and-death-and-rock-n-roll",
+    "closesAt": "2026-10-10T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "New sibling competition on c2c's own competitions hub (org already tracked via c2c-blowout-company), found by searching current live links from c2c-online.co.uk/destinations-offers/competitions/ directly rather than the search-engine leads that turned up a stale, already-closed 2024/2025 Adventure Island annual-pass tie-in on the same domain. Confirmed directly from the live page: a genuinely separate Gravity Forms instance (id 285, different field ids/shape from the-blowout-company's form 283 — not a re-skin). No purchase necessary. Prize: a pair of tickets to Wilko: Love And Death And Rock 'N' Roll at the Palace Theatre, Southend, plus an overnight stay (dinner included) at the Holiday Inn Southend Airport, for the performance on Monday 12 Oct 2026 — the T&Cs never state an explicit entry closing date (only that prize date), so closesAt here is a conservative couple-of-days-before-the-performance estimate, not a stated deadline; worth tightening once a real run's log shows whether the form is still live. Name + email, three independently optional marketing checkboxes (c2c, the venue/Trafalgar Theatres, the accommodation/Holiday Inn) all left unticked, an optional 'nearest c2c station' dropdown left unselected (no reliable profile field to derive it from), and a required 'I agree to the c2c Privacy Policy' checkbox (privacy acknowledgement, ticked). Same visible reCAPTCHA v2 checkbox already root-caused as a hard block on c2c-blowout-company's own form — built up to the final submit per this project's submit-time-CAPTCHA policy, expected to fail loudly there the same way. Same Cookiebot banner as the-blowout-company and suffolkCoast.ts."
+  },
+  {
+    "name": "TUI Monthly Giveaway — September 2026",
+    "url": "https://www.tui.co.uk/holidays/competitions/giveaway/?month=2026-09",
+    "adapterKey": "tui-monthly-giveaway",
+    "closesAt": "2026-09-30T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Next month's row for the already-tracked recurring TUI UK Limited monthly prize draw (tui-monthly-giveaway adapter, August 2026 row already tracked) — same page, no per-month URL of its own, so a '?month=2026-09' query string is appended purely to give this month's Competition row a URL distinct from August's under the schema's url-uniqueness constraint (inert query string; the adapter navigates straight to competitionUrl and the page ignores it). Once this row closes, the following month's should be registered the same way. Could not re-fetch the live page from this research sandbox this run (an Akamai edge WAF 403'd a plain curl fetch) — looks like a block on this environment's egress IP/reputation rather than a new site-side change, since the existing adapter's own notes already document successfully automating this exact page including its lazy-loaded form and load-event timing quirks. Registering on the strength of that prior verification, not a fresh re-check this run — worth a quick DRY_RUN sanity check before the real run enters it."
+  },
+  {
+    "name": "Best Days Out Cornwall — Golden Ticket (free entry to 30+ Cornwall attractions)",
+    "url": "https://bestdaysoutcornwall.co.uk/competitions/",
+    "adapterKey": "best-days-out-cornwall-golden-ticket",
+    "closesAt": "2026-12-31T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Official Best Days Out Cornwall (bestdaysoutcornwall.co.uk), run by the Cornwall Association of Tourist Attractions — a genuine regional tourism consortium (company no. 12469987), same kind of organisation as the already-tracked devons-top-attractions and north-norfolk-attractions. No purchase necessary (T&Cs clause 3: 'There is no entry fee and no purchase necessary to enter this competition'). Prize: a Golden Ticket giving four people free entry to 30+ Cornwall attractions for one year from March 2027. Closes 31 Dec 2026 (long runway); winner drawn 3 Jan 2027. Simple Elementor Forms name/email/county form, verified directly via curl (form_id 188d3752 — the page also hosts an unrelated second, email-only newsletter form further down, deliberately not targeted). Site runs the 'Simple Cloudflare Turnstile' WordPress plugin, which injects a Turnstile widget after every Elementor form ('appearance: always' per its own embedded config) — not visible in static HTML since it's added client-side, so this is a submit-time widget in the same category as park-holidays-win-a-holiday-home's invisible Turnstile, not a page-load-level block; the adapter waits for its response token to populate and only fails loudly if an actual challenge iframe renders. This sandbox's Playwright couldn't reach this domain at all (net::ERR_CONNECTION_RESET through this environment's mandatory egress proxy — the same artifact already documented on c2c/devonsTopAttractions/parkholidays.com in earlier commits, confirmed general this run: several other unrelated domains hit the identical error while curl worked fine on all of them), so the Turnstile behaviour and the two forms' relative order are verified from curl'd static HTML only — worth a human's eyes on the first live run."
+  },
+  {
+    "name": "Woman's Own Magazine — Win an Apple iPad Mini (Bad Apples)",
+    "url": "https://comps.womansownmagazine.co.uk/competition/an_apple_ipad_mini_with_new_film_bad_apples_network/123008.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-09T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New sibling DMRI (Future PLC) daily prize draw domain not yet tracked by this project: Woman's Own Magazine (comps.womansownmagazine.co.uk), found this run via competitions-whale.co.uk's per-website competition listing (used only as a lead/answer source, same role already established for the Marie Claire entries in this file — entry itself happens on Woman's Own's own domain). Shared dmri-comps adapter, no code changes needed beyond a new TRIVIA_ANSWERS entry. No purchase necessary, real registered UK publisher (Future PLC). Prize: an Apple iPad Mini 2024 Wifi 128GB, tied to the cinema release of the film Bad Apples (in cinemas from 18 Sept 2026). Page states 'This competition ends on 09/10/2026' (converted to 22:59 UTC, BST in effect on that date, same convention as this file's other DMRI entries). Trivia answer ('Saoirse Ronan') independently verified directly from the competition's own page copy ('Starring Academy Award nominee Saoirse Ronan') — a real, checkable fact (she is a genuine Academy Award nominee and the film's lead), not just the aggregator's word. maxEntries set high (30) for the same recurring-daily-draw reason documented in the dmri-comps adapter file."
+  },
+  {
+    "name": "Woman's Own Magazine — Win 4 Tickets to The Ideal Christmas Show",
+    "url": "https://comps.womansownmagazine.co.uk/competition/_tickets_to_the_ideal_christmas_show_network/122848.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-08T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on the same new comps.womansownmagazine.co.uk domain as the Bad Apples iPad Mini entry above, same shared dmri-comps adapter. No purchase necessary. Prize: 4 tickets each for 6 winners to The Ideal Christmas Show, Olympia London. Page states 'This competition ends on 08/10/2026' (22:59 UTC, same BST convention as this file's other entries). Trivia answer ('26-29 November') independently verified directly from the competition's own page copy ('Returning to Olympia London from 26–29 November, The Ideal Christmas Show is bigger, brighter, and more magical than ever') — the actual on-form question wording couldn't be confirmed without logging into a real DMRI account (same limitation already documented for most of this adapter's other whale-sourced answers), but the date itself is stated in the page's own copy, not guessed."
+  },
+  {
+    "name": "Woman's Own Magazine — Win 4 Tickets to The Cake & Bake Show",
+    "url": "https://comps.womansownmagazine.co.uk/competition/_tickets_to_the_cake__bake_show__network/122887.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-09T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on the same new comps.womansownmagazine.co.uk domain, same shared dmri-comps adapter. No purchase necessary. Prize: 4 tickets each for 6 winners to The Cake & Bake Show, Olympia London (26-29 Nov 2026). Page states 'This competition ends on 09/10/2026' (22:59 UTC). Trivia answer ('Home Bake Kitchen Stage') independently verified directly from the competition's own page copy ('discover recipes and clever baking and decorating techniques at the Home Bake Kitchen Stage') — not just the aggregator's paraphrase."
+  },
+  {
+    "name": "Woman Magazine — Win a Pet-Friendly Holiday (Neutradol)",
+    "url": "https://comps.womanmagazine.co.uk/competition/a_petfriendly_holiday_womanmagazine/122833.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-09T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New sibling DMRI (Future PLC) prize draw on comps.womanmagazine.co.uk — a genuinely separate domain from Woman's Own Magazine above and from Woman's Weekly's existing competitions.womansweekly.com entries, all sharing the same platform. No purchase necessary. Prize: a 4-night dog-friendly B&B stay for two (+ up to two dogs) at Woolley Grange, Wiltshire, sponsored by Neutradol. Page confirms directly 'This competition ends on 09/10/2026' (22:59 UTC). Trivia question ('Which of the following is NOT a breed of dog?') and its answer ('Lykoi') come from competitions-whale.co.uk (lead/answer-source only, same role as this adapter's other whale-sourced entries) and are NOT independently confirmable against this page's own copy (the real on-form question only renders after logging into a DMRI account) — but Lykoi is verifiable general knowledge (a real cat breed, the 'werewolf cat'), so this is a hand-researched fact rather than a guess, consistent with this project's quiz-answer rule."
+  },
+  {
+    "name": "What's On TV — Win an Apple iPad Mini (Bad Apples)",
+    "url": "https://comps.whatsontv.co.uk/competition/an_apple_ipad_mini_with_new_film_bad_apples_network/123005.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-09T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Same Apple iPad Mini / Bad Apples content as the Woman's Own Magazine entry above, confirmed running concurrently on What's On TV's own sibling DMRI domain (comps.whatsontv.co.uk) — identical copy and 'This competition ends on 09/10/2026' date fetched directly from that domain. A genuinely separate prize draw with its own independent winner pool (same 'concurrent but separate' pattern already documented in the dmri-comps adapter's own file-level docblock), not a duplicate entry into the Woman's Own one. What's On TV was already tracked in this project for its newsletter (future-plc-newsletter, whattowatch.com) but this is its first tracked competition. No purchase necessary. Trivia answer ('Saoirse Ronan') independently verified the same way as the Woman's Own entry above."
+  },
+  {
+    "name": "GoodTo — Win a Family Palace and Play Pass to Blenheim Palace",
+    "url": "https://competitions.goodto.com/competition/a_family_palace_and_play_pass_to_blenheim_palace_goodtoknow/122901.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-04T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New DMRI (Future PLC) sibling domain not yet tracked by this project: GoodTo (competitions.goodto.com) — org already tracked for its newsletter (future-plc-newsletter) but not previously for a competition. Confirmed directly the site runs the identical DMRI reader-comps platform ('Log In Now or Create a FREE account and start entering DAILY competitions NOW!') as the already-tracked Marie Claire/Woman/Woman's Own/What's On TV sibling sites, so no adapter changes needed beyond registering this origin — the shared dmri-comps adapter picks up any other open competition on this domain automatically from here (its origin is derived from tracked Competition rows at discovery time, confirmed directly against discoverOnce.ts, no seed-list edit required). No purchase necessary, real registered UK publisher. Prize: a family 'Palace and Play Pass' to Blenheim Palace (Oxfordshire) for two winning families, sponsored by Blenheim Estate Homes. Page states 'This competition ends on 04/10/2026' (converted to 22:59 UTC, BST in effect on that date, same convention as this file's other DMRI entries). No hand-researched TRIVIA_ANSWERS entry added — the actual on-form quiz question only renders after logging into a real GoodTo account, so this relies on the adapter's own existing deriveAnswerFromCopy safety net (only answers when exactly one offered option appears unambiguously in the competition's own descriptive copy, declines otherwise) rather than a guess."
+  },
+  {
+    "name": "GoodTo — Win a Pair of Tickets to The Cake & Bake Show",
+    "url": "https://competitions.goodto.com/competition/a_pair_of_tickets_to_the_cake__bake_show_goodtoknow/122881.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-09T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on the newly-tracked comps.goodto.com domain (see the Blenheim Palace entry above for how this origin was found/verified), shared dmri-comps adapter. No purchase necessary. Prize: 4 pairs of tickets each for 8 winners to The Cake & Bake Show, Olympia London (26-29 Nov 2026) — identical content/copy to the already-tracked Woman's Own Magazine entry for the same show, confirmed directly by fetching both pages (same 'discover recipes and clever baking and decorating techniques at the Home Bake Kitchen Stage' wording), so the same independently-verified answer ('Home Bake Kitchen Stage') is reused in dmriComps.ts's TRIVIA_ANSWERS — a genuinely separate prize draw with its own independent winner pool on this platform (documented 'concurrent but separate' behaviour), not a duplicate entry into the Woman's Own one. Page states 'This competition ends on 09/10/2026' (22:59 UTC)."
+  },
+  {
+    "name": "GoodTo — Win a Pair of Tickets to The Ideal Christmas Show",
+    "url": "https://competitions.goodto.com/competition/a_pair_of_tickets_to_the_ideal_christmas_show_goodtoknow/122842.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-08T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on the newly-tracked comps.goodto.com domain, shared dmri-comps adapter. No purchase necessary. Prize: a pair of tickets each for 8 winners to The Ideal Christmas Show, Olympia London (26-29 Nov 2026) — identical content/copy to the already-tracked Woman's Own Magazine entry for the same show, confirmed directly by fetching both pages (same 'Returning to Olympia London from 26–29 November' wording), so the same independently-verified answer ('26-29 November') is reused in dmriComps.ts's TRIVIA_ANSWERS — a genuinely separate prize draw on this platform, not a duplicate entry. Page states 'This competition ends on 08/10/2026' (22:59 UTC)."
+  },
+  {
+    "name": "GoodTo — Win £50 to Spend on Heavenly Feet",
+    "url": "https://competitions.goodto.com/competition/_win_aw_collection_heavenly_feet_goodtoknow/122701.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-30T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on the newly-tracked comps.goodto.com domain, shared dmri-comps adapter. No purchase necessary. Prize: a £50 Heavenly Feet footwear voucher for 6 winners, tied to the brand's new autumn/winter collection launch. Page states 'This competition ends on 30/09/2026' (22:59 UTC) — tight, worth registering promptly. No hand-researched answer added; relies on the adapter's own deriveAnswerFromCopy safety net (declines rather than guessing if the copy doesn't settle it unambiguously) since the real quiz question only renders after account login."
+  },
+  {
+    "name": "GoodTo — Win £300 Towards Music Programmes at School of Rock",
+    "url": "https://competitions.goodto.com/competition/music_programmes_at_school_of_rock_goodtoknow/122953.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-02T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling DMRI (Future PLC) daily prize draw on the newly-tracked comps.goodto.com domain, shared dmri-comps adapter. No purchase necessary. Prize: a £300 voucher towards Music programmes at School of Rock's new Bayswater, London branch. Page states 'This competition ends on 02/10/2026' (22:59 UTC). No hand-researched answer added; relies on the adapter's own deriveAnswerFromCopy safety net, same reasoning as the Heavenly Feet entry above."
+  },
+  {
+    "name": "Kent Attractions — Win a Kent Attractions Pass",
+    "url": "https://kentattractions.co.uk/competitions/",
+    "adapterKey": "kent-attractions",
+    "closesAt": null,
+    "maxEntries": 24,
+    "entryIntervalHours": 720,
+    "notes": "This org's own competition page was previously excluded here as the 'Kent Attractions consortium', noted elsewhere in this file (Leeds Castle newsletter entry) as bot-protected on page load. Re-verified directly this run: that no longer reproduces (plain curl fetch returns the full real page, 200 OK, real Gravity Forms markup) — a temporary/lifted block, not a structural aggregator-hub problem (this is a genuine single regional-tourism-consortium organiser's own domain, same category this project already accepts for Devon's Top Attractions/North Norfolk Attractions). No purchase necessary, real T&Cs. No fixed closing date — page states 'a winner will be chosen every month' at the same URL (unlike tui-monthly-giveaway's per-month page), so modelled as a repeatable draw (entryIntervalHours=720 ≈ 30 days); maxEntries=24 is just a generous cap (~2 years), not a stated limit. Gravity Forms (id 1): name, email, a required trivia multi-select ('...how many years of jousting?' re: Hever Castle's 2026 season — options 20/60/10/40/30, answer 40 confirmed directly against Hever Castle's own news pages: the jousting tournament started in 1986, making 2026 its 40th-anniversary season), and a required T&Cs checkbox with an independently optional newsletter checkbox left unticked. The remaining real block is a visible (explicit-render, not invisible) Google reCAPTCHA v2 gating the final submit (data-sitekey present in the page's own markup) — adapter built up to and including that check, fails loudly there rather than solving/evading it, same category as c2c-blowout-company. Note for next time: re-check the trivia answer once this jousting season closes, since '40' won't stay correct forever."
+  },
+  {
+    "name": "Wightlink — Win a Parkdean Resorts holiday worth up to £800",
+    "url": "https://form.wightlink.co.uk/cn/aojq7/parkdeancompetition",
+    "adapterKey": "wightlink-parkdean-competition",
+    "closesAt": "2026-09-30T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Sibling to the already-tracked wightlink-parkdean-resorts competition (form.wightlink.co.uk/cn/aojq7/parkdean, '£750') — same organiser (Wightlink Ltd) and prize partner (Parkdean Resorts), but a genuinely different, currently-live hosted form. Confirmed directly today: the listing page's own 'Enter competition' button (wightlink.co.uk/ways-to-save/competitions/parkdean-resorts) now links to THIS url, not the old /parkdean one, which no longer appears anywhere on the live site (still resolves if hit directly, but orphaned — left that adapter/row untouched rather than risk breaking whatever's already synced against it, and registered this as a new sibling instead, same pattern as this project's DMRI siblings). Same T&Cs as the listing page already documented for the sibling: no purchase necessary, online-only, 18+, closes 23:59 30 Sept 2026 (tight). Platform has also changed — this form is SurveyJS-based (not ClickDimensions), with a real, always-rendered reCAPTCHA v2 checkbox the old form didn't have (confirmed directly). Single page: First name, Last name, Email, Postcode, all required, no marketing checkbox. Adapter fills the whole form and fails loudly at the reCAPTCHA, same category as c2c-blowout-company. Rendering required a real Playwright browser with --ignore-certificate-errors to get past this sandbox's own egress-proxy TLS re-termination on this host — a sandbox artifact, not a site issue. Confirmation wording after submit not observed live — matched by SurveyJS's own structural completion-page class plus a broad wording fallback. The already-tracked wightlink-newsletter row is unaffected — confirmed its url (wightlink.co.uk/newsletter) 302-redirects to the same website_sign_up form either way, so that one's still correctly targeted."
+  },
+  {
+    "name": "GoodTo — Win a Family Ticket to Colchester Zoological Society",
+    "url": "https://competitions.goodto.com/competition/a_family_ticket_to_colchester_zoological_society_goodtoknow/123181.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-14T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New find this run on the already-tracked comps.goodto.com DMRI sibling domain (no adapter changes needed — the shared dmri-comps adapter picks up any competition on an already-registered origin automatically). Genuinely local to this Essex-based profile: Colchester Zoo (Colchester Zoological Society) is a real, well-known Essex attraction. No purchase necessary, real registered UK publisher (confirmed directly, same platform as this domain's other tracked entries). Prize: family tickets (2 adults + 2 children) for standard admission, 3 winners. Page states 'This competition ends on 14/10/2026' (converted to 22:59 UTC, BST in effect on that date, same convention as this file's other DMRI entries). No hand-researched TRIVIA_ANSWERS entry added — the real on-form quiz question only renders after logging into a DMRI account (same limitation documented on this domain's other entries), so this relies on the adapter's own deriveAnswerFromCopy safety net (answers only when exactly one offered option unambiguously matches the page's own copy, declines otherwise) rather than a guess. maxEntries set high (30) for the same recurring-daily-draw reason documented in the dmri-comps adapter file."
+  },
+  {
+    "name": "Top Sante Competitions — Win a Vitality Break at Careys Manor Hotel & SenSpa",
+    "url": "https://competitions.topsante.co.uk/competition/a__vitality_break_at_careys_manor_hotel__senspa__topsante/122829.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-09-30T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New DMRI sibling domain not yet tracked by this project: Top Sante magazine (competitions.topsante.co.uk). Confirmed directly this is the identical shared DMRI reader-competitions platform already handled by the dmri-comps adapter (same 'Log In Now'/'Create Free Account' markup, same /login/step1 iframe, same /account profile-completion page) — no adapter code changes needed. Confirmed directly via this domain's own /rules page: 'competitions.topsante.co.uk is managed by DMRI on behalf of Kelsey Media' — this is a genuinely different publisher (Kelsey Media, already tracked elsewhere in this project for Coast Magazine) reusing the exact same white-label DMRI platform Future PLC's sibling sites use, not a Future PLC site itself; worth noting since the adapter's own file-level docblock currently only mentions Future PLC by name. No purchase necessary (standard DMRI reader-comps format). Prize: a 360° Vitality Break for one at Careys Manor Hotel & SenSpa (New Forest), voucher valid 12 months, redeemable Sun-Thu excluding blackout dates. Page states 'This competition ends on 30/09/2026' (converted to 22:59 UTC, BST in effect on that date, same convention as this file's other DMRI entries) — tight, worth a prompt first run. No hand-researched TRIVIA_ANSWERS entry added — the real quiz question only renders after logging into a DMRI account, same limitation as this project's other whale/blind DMRI entries — relies on the adapter's own deriveAnswerFromCopy safety net rather than a guess. maxEntries set high (30) for the same recurring-daily-draw reason documented in the dmri-comps adapter file."
+  },
+  {
+    "name": "Top Sante Competitions — Win a Sparkling Afternoon Tea with Soft & Gentle",
+    "url": "https://competitions.topsante.co.uk/competition/a_sparkling_afternoon_tea_with_soft__gentle_topsante/122873.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-06T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "Sibling competition on the same newly-tracked competitions.topsante.co.uk DMRI domain as the Careys Manor Hotel entry above (see that entry for the Kelsey Media/DMRI platform verification) — same dmri-comps adapter, no code changes needed. No purchase necessary. Prize: a sparkling afternoon tea, sponsored by Soft & Gentle. Page states 'This competition ends on 06/10/2026' (converted to 22:59 UTC, BST in effect on that date). No hand-researched TRIVIA_ANSWERS entry added, same reasoning as the Careys Manor entry — relies on the adapter's own deriveAnswerFromCopy safety net. maxEntries set high (30) for the same recurring-daily-draw reason documented in the dmri-comps adapter file."
+  },
+  {
+    "name": "Muddy Stilettos Reader Treat — Win a Two-Night Stay at THE PIG-in the Cotswolds",
+    "url": "https://muddystilettos.co.uk/reader-treats/win-two-night-stay-the-pig-cotswolds/",
+    "adapterKey": "muddy-stilettos-reader-treats",
+    "closesAt": "2026-10-25T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "New national Reader Treat found this run on muddystilettos.co.uk's main Reader Treats listing — same shared muddyStilettosReaderTreats.ts template/adapter as the other entries in this file, no code changes needed beyond adding this URL's answer to READER_TREAT_ANSWERS (done this run). No purchase necessary, real T&Cs. Prize: a two-night midweek stay for two at THE PIG-in the Cotswolds (Barnsley, near Cirencester), including dinner, breakfast, a Fieldhouse spa treatment each and a private Kitchen Garden tour. Trivia ('What style are the celebrated gardens at THE PIG-in the Cotswolds?', options Arts & Crafts/English Cottage/French Formal) answered 'Arts & Crafts' directly from the competition page's own copy ('famous Arts and Crafts gardens by Rosemary Verey') — not guessed. Closing time stated explicitly on the page as '11.59pm on Sun 25 Oct 2026' — used as-is rather than the file's usual 'no exact time stated' UK-midnight assumption; note this date is the actual UK autumn clock-change day (last Sunday of October), so by 23:59 local time the country has already reverted to GMT and 23:59 UK time really is 23:59 UTC, not the usual BST-era 22:59 UTC seen on this file's other October entries — worth double-checking this reasoning on the day. A sibling Reader Treat on the same page (Delta Roam Beaumont Robe giveaway) was found and deliberately NOT added — see the adapter file's own comment for why its trivia answer turned out to be genuinely ambiguous rather than researchable."
+  },
+  {
+    "name": "Visit East of England — Win a Forest Adventure, Wildlife Safari and Country Inn Stay",
+    "url": "https://www.visiteastofengland.com/competitions/win-a-forest-adventure-wildlife-safari-and-country-inn-stay",
+    "adapterKey": "visit-east-of-england",
+    "closesAt": "2026-09-29T00:00:00.000Z",
+    "maxEntries": 1,
+    "notes": "New live competition found this run on the already-tracked Visit East of England Freeform platform (visit-east-of-england adapter) — same '/competitions/<slug>' page shape and the identical competitionForm field set (firstName, lastName, email, telephone, postcode, privacyPolicy, termsAndConditions, marketingMaterial) confirmed directly from the served HTML, so no code changes needed. Replaces the now-delisted Norfolk Broads boating-holiday entry in this file (no longer linked from the live /competitions index — presumably closed; left in place rather than removed, per this file's own append-only convention, and Competition.url uniqueness means it's harmless either way). No purchase necessary, no quiz question (confirmed: no radio/question markup in the served HTML). Prize is a forest adventure/wildlife safari/country inn stay bundle. Closing date taken directly from the page's own T&Cs: 'the prize draw opens at 9:00am on Monday 17 August 2026 and closes at 00:00 on Tuesday 29 September 2026.'"
+  },
+  {
+    "name": "Visit North Devon — Win a Stay at Woolacombe Bay Hotel",
+    "url": "https://www.visitdevon.co.uk/northdevon/plan-your-visit/competitions/win-a-stay-at-woolacombe-bay-hotel/",
+    "adapterKey": "visit-north-devon",
+    "closesAt": null,
+    "maxEntries": 1,
+    "notes": "New org this run: Visit North Devon, part of the official Visit Devon tourism board network (genuinely separate from the already-tracked Devon's Top Attractions, a different multi-attraction pass scheme). Same NewMind/eCMS platform as visitEssexGardenersWorld.ts/northNorfolkAttractions.ts, but here the actual form is embedded as a cross-origin iframe (visitdevon-ws.newmindmedia.com) rather than same-origin — confirmed directly, new visitNorthDevonAdapter uses a frameLocator for it. No purchase necessary — quoted directly from the linked competition T&Cs (data-protection-policy-details?policyid=2627VNDCOMP): 'No purchase is necessary to enter unless specifically stated.' Same page's Data Protection clause is explicit that entry never auto-subscribes to marketing: 'Entering a competition does not automatically subscribe an entrant to marketing communications... Where entrants are given the option to receive marketing communications, this will be clearly stated and consent will be collected separately.' No quiz — the form's only 'question' is a single checkbox whose label is the entry action itself ('By ticking this box you are agreeing to enter this competition'), ticked; two separate, genuinely optional marketing checkboxes (Visit North Devon / the prize provider) left unticked, confirmed from the form's own onQuestionnaireSubmit() script that leaving both blank only shows a non-blocking #policy-warning/Proceed panel, not a submission block. Invisible reCAPTCHA v2 present — not solved or evaded. No closing date is stated anywhere on this page or its linked T&Cs (confirmed directly) — closesAt left null; re-check periodically since this Visit Devon microsite's competition rotates (the previous entry here, Watermouth Castle, has already expired and 404s). Prize: 2 nights for two in a Sea View Bedroom at Woolacombe Bay Hotel (breakfast both mornings, a 2-course dinner, cream tea for two, spa/gym/court access), valid for stays 1 Oct 2026-30 Jun 2027 excluding several blackout weeks stated on the page."
+  },
+  {
+    "name": "Visit East of England — Win a Three-Night Defender Camper Adventure at Flint Vineyard",
+    "url": "https://visiteastofengland.com/competitions/win-a-three-night-defender-camper-adventure-alongside-a-tour-and-tasting-at-flint-vineyard",
+    "adapterKey": "visit-east-of-england",
+    "closesAt": "2026-09-29T23:00:00.000Z",
+    "maxEntries": 1,
+    "notes": "New live competition found this run (via an MSE-forum lead pointing at the org's own /win-a-magical-christmas-break-at-holkham vanity URL, which now 301s to the homepage — that specific prize has rotated off; this Flint Vineyard one was found instead by re-checking the live /competitions index directly) on the already-tracked Visit East of England Freeform platform (visit-east-of-england adapter) — same '/competitions/<slug>' page shape and the identical competitionForm field set (firstName, lastName, email, telephone, postcode, privacyPolicy, termsAndConditions, marketingMaterial) confirmed directly from the served HTML, so no code changes needed. No purchase necessary — confirmed from the site's linked general-prize-draw-terms-and-conditions page ('Prize draws are free to enter and no purchase is necessary'). No quiz question (confirmed: no radio/question markup in the served HTML). Prize: a three-night LandyCampers Defender camper hire for two plus a Flint Vineyard tour and tasting for two, vehicle collected from LandyCampers' base near Stansted, North Essex. Closing date taken directly from the page's own prize-draw T&Cs: 'the prize draw opens at 9:00am on Monday 17 August 2026 and closes at 00:00 on Tuesday 29 September 2026' — same closing instant as the Forest Adventure entry above, both apparently part of the same August-opened batch."
+  },
+  {
+    "name": "Visit Devon — Win a Short Break at Riviera Bay Coastal Retreat",
+    "url": "https://www.visitdevon.co.uk/competitions/win-a-short-break-at-riviera-bay-coastal-retreat/",
+    "adapterKey": "visit-north-devon",
+    "closesAt": null,
+    "maxEntries": 1,
+    "notes": "New live competition found this run on visitdevon.co.uk's own county-wide /competitions/ index (parent 'Visit Devon' tourism board brand, same domain and same NewMind/eCMS platform as the already-tracked Visit North Devon microsite, just a different section of the same organisation) — confirmed directly from the served HTML that its embedded form (same cross-origin visitdevon-ws.newmindmedia.com iframe technique, same #questionforename/#questionsurname/#questionpostcode/#questionemail/#questiontelephone field ids) is structurally identical to the Woolacombe Bay Hotel form, differing only in its entry checkbox's numeric field id — so the visitNorthDevonAdapter was generalized this run to match that checkbox by its label text ('By ticking this box you are agreeing to enter this competition', identical wording on both) instead of a hardcoded id, letting one adapter cover both without a rename (kept the existing 'visit-north-devon' key to avoid orphaning the already-registered Woolacombe Bay row). No purchase necessary — the entry mechanism is this free checkbox-ticks-are-the-entry form, no quiz, and the two marketing consent checkboxes ('contacted by Visit Devon'/'contacted by the prize provider') are independently optional, confirmed non-blocking from the shared onQuestionnaireSubmit() script. Unlike the Woolacombe Bay page, this one's linked data-protection-policy-details URL 404s (a broken/not-yet-published link on Visit Devon's own site, not something this project can fix) so no direct 'no purchase necessary' quote was found in writing for this specific page — noted for a human to double check, though the entry mechanism itself charges nothing and requires nothing beyond the free form. Invisible reCAPTCHA v2 present — not solved or evaded. No closing date stated anywhere on the page (confirmed directly) — closesAt left null; re-check periodically, same as the Woolacombe Bay entry. Prize: a 3-4 night stay in a Lodge for up to 6 at Riviera Bay Holiday Lodges, Brixham, overlooking St Mary's Bay, valid for stays April-June 2027, excluding school holidays/bank holidays/special breaks."
+  },
+  {
+    "name": "Mirror — Win the ultimate festive All Inclusive staycation (Butlin's)",
+    "url": "https://www.mirror.co.uk/play/competitions/win-ultimate-festive-inclusive-staycation-37604761",
+    "adapterKey": "reachplc-competition",
+    "closesAt": "2026-11-01T23:45:00.000Z",
+    "maxEntries": 1,
+    "notes": "New org/platform this run: Reach plc's own shared reader-competitions widget (a JotForm instance embedded via <iframe src=\"https://data.reachplc.com/<formID>\">), used across Reach's national titles (Mirror, Express, Daily Star, OK!) and local 'Live' network — confirmed directly by fetching the live iframe's own served HTML for this and three sibling competitions (P&O Cruises, Alton Towers, Oak Furnitureland, all added alongside this one), all of which share IDENTICAL internal JotForm field ids (#input_59 firstname, #input_58 lastname, #input_6 email, #input_32_0 a single required 'Yes I understand' T&Cs radio, #input_2 submit) because they're clones of the same template — new reachplc-competition adapter is written generically against those stable ids rather than per-competition, so a future Reach plc competition is just a new row, no new code. Organiser stated in the page's own T&Cs as 'Reach Publishing Services Limited... and sponsor Wasing Estate/Butlin's'; 'Simply fill in your details below & you'll be entered' — no purchase necessary, plain form, no quiz. Several optional Mirror-newsletter checkboxes (name=q132_dontMiss[]) and a 'Reach Plc family' marketing checkbox (q155_typeA[]) are present and deliberately never ticked. A visible (explicit-render) Google reCAPTCHA v2 checkbox gates submission — confirmed directly via the page's own frame list — not solved or evaded; the adapter detects it and fails loudly before ever clicking submit. Cookie consent is Reach's own 'CIPA' notice (data-testid=cipa-accept-button) — confirmed it offers only one-click Accept, no reject-all, same no-reject-option situation already handled elsewhere in this project (Bauer, Future PLC). Closing date from the page's own copy: 23:45 UK time, 1 November 2026."
+  },
+  {
+    "name": "Mirror — Win a Caribbean fly-cruise holiday for two (P&O Cruises)",
+    "url": "https://www.mirror.co.uk/travel/cruises/your-chance-win-caribbean-fly-37597061",
+    "adapterKey": "reachplc-competition",
+    "closesAt": "2026-10-31T23:45:00.000Z",
+    "maxEntries": 1,
+    "notes": "Sibling competition on the same Reach plc reader-competitions widget as the new Butlin's row above (see that entry's notes for the full platform description) — confirmed directly this is genuinely on Reach plc's own mirror.co.uk domain, NOT the same as pocruises.com (already excluded elsewhere as bot-protected on load — this widget is entirely unaffected by that block since it never touches P&O's own site). Sponsor stated in T&Cs as Carnival UK Ltd; opened 5 Sept 2026, no purchase necessary, plain form (firstname/lastname/email), same required T&Cs radio, plus an optional P&O-specific 'stay up to date with P&O Cruises' checkbox left unticked alongside the usual Mirror-newsletter checkboxes. Same visible reCAPTCHA v2 at submit, same CIPA cookie notice, same reachplc-competition adapter (no new code). Closing date from the page's own copy: 11:45pm UK time, 31 October 2026."
+  },
+  {
+    "name": "Mirror — Win a short break at Alton Towers Resort (Scarefest)",
+    "url": "https://www.mirror.co.uk/play/competitions/win-stay-alton-towers-resort-37695150",
+    "adapterKey": "reachplc-competition",
+    "closesAt": "2026-11-01T23:45:00.000Z",
+    "maxEntries": 1,
+    "notes": "Sibling competition on the same Reach plc reader-competitions widget as the new Butlin's row above (see that entry's notes for the full platform description) — confirmed directly via the live iframe's served HTML, identical field ids (#input_59/#input_58/#input_6/#input_32_0/#input_2). Prize: 1 night at Alton Towers Resort (Alton Towers Hotel or Splash Landings Hotel) for a family of 4, plus a day's theme-park entry, 4 Fastrack passes and 4 water-park passes. 'Simply fill in your details below' — no purchase necessary, no quiz. Same visible reCAPTCHA v2 at submit, same CIPA cookie notice, same reachplc-competition adapter (no new code). Closing date from the page's own copy: 23:45 UK time, 1 November 2026."
+  },
+  {
+    "name": "Mirror — Win a £1000 Oak Furnitureland voucher",
+    "url": "https://www.mirror.co.uk/play/competitions/win-1000-oak-furnitureland-voucher-37668707",
+    "adapterKey": "reachplc-competition",
+    "closesAt": "2026-10-25T23:45:00.000Z",
+    "maxEntries": 1,
+    "notes": "Sibling competition on the same Reach plc reader-competitions widget as the new Butlin's row above (see that entry's notes for the full platform description) — confirmed directly via the live iframe's served HTML, identical field ids. This instance additionally carries a brand-specific optional checkbox (name=q157_oakFurnitureland[], 'Yes I am happy to hear from Oak Furnitureland by email') — confirmed directly its underlying <input> carries no HTML `required` attribute despite the label's asterisk, so it's left unticked same as every other optional checkbox on this platform; worth re-checking after a real run in case client-side JS enforces it despite the missing attribute. Same required T&Cs radio, same visible reCAPTCHA v2 at submit, same CIPA cookie notice, same reachplc-competition adapter (no new code). Closing date from the page's own copy: 23:45 UK time, 25 October 2026."
+  },
+  {
+    "name": "Muddy Stilettos Reader Treat — Win a Stay at The July London Victoria (dinner & theatre)",
+    "url": "https://muddystilettos.co.uk/reader-treats/win-a-stay-at-the-july-london-victoria/",
+    "adapterKey": "muddy-stilettos-reader-treats",
+    "closesAt": "2026-10-05T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "New national-edition Reader Treat, found this run via the web sweep. Same shared muddyStilettosReaderTreats.ts template/adapter as the other tracked entries (name/email/county/trivia, T&Cs checkbox) — no code changes needed beyond adding this URL's answer to READER_TREAT_ANSWERS, done this run. Prize: a stay at The July London Victoria hotel with dinner for two at its restaurant and a £150 West End theatre voucher. Trivia ('What's the name of The July London Victoria's restaurant?', options The Idler/The Idol/The Idiot) answered 'The Idler', stated directly in the page's own body copy twice and independently confirmed as the hotel's real restaurant at thejuly.com/restaurants/the-idler (the page's own hyperlink) — the other two options are wordplay decoys, not real venues. Page's own embedded config gives closing date as 2026-10-05 (23:59 UK/BST time = 22:59 UTC, same convention as this file's other Reader Treats)."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a family 'Palace & Play Pass' to Blenheim Palace",
+    "url": "https://comps.marieclaire.co.uk/competition/a_family_palace__play_pass_to_blenheim_palace_marieclaire/122814.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-13T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 13/10/2026'). No hand-researched trivia answer added; the adapter's own deriveAnswerFromCopy runtime fallback will answer from the competition's own descriptive copy if exactly one offered option matches, and declines rather than guessing otherwise."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a NETGEAR Nighthawk M7 Pro mobile hotspot",
+    "url": "https://comps.marieclaire.co.uk/competition/a_netgear_nighthawk_m_pro_mobile_hotspot_marieclaire/123175.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-23T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 23/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback (see the Blenheim Palace row above for how it works)."
+  },
+  {
+    "name": "Marie Claire Competitions — Win an AlcoSense Elite 3 for Autumn",
+    "url": "https://comps.marieclaire.co.uk/competition/alcosense_marieclaire/122988.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-14T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 14/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a £250 Shopping Spree with Cotton Traders",
+    "url": "https://comps.marieclaire.co.uk/competition/cotton_traders_marieclaire/122138.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-22T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 22/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win Jeulia Eternal Heart Twist Jewellery & £250 E-Gift Card",
+    "url": "https://comps.marieclaire.co.uk/competition/jeulia_eternal_heart_twist_jewellery___egift_card_marieclaire/123190.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-26T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 26/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win a Magical Storytelling Bundle for the Whole Family",
+    "url": "https://comps.marieclaire.co.uk/competition/win_a_magical_storytelling_bundle_for_the_whole_family_marieclaire/123250.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-16T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 16/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win an Oliver! The Musical and London Sightseeing Experience",
+    "url": "https://comps.marieclaire.co.uk/competition/the-original-tour-win%E2%80%93oliver-musical-tickets-two-day-family-hop-on-hop-off-london_marieclaire/123156.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-21T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes). Prize is Oliver! Musical tickets (Gielgud Theatre, West End) plus a family 2-day Original Tour hop-on-hop-off London bus tour — genuinely London-relevant. Confirmed directly via curl: the page's own visible copy says 'This competition ends on 21/10/2026' (used here per this file's standing convention of trusting that visible text), but the T&Cs modal's own prose separately states the 'Competition Period... closes at 23:59 on 13/10/2026' — a genuine discrepancy on the page itself, worth a human's eyes / a live re-check rather than assumed resolved. No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win tickets to South West Homebuilding & Renovating Show",
+    "url": "https://competitions.goodto.com/competition/tickets_to_south_west_homebuilding__renovating_show_goodtoknow/122911.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-02T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 02/10/2026' — tight runway). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback. Sibling instance also found on competitions.topsante.co.uk (added separately below), same content, independently-verified separate draw per this platform's documented 'concurrent but separate' behaviour."
+  },
+  {
+    "name": "GoodTo — Win £500 of HexClad Kitchenware with SPAR's Fresh Pasta",
+    "url": "https://competitions.goodto.com/competition/_of_hexclad_kitchenware_with_spars_fresh_pasta_goodtoknow/123332.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-23T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 23/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win A Muddy Puddles £100 Gift Card",
+    "url": "https://competitions.goodto.com/competition/muddy_puddles__gift_card_goodtoknow/123128.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-15T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 15/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win a Back-to-School Kids Yogurt Bundle from The Collective",
+    "url": "https://competitions.goodto.com/competition/the_collective_goodtoknow/123018.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-10T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 10/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win a £50 voucher for XY London",
+    "url": "https://competitions.goodto.com/competition/a__voucher_for_xy_london_goodtoknow/123091.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-11T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes), London-relevant prize. Confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 11/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win a year of calm and joy with Amplify",
+    "url": "https://competitions.topsante.co.uk/competition/a_year_of_calm_and_joy_with_amplify__topsante/123107.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-13T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 13/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win 2 months supply Qsilica Hair Supplements worth £100",
+    "url": "https://competitions.topsante.co.uk/competition/_2months_supply_qsilica_hair_supplements_%26pound;100_topsante/122898.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-03T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 03/10/2026' — tight runway). URL's own raw HTML entity ('&pound;', unescaped in the site's own markup) kept literally/percent-encoded as served rather than 'corrected', since that's the real link. No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win a Medisana Winter Wellness Bundle worth £120",
+    "url": "https://competitions.topsante.co.uk/competition/a_medisana_winter_wellness_bundle_worth__topsante/123179.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-24T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 24/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win a Nurosym by Parasym (vagus nerve stimulation device)",
+    "url": "https://competitions.topsante.co.uk/competition/a_nurosym_by_parasym_a_vagus_nerve_stimulation_device_topsante/122905.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-05T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 05/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win an Anita Active Sports Bra",
+    "url": "https://competitions.topsante.co.uk/competition/an_anita_active_sports_bra_topsante/123157.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-23T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 23/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win a six-month supply of Nutri-Ice fortified ice cream",
+    "url": "https://competitions.topsante.co.uk/competition/nutri_ice_topsante/122933.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-02T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 02/10/2026' — tight runway). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win a Guided Nervous System Reset (Safe and Sound Protocol) worth £380",
+    "url": "https://competitions.topsante.co.uk/competition/safe-and-sound-protocol_topsante/122899.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-09T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 09/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a copy of John Steinbeck's East of Eden",
+    "url": "https://comps.whatsontv.co.uk/competition/a_copy_of_john_steinbecks_east_of_eden_whatsontv/123214.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-22T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 22/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win a Spa Day and a Japanese Head Spa for Two with Polytar",
+    "url": "https://comps.womanmagazine.co.uk/competition/a_spa_day_and_a_japanese_head_spa_for_two_with_polytar_network/123277.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-17T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 17/10/2026'). Sibling instances of the same content also live on comps.whatsontv.co.uk (123276) and comps.womansownmagazine.co.uk (123279) at time of writing — not added this run to keep this batch to a reasonable size, worth adding on a future pass if still open (independently-verified separate draws per this platform's documented behaviour, not duplicates). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win 3 Months of IntimX or VirilX with Aiku",
+    "url": "https://comps.whatsontv.co.uk/competition/_intimate_pleasure_with_aiku_network/123086.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-11T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1 'Win 3 Months of IntimX or VirilX with Aiku', 'This competition ends on 11/10/2026'). A men's supplement brand giveaway, same legitimate no-purchase-necessary platform-wide T&Cs as every other tracked DMRI row — nothing about the prize itself excludes it. No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win Ray-Ban Sunglasses and TheraTears Screen Eyes",
+    "url": "https://comps.womanmagazine.co.uk/competition/rayban_sunglasses_and_theratears_screen_eyes_2026_network/123353.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-21T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 21/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win an ECOVACS WINBOT W2S PRO OMNI Robotic Window Cleaner",
+    "url": "https://comps.whatsontv.co.uk/competition/an_ecovacs_winbot_ws_pro_omni_robotic_window_cleaner_network/122963.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-12T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 12/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a spooky signed copy of Kay's Gruesome Games",
+    "url": "https://comps.whatsontv.co.uk/competition/_a_spooky_signed_copy_of_kays_gruesome_games_network/123131.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-18T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 18/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win 1 of 4 £125 Jeulia E-Gift Cards",
+    "url": "https://comps.whatsontv.co.uk/competition/_of___jeulia_egift_cards_network/123185.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-26T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 26/10/2026'). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win 1 of 2 £250 Vouchers for Woven Woven's Weighted Blanket",
+    "url": "https://comps.whatsontv.co.uk/competition/best_kids_weighted_blanket_network/121771.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-02T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 02/10/2026' — tight runway). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win 4 Tickets to The Ideal Christmas Show",
+    "url": "https://comps.womanmagazine.co.uk/competition/_tickets_to_the_ideal_christmas_show_network/122846.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-07T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, 'This competition ends on 07/10/2026'). A genuinely separate draw ID from the already-tracked GoodTo Ideal Christmas Show entry, per this platform's documented per-domain-independent-winners behaviour. No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Official London Theatre — Win two tickets to Into The Woods plus an overnight stay and meal at Z Hotels Covent Garden",
+    "url": "https://officiallondontheatre.com/webforms/win-two-tickets-to-into-the-woods-plus-an-overnight-stay-and-meal-at-z-hotels-covent-garden/",
+    "adapterKey": "official-london-theatre-into-the-woods",
+    "closesAt": "2026-10-10T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Same organiser (Society of London Theatre) and webforms/prizeDraw template already tracked for Heathers The Musical, but this is a distinct competition on its own URL with its own field GUIDs, confirmed directly via curl (real static HTML + webform-state JSON schema, no client JS needed). Prize draw runs 26.09.2026 to 10.10.2026 per this instance's own T&Cs (in the page's expandable terms block) — free to enter, one entry per person, UK residents 18+. Currently the only competition listed on officiallondontheatre.com/competitions/ itself; several other officiallondontheatre.com/webforms/ URLs that still rank in search results (West End LIVE, Wicked, To Kill a Mockingbird, etc.) were checked directly and are already closed — not registered. new adapter: officialLondonTheatreIntoTheWoods.ts."
+  },
+  {
+    "name": "Mirror — Win a holiday at Ladram Bay (Devon holiday park)",
+    "url": "https://www.mirror.co.uk/play/competitions/win-holiday-ladram-bay-37685446",
+    "adapterKey": "reachplc-competition",
+    "closesAt": "2026-11-01T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "New live instance on the already-tracked Reach plc reader-competitions widget (reachplc-competition adapter, no code changes) — confirmed directly via curl of the embedded data.reachplc.com JotForm iframe: same stable field ids (#input_59/#input_58/#input_6/#input_32_0/#input_2) as every other instance this adapter covers, plus several always-hidden tracking fields (SubSignUpSource, brandId, consentStatementId, etc.) that already carry their own default values and need no input. Same visible reCAPTCHA v2 gate at submit as every other Reach plc instance — adapter already fails loudly on that rather than solving it. Page's own copy: 'This competition closes on 1 November.'"
+  },
+  {
+    "name": "Mirror — Win £100 Aldi shopping vouchers",
+    "url": "https://www.mirror.co.uk/play/competitions/win-100-shopping-vouchers-aldi-37627712",
+    "adapterKey": "reachplc-competition",
+    "closesAt": "2026-10-11T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Another new live instance on the already-tracked Reach plc widget (reachplc-competition adapter, no code changes) — field ids (#input_59/#input_58/#input_6/#input_32_0/#input_2) confirmed directly via curl of the embedded JotForm iframe, same as every other instance. A prior session flagged an Aldi Reach plc competition as a lead without pinning down its exact field ids within that run's budget; this is a fresh live instance verified end-to-end this run. Page's own copy: 'This competition closes on 11 October.'"
+  },
+  {
+    "name": "Mirror — Win a £500 LEGO e-gift card",
+    "url": "https://www.mirror.co.uk/play/competitions/win-500-lego-e-gift-37598569",
+    "adapterKey": "reachplc-competition",
+    "closesAt": "2026-10-04T22:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Another new live instance on the already-tracked Reach plc widget (reachplc-competition adapter, no code changes) — field ids confirmed directly via curl of the embedded JotForm iframe, same as every other instance. A prior session flagged a LEGO Reach plc competition (via Brick Fanatics x Mirror) as a lead without pinning down its exact field ids within that run's budget; this is a fresh live instance verified end-to-end this run. Page's own copy: 'This competition closes on the 4th October.'"
+  },
+  {
+    "name": "Marie Claire Competitions — Win hair thickening essentials from Nanogen",
+    "url": "https://comps.marieclaire.co.uk/competition/hair_thickening_essential_from_nanogen__marieclaire/123273.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win The Complete Super Renewal Set worth £250",
+    "url": "https://comps.marieclaire.co.uk/competition/cornishseaweedbath_the_complete_super_renewal_set_marieclaire/123517.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win over £150 Natural Skincare from Neve's Bees",
+    "url": "https://comps.marieclaire.co.uk/competition/over__natural_skincare_from_neves_bees_marieclaire/120701.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win 1 of 4 Revive Active Menopause Supplement Bundles",
+    "url": "https://comps.marieclaire.co.uk/competition/revive_active_menopause_supplement_bundles_marieclaire/123253.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-28T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 28/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a Spa Day and a Japanese Head Spa for Two with Polytar",
+    "url": "https://comps.whatsontv.co.uk/competition/a_spa_day_and_a_japanese_head_spa_for_two_with_polytar_network/123276.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-17T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 17/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win Bearfields 'Better Reset' bundle, worth £500",
+    "url": "https://comps.whatsontv.co.uk/competition/bearfields_better_reset_bundle_worth__network/123193.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a TCL Full HD Fire TV with Neutradol",
+    "url": "https://comps.whatsontv.co.uk/competition/a_tcl_full_hd_fire_tv_with_neutradol_network/123162.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a Hydromol prize kit with 3 skincare products worth £50",
+    "url": "https://comps.whatsontv.co.uk/competition/a_hydromol_prize_kit_with__skincare_products_worth_%C2%A350_network/123204.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-27T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 27/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a family 'Palace & Play Pass' to Blenheim Palace",
+    "url": "https://comps.whatsontv.co.uk/competition/a_family_palace__play_pass_to_blenheim_palace_network/122817.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-13T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 13/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a £100 Love2shop voucher with Utility Warehouse",
+    "url": "https://comps.whatsontv.co.uk/competition/utility_warehouse_voucher_network/122546.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-19T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 19/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win Bearfields 'Better Reset' bundle, worth £500",
+    "url": "https://comps.womanmagazine.co.uk/competition/bearfields_better_reset_bundle_worth__network/123194.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win a TCL Full HD Fire TV with Neutradol",
+    "url": "https://comps.womanmagazine.co.uk/competition/a_tcl_full_hd_fire_tv_with_neutradol_network/123163.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win a Hydromol prize kit with 3 skincare products worth £50",
+    "url": "https://comps.womanmagazine.co.uk/competition/a_hydromol_prize_kit_with__skincare_products_worth_%C2%A350_network/123205.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-27T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 27/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win 1 of 4 £125 Jeulia E-Gift Cards",
+    "url": "https://comps.womanmagazine.co.uk/competition/_of___jeulia_egift_cards_network/123186.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-26T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 26/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win a family 'Palace & Play Pass' to Blenheim Palace",
+    "url": "https://comps.womanmagazine.co.uk/competition/a_family_palace__play_pass_to_blenheim_palace_network/122818.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-13T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 13/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win a £100 Love2shop voucher with Utility Warehouse",
+    "url": "https://comps.womanmagazine.co.uk/competition/utility_warehouse_voucher_network/122547.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-19T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 19/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win a spooky signed copy of Kay's Gruesome Games",
+    "url": "https://comps.womanmagazine.co.uk/competition/_a_spooky_signed_copy_of_kays_gruesome_games_network/123132.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-18T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 18/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win 3 Months of IntimX or VirilX with Aiku",
+    "url": "https://comps.womanmagazine.co.uk/competition/_intimate_pleasure_with_aiku_network/123087.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-11T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 11/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win Bearfields 'Better Reset' bundle, worth £500",
+    "url": "https://comps.womansownmagazine.co.uk/competition/bearfields_better_reset_bundle_worth__network/123196.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win a TCL Full HD Fire TV with Neutradol",
+    "url": "https://comps.womansownmagazine.co.uk/competition/a_tcl_full_hd_fire_tv_with_neutradol_network/123165.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win a Hydromol prize kit with 3 skincare products worth £50",
+    "url": "https://comps.womansownmagazine.co.uk/competition/a_hydromol_prize_kit_with__skincare_products_worth_%C2%A350_network/123207.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-27T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 27/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win 1 of 4 £125 Jeulia E-Gift Cards",
+    "url": "https://comps.womansownmagazine.co.uk/competition/_of___jeulia_egift_cards_network/123188.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-26T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 26/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win a £100 Love2shop voucher with Utility Warehouse",
+    "url": "https://comps.womansownmagazine.co.uk/competition/utility_warehouse_voucher_network/122549.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-19T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 19/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win a Spa Day and a Japanese Head Spa for Two with Polytar",
+    "url": "https://comps.womansownmagazine.co.uk/competition/a_spa_day_and_a_japanese_head_spa_for_two_with_polytar_network/123279.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-17T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 17/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win a family 'Palace & Play Pass' to Blenheim Palace",
+    "url": "https://comps.womansownmagazine.co.uk/competition/a_family_palace__play_pass_to_blenheim_palace_network/122820.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-13T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 13/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win a spooky signed copy of Kay's Gruesome Games",
+    "url": "https://comps.womansownmagazine.co.uk/competition/_a_spooky_signed_copy_of_kays_gruesome_games_network/123134.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-18T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 18/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win a Magical Sightseeing Tour of London's Christmas Lights",
+    "url": "https://competitions.goodto.com/competition/the-original-tour-win-christmas-lights-tour-tickets-london_goodtoknow/123374.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win A Waterdrop CT01 Dispenser and Waterdrop M6SL RO system",
+    "url": "https://competitions.goodto.com/competition/waterdrop_filter_goodtoknow/123524.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win The Vampire Lestat on Blu-ray",
+    "url": "https://competitions.goodto.com/competition/the_vampire_lestat_bluray_goodtoknow/123285.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win Siocolat's Award-Winning Collection worth £60",
+    "url": "https://competitions.goodto.com/competition/_siocolats_awardwinning_collection_worth__goodtoknow/123124.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win The Complete Super Renewal Set worth £250",
+    "url": "https://competitions.topsante.co.uk/competition/cornishseaweedbath_the_complete_super_renewal_set_topsante/123518.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win 1 of 2 Revive Active Menopause Supplement Bundles",
+    "url": "https://competitions.topsante.co.uk/competition/_x_revive_active_menopause_supplement_bundles_topsante/123254.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-28T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 28/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Fate & Fortune — Win The Witchcraft Almanac",
+    "url": "https://www.fateandfortunemagazine.co.uk/competitions/latest-competitions/fate-fortune-november/",
+    "adapterKey": "bauer-competition-form",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Next month's issue of the already-tracked H Bauer Publishing shared reader-competitions widget (bauer-competition-form adapter, no code changes beyond a new BAUER_ENTRIES record) — same fateandfortunemagazine.co.uk/competitions/latest-competitions/fate-fortune-<month>/ rotating-URL pattern documented on the October issue's own pending-competition entry, confirmed directly this run that the November page is now live (October's own closesAt was today, 1 Oct 2026, so this replaces it going forward). Only The Witchcraft Almanac field (id 114060) states its own answer verbatim in the page's own copy (\"Please answer YES to enter\") — the other bundled competitions on the same form (Prize Sudoku, Skeleton Puzzle, Star Chart, Tarot Reading with Hypnosis) need the physical magazine to solve and are deliberately left blank, same rule as every other Bauer entry in this project. Closing date from the page's own copy: \"Closing date for the November issue is 29th October 2026\" — no exact time stated, 23:59 UK time assumed; UK is on GMT by then (BST ends 25 Oct 2026), so that's 23:59 UTC, not the usual BST-era 22:59 UTC seen on this file's other October entries."
   }
 ]

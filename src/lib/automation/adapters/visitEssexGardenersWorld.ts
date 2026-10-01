@@ -1,25 +1,43 @@
 import type { AdapterContext, CompetitionAdapter, EntryOutcome } from "../types";
 
 /**
- * Visit Essex — "Win tickets to BBC Gardeners' World Autumn Fair"
- * (visitessex.com/inspire-me/competitions/win-tickets-to-bbc-gardeners-world-autumn-fair),
- * run directly by Visit Essex (the official Essex destination management
- * organisation). A NewMind/eCMS questionnaire form: title, forename,
- * surname, county, postcode, email, plus one multiple-choice question
- * ("Where is BBC Gardeners' World Autumn Fair 2026 taking place?") whose
- * correct answer ("Audley End House and Gardens, Saffron Walden") is
- * stated directly in the competition's own copy on the same page — not
- * guessed. Two optional consent checkboxes (Visit Essex e-newsletter,
- * prize giver's e-newsletter) are deliberately never ticked; leaving both
- * unticked triggers a one-time "are you sure" confirmation panel rather
- * than blocking submission, so that's handled here too. Protected by an
+ * Visit Essex's NewMind/eCMS prize draws — "Win tickets to BBC Gardeners'
+ * World Autumn Fair"
+ * (visitessex.com/inspire-me/competitions/win-tickets-to-bbc-gardeners-world-autumn-fair)
+ * and its sibling "Win a meal for two at Downham Hall"
+ * (visitessex.com/inspire-me/competitions/win-a-meal-for-two-at-downham-hall),
+ * both run directly by Visit Essex (the official Essex destination
+ * management organisation) on the same platform already documented in
+ * northNorfolkAttractions.ts. Same quiz-question-with-a-verifiable-answer
+ * shape as that adapter, matched per-URL below since the question and
+ * correct answer differ each time (never guessed — each is stated
+ * directly in that competition's own page copy). The Gardeners' World
+ * form also has a County field the Downham Hall one doesn't (confirmed by
+ * fetching both directly) — filled only when present. Two optional
+ * consent checkboxes (Visit Essex e-newsletter, prize giver's
+ * e-newsletter) are deliberately never ticked; leaving both unticked
+ * triggers a one-time "are you sure" confirmation panel rather than
+ * blocking submission, so that's handled here too. Protected by an
  * invisible reCAPTCHA — we don't attempt to solve or evade that, just
  * submit normally and fail loudly if it blocks the automated browser.
  */
+const QUESTION_ANSWERS: Record<string, RegExp> = {
+  "https://www.visitessex.com/inspire-me/competitions/win-tickets-to-bbc-gardeners-world-autumn-fair":
+    /Audley End House and Gardens/i, // stated in the competition's own copy: fair takes place at Audley End House and Gardens, Saffron Walden
+  "https://www.visitessex.com/inspire-me/competitions/win-a-meal-for-two-at-downham-hall":
+    /North Wing Restaurant/i, // stated in the competition's own copy: "...meal for two people in the North Wing Restaurant"
+};
+
 export const visitEssexGardenersWorldAdapter: CompetitionAdapter = {
   key: "visit-essex-gardeners-world",
   siteName: "Visit Essex",
   async enterCompetition({ page, competitionUrl, profile, log, dryRun }: AdapterContext): Promise<EntryOutcome> {
+    const answerPattern = QUESTION_ANSWERS[competitionUrl];
+    if (!answerPattern) {
+      await log.warn(`No researched quiz answer recorded for ${competitionUrl} — add one to QUESTION_ANSWERS before this can run`);
+      return { status: "FAILED", message: "No quiz answer recorded for this competition URL" };
+    }
+
     await log.info(`Navigating to ${competitionUrl}`);
     await page.goto(competitionUrl, { waitUntil: "domcontentloaded" });
 
@@ -42,9 +60,9 @@ export const visitEssexGardenersWorldAdapter: CompetitionAdapter = {
       return { status: "FAILED", message: "Entry form not found on page" };
     }
 
-    if (!profile.region || !profile.postalCode) {
-      await log.warn("Profile is missing county (region) or postcode, both required by this form");
-      return { status: "FAILED", message: "Profile missing region/postalCode required by this form" };
+    if (!profile.postalCode) {
+      await log.warn("Profile is missing postalCode, required by this form");
+      return { status: "FAILED", message: "Profile missing postalCode required by this form" };
     }
 
     // Required free-text field with no default — unlike suffolkCoast.ts's
@@ -59,24 +77,38 @@ export const visitEssexGardenersWorldAdapter: CompetitionAdapter = {
     await page.locator("#questiontitle").fill(profile.title);
     await page.locator("#questionforename").fill(profile.firstName);
     await page.locator("#questionsurname").fill(profile.lastName);
-    await page.locator("#questioncounty").fill(profile.region);
+
+    // Only the Gardeners' World form has a County field — confirmed
+    // directly the Downham Hall sibling doesn't, so it's filled only when
+    // present rather than assumed required across every competition this
+    // adapter covers.
+    const countyField = page.locator("#questioncounty");
+    if ((await countyField.count()) > 0) {
+      if (!profile.region) {
+        await log.warn("Profile is missing county (region), required by this competition's form");
+        return { status: "FAILED", message: "Profile missing region required by this form" };
+      }
+      await countyField.fill(profile.region);
+    }
+
     await page.locator("#questionpostcode").fill(profile.postalCode);
     await page.locator("#questionemail").fill(profile.email);
-    await log.info("Filled title, forename, surname, county, postcode, email");
+    await log.info("Filled title, forename, surname, postcode, email" + ((await countyField.count()) > 0 ? ", county" : ""));
 
     await dismissCookieBanner(3000);
 
     // The question's radio group id suffix (e.g. "question-29101") isn't
     // guaranteed stable across page loads, so match the answer by its
-    // label text instead — the correct answer, taken from the page's own
-    // copy above the form, not guessed.
-    const correctAnswer = page.getByLabel(/Audley End House and Gardens/i);
+    // label text instead — the correct answer, taken from each
+    // competition's own copy above the form (QUESTION_ANSWERS), not
+    // guessed.
+    const correctAnswer = page.getByLabel(answerPattern);
     if ((await correctAnswer.count()) === 0) {
-      await log.warn("Expected quiz answer option (Audley End House and Gardens) not found — question text may have changed");
+      await log.warn(`Expected quiz answer option (${answerPattern}) not found — question text may have changed`);
       return { status: "FAILED", message: "Quiz answer option not found on page" };
     }
     await correctAnswer.first().check();
-    await log.info("Selected quiz answer: Audley End House and Gardens, Saffron Walden");
+    await log.info(`Selected quiz answer matching ${answerPattern}`);
 
     // Both left unticked deliberately: consent value=8091 (Visit Essex
     // e-newsletter), value=8101 (prize giver's e-newsletter). See

@@ -22,6 +22,27 @@ import { classicCottagesNewsletterAdapter } from "./adapters/classicCottages";
 import { anchorBayHolidaysNewsletterAdapter } from "./adapters/anchorBayHolidays";
 import { cruiseMummyNewsletterAdapter } from "./adapters/cruiseMummy";
 import { futurePlcNewsletterAdapter } from "./adapters/futurePlcNewsletter";
+import { ambassadorCruiseLineNewsletterAdapter } from "./adapters/ambassadorCruiseLine";
+import { diggerlandNewsletterAdapter } from "./adapters/diggerland";
+import { awayResortsNewsletterAdapter } from "./adapters/awayResorts";
+import { visitNorthumberlandNewsletterAdapter } from "./adapters/visitNorthumberland";
+import { wightlinkNewsletterAdapter } from "./adapters/wightlink";
+import { fateAndFortuneNewsletterAdapter } from "./adapters/fateAndFortune";
+import { havenNewsletterAdapter } from "./adapters/haven";
+import { butlinsNewsletterAdapter } from "./adapters/butlins";
+import { visitCardiffNewsletterAdapter } from "./adapters/visitCardiff";
+import { visitEastOfEnglandNewsletterAdapter } from "./adapters/visitEastOfEngland";
+import { bestDaysOutCornwallNewsletterAdapter } from "./adapters/bestDaysOutCornwall";
+import { leedsCastleNewsletterAdapter } from "./adapters/leedsCastle";
+import { exploreEssexNewsletterAdapter } from "./adapters/exploreEssex";
+import { visitGreatYarmouthNewsletterAdapter } from "./adapters/visitGreatYarmouth";
+import { c2cNewsletterAdapter } from "./adapters/c2c";
+import { banhamZooNewsletterAdapter } from "./adapters/banhamZoo";
+import { kentAttractionsNewsletterAdapter } from "./adapters/kentAttractions";
+import { parkHolidaysUkNewsletterAdapter } from "./adapters/parkHolidaysUk";
+import { topSanteNewsletterAdapter } from "./adapters/topSante";
+import { visitNorthDevonNewsletterAdapter } from "./adapters/visitNorthDevon";
+import { visitDevonNewsletterAdapter } from "./adapters/visitDevon";
 
 const adapters: NewsletterAdapter[] = [
   nationalLobsterHatcheryNewsletterAdapter,
@@ -47,6 +68,27 @@ const adapters: NewsletterAdapter[] = [
   anchorBayHolidaysNewsletterAdapter,
   cruiseMummyNewsletterAdapter,
   futurePlcNewsletterAdapter,
+  ambassadorCruiseLineNewsletterAdapter,
+  diggerlandNewsletterAdapter,
+  awayResortsNewsletterAdapter,
+  visitNorthumberlandNewsletterAdapter,
+  wightlinkNewsletterAdapter,
+  fateAndFortuneNewsletterAdapter,
+  havenNewsletterAdapter,
+  butlinsNewsletterAdapter,
+  visitCardiffNewsletterAdapter,
+  visitEastOfEnglandNewsletterAdapter,
+  bestDaysOutCornwallNewsletterAdapter,
+  leedsCastleNewsletterAdapter,
+  exploreEssexNewsletterAdapter,
+  visitGreatYarmouthNewsletterAdapter,
+  c2cNewsletterAdapter,
+  banhamZooNewsletterAdapter,
+  kentAttractionsNewsletterAdapter,
+  parkHolidaysUkNewsletterAdapter,
+  topSanteNewsletterAdapter,
+  visitNorthDevonNewsletterAdapter,
+  visitDevonNewsletterAdapter,
 ];
 
 export const newsletterAdapterRegistry = new Map(adapters.map((a) => [a.key, a]));

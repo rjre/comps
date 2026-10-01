@@ -6,20 +6,35 @@ import { suffolkCoastAdapter } from "./adapters/suffolkCoast";
 import { visitEssexGardenersWorldAdapter } from "./adapters/visitEssexGardenersWorld";
 import { northNorfolkAttractionsAdapter } from "./adapters/northNorfolkAttractions";
 import { villagePeopleBanhamZooAdapter } from "./adapters/villagePeopleBanhamZoo";
+import { villagePeopleUltimateEarsAdapter } from "./adapters/villagePeopleUltimateEars";
+import { villagePeopleElemisPamperAdapter } from "./adapters/villagePeopleElemisPamper";
+import { diggerlandPrizeDrawAdapter } from "./adapters/diggerlandPrizeDraw";
 import { coastMagazineSuffolkCoastAdapter } from "./adapters/coastMagazineSuffolkCoast";
+import { coastMagazineCarbisBayAdapter } from "./adapters/coastMagazineCarbisBay";
 import { devonsTopAttractionsAdapter } from "./adapters/devonsTopAttractions";
 import { c2cBlowoutCompanyAdapter } from "./adapters/c2cBlowoutCompany";
+import { c2cWilkoLoveAndDeathAndRockNRollAdapter } from "./adapters/c2cWilkoLoveAndDeathAndRockNRoll";
 import { tuiMonthlyGiveawayAdapter } from "./adapters/tuiMonthlyGiveaway";
 import { solmarVillasBritishTravelAwardsAdapter } from "./adapters/solmarVillasBritishTravelAwards";
 import { visitLakeDistrictAdapter } from "./adapters/visitLakeDistrict";
 import { muddyStilettosReaderTreatsAdapter } from "./adapters/muddyStilettosReaderTreats";
 import { officialLondonTheatreHeathersAdapter } from "./adapters/officialLondonTheatreHeathers";
+import { officialLondonTheatreIntoTheWoodsAdapter } from "./adapters/officialLondonTheatreIntoTheWoods";
 import { parkHolidaysWinAHolidayHomeAdapter } from "./adapters/parkHolidaysWinAHolidayHome";
 import { ambassadorCruiseLineEnglandGolfAdapter } from "./adapters/ambassadorCruiseLineEnglandGolf";
 import { advantageTravelAmbassadorCaribbeanAdapter } from "./adapters/advantageTravelAmbassadorCaribbean";
 import { dmriCompsAdapter, looksLikeDmriUrl } from "./adapters/dmriComps";
 import { gleamAdapter } from "./adapters/gleam";
 import { kingSumoAdapter } from "./adapters/kingSumo";
+import { visitNorthumberlandAdapter } from "./adapters/visitNorthumberland";
+import { visitEastOfEnglandAdapter } from "./adapters/visitEastOfEngland";
+import { bauerCompetitionFormAdapter } from "./adapters/bauerCompetitionForm";
+import { wightlinkParkdeanResortsAdapter } from "./adapters/wightlinkParkdeanResorts";
+import { wightlinkParkdeanCompetitionAdapter } from "./adapters/wightlinkParkdeanCompetition";
+import { bestDaysOutCornwallGoldenTicketAdapter } from "./adapters/bestDaysOutCornwallGoldenTicket";
+import { kentAttractionsAdapter } from "./adapters/kentAttractions";
+import { visitNorthDevonAdapter } from "./adapters/visitNorthDevon";
+import { reachPlcCompetitionAdapter } from "./adapters/reachPlcCompetition";
 
 const adapters: CompetitionAdapter[] = [
   exampleAdapter,
@@ -31,20 +46,35 @@ const adapters: CompetitionAdapter[] = [
   visitEssexGardenersWorldAdapter,
   northNorfolkAttractionsAdapter,
   villagePeopleBanhamZooAdapter,
+  villagePeopleUltimateEarsAdapter,
+  villagePeopleElemisPamperAdapter,
+  diggerlandPrizeDrawAdapter,
   coastMagazineSuffolkCoastAdapter,
+  coastMagazineCarbisBayAdapter,
   devonsTopAttractionsAdapter,
   c2cBlowoutCompanyAdapter,
+  c2cWilkoLoveAndDeathAndRockNRollAdapter,
   tuiMonthlyGiveawayAdapter,
   solmarVillasBritishTravelAwardsAdapter,
   visitLakeDistrictAdapter,
   muddyStilettosReaderTreatsAdapter,
   officialLondonTheatreHeathersAdapter,
+  officialLondonTheatreIntoTheWoodsAdapter,
   parkHolidaysWinAHolidayHomeAdapter,
   ambassadorCruiseLineEnglandGolfAdapter,
   advantageTravelAmbassadorCaribbeanAdapter,
   dmriCompsAdapter,
   gleamAdapter,
   kingSumoAdapter,
+  visitNorthumberlandAdapter,
+  visitEastOfEnglandAdapter,
+  bauerCompetitionFormAdapter,
+  wightlinkParkdeanResortsAdapter,
+  wightlinkParkdeanCompetitionAdapter,
+  bestDaysOutCornwallGoldenTicketAdapter,
+  kentAttractionsAdapter,
+  visitNorthDevonAdapter,
+  reachPlcCompetitionAdapter,
 ];
 
 export const adapterRegistry = new Map(adapters.map((a) => [a.key, a]));
