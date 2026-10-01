@@ -7,7 +7,8 @@ import { runEntryPass } from "@/lib/scheduler/runOnce";
 import { runNewsletterPass } from "@/lib/scheduler/subscribeNewsletters";
 import { runPrune } from "@/lib/maintenance/prune";
 import { processMailbox } from "@/lib/gmail/processMailbox";
-import { isGmailConfigured } from "@/lib/gmail/client";
+import { isMailConfigured, mailBackendName } from "@/lib/gmail/mailbox";
+import { describeError } from "@/lib/describeError";
 import { msUntilNextHour } from "@/lib/scheduler/dailyAt";
 import {
   FEED_DISCOVERY_INTERVAL_MS,
@@ -43,7 +44,7 @@ async function loop(name: string, intervalMs: number, fn: () => Promise<unknown>
       // Never let one bad pass end the loop — this process is the whole
       // service, and it's expected to survive individual sites, the
       // network, and its own bugs having a bad day.
-      console.error(`[${name}] pass failed:`, err);
+      console.error(`[${name}] pass failed: ${describeError(err)}`);
     }
     console.log(`[${name}] pass finished in ${Math.round((Date.now() - startedAt) / 1000)}s`);
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
@@ -63,7 +64,7 @@ async function dailyLoop(name: string, hour: number, fn: () => Promise<unknown>)
     try {
       await fn();
     } catch (err) {
-      console.error(`[${name}] pass failed:`, err);
+      console.error(`[${name}] pass failed: ${describeError(err)}`);
     }
     console.log(`[${name}] pass finished in ${Math.round((Date.now() - startedAt) / 1000)}s`);
   }
@@ -93,11 +94,11 @@ async function main() {
     `prune ${PRUNE_INTERVAL_MS / 60_000}min`,
   ];
 
-  if (isGmailConfigured()) {
+  if (isMailConfigured()) {
     loops.push(loop("mailbox", MAIL_SCAN_INTERVAL_MS, processMailbox));
-    schedule.push(`mail scan ${MAIL_SCAN_INTERVAL_MS / 60_000}min`);
+    schedule.push(`mail scan ${MAIL_SCAN_INTERVAL_MS / 60_000}min via ${mailBackendName()}`);
   } else {
-    console.log("Gmail not configured — skipping mail scanning (see README: npm run gmail:auth).");
+    console.log("Mail not configured — skipping mail scanning (see README: GMAIL_APP_PASSWORD or npm run gmail:auth).");
   }
 
   console.log(`Starting worker — ${schedule.join(", ")}.`);

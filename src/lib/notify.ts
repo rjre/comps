@@ -9,15 +9,15 @@
  *
  * `WIN_NOTIFY_EMAIL` sends through the same Gmail account the mailbox pass
  * already reads (needs the `gmail.send` scope; see GMAIL_SCOPES), so it
- * requires the `gmail` client the caller already has rather than a
- * separate credential.
+ * takes the mailbox the caller already has open rather than a separate
+ * credential. That's the Gmail API's send, or SMTP on the app-password
+ * route (see ./gmail/mailbox).
  *
  * With nothing configured, notification always fails — deliberately, so
  * the caller keeps the mail in the inbox rather than silently filing it.
  */
 
-import type { GmailClient } from "./gmail/client";
-import { sendMail } from "./gmail/sendMail";
+import type { Mailbox } from "./gmail/mailbox";
 
 export interface Notification {
   title: string;
@@ -28,8 +28,8 @@ export function isNotifyConfigured(): boolean {
   return Boolean(process.env.WIN_NOTIFY_EMAIL);
 }
 
-export async function notify({ title, text }: Notification, gmail?: GmailClient): Promise<boolean> {
+export async function notify({ title, text }: Notification, mailbox?: Mailbox): Promise<boolean> {
   const to = process.env.WIN_NOTIFY_EMAIL;
-  if (!to || !gmail) return false;
-  return sendMail(gmail, to, title, text);
+  if (!to || !mailbox) return false;
+  return mailbox.send(to, title, text);
 }

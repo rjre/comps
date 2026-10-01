@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { isGmailConfigured } from "@/lib/gmail/client";
+import { isMailConfigured } from "@/lib/gmail/mailbox";
+import { readMailStatus } from "@/lib/gmail/mailStatus";
+import { ago } from "@/lib/health";
 import { Pill } from "@/components/Pill";
 
 // Read live on every request: this reflects an unattended service's current
@@ -16,7 +18,8 @@ async function markReviewed(formData: FormData) {
 }
 
 export default async function WinsPage() {
-  const configured = isGmailConfigured();
+  const configured = isMailConfigured();
+  const mailStatus = configured ? readMailStatus() : null;
   const wins = configured
     ? await prisma.potentialWin.findMany({ orderBy: { receivedAt: "desc" } })
     : [];
@@ -31,8 +34,17 @@ export default async function WinsPage() {
 
       {!configured && (
         <p className="empty-state">
-          Gmail isn&apos;t connected yet. Run <code>npm run gmail:auth</code> once you have your
-          Google OAuth client set up (see README) and add the resulting profile/email details.
+          Mail isn&apos;t connected yet. Set <code>GMAIL_ADDRESS</code> and{" "}
+          <code>GMAIL_APP_PASSWORD</code> in <code>.env</code>, or run <code>npm run gmail:auth</code>{" "}
+          (see README).
+        </p>
+      )}
+
+      {mailStatus && !mailStatus.ok && (
+        <p className="empty-state">
+          <strong>Mail triage is failing</strong> (last tried {ago(new Date(mailStatus.at))}
+          {mailStatus.lastOkAt ? `, last worked ${ago(new Date(mailStatus.lastOkAt))}` : ""}) — new wins
+          aren&apos;t being picked up and win alerts can&apos;t be sent. {mailStatus.error}
         </p>
       )}
 

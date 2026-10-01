@@ -28,7 +28,10 @@
   "dependencies": {
     "@prisma/client": "^5.20.0",
     "googleapis": "^144.0.0",
+    "imapflow": "^2.2.1",
+    "mailparser": "^3.9.33",
     "next": "^14.2.5",
+    "nodemailer": "^10.0.13",
     "playwright": "^1.47.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -36,7 +39,9 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/mailparser": "^3.9.0",
     "@types/node": "^20.14.0",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^18.3.3",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.5",

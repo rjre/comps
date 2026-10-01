@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { decideSchedule } from "@/lib/scheduler/schedule";
 import type { EntryStatus } from "@/lib/status";
 import { getServiceHealth, ago } from "@/lib/health";
+import { readMailStatus } from "@/lib/gmail/mailStatus";
+import { isMailConfigured } from "@/lib/gmail/mailbox";
 import { Pill } from "@/components/Pill";
 
 // Always read live — this is the health page for an unattended service, so
@@ -82,6 +84,7 @@ export default async function Dashboard() {
     adapterReliability(twoWeeksAgo),
   ]);
   const { lastRun, stale } = health;
+  const mailStatus = isMailConfigured() ? readMailStatus() : null;
 
   // The same decision the runner makes, so this page shows what will
   // actually happen next rather than a separate guess at it.
@@ -117,6 +120,14 @@ export default async function Dashboard() {
       {!profile && (
         <p className="empty-state">
           No profile yet. <a href="/profile">Set one up</a> before entries can run.
+        </p>
+      )}
+
+      {mailStatus && !mailStatus.ok && (
+        <p className="empty-state">
+          <strong>Mail triage is failing</strong> (last tried {ago(new Date(mailStatus.at))}
+          {mailStatus.lastOkAt ? `, last worked ${ago(new Date(mailStatus.lastOkAt))}` : ""}). Entries are
+          unaffected, but wins in the inbox aren&apos;t being picked up or alerted. {mailStatus.error}
         </p>
       )}
 

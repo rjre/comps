@@ -116,7 +116,26 @@ account being scanned, so it needs no extra credential — but does need the
 `gmail.send` scope, which is only in the token if `npm run gmail:auth` was
 (re-)run after that scope was added.
 
-### Setup (one-time, needs a human in the loop)
+### Setup, recommended: app password (doesn't expire)
+
+1. The Gmail account needs 2-Step Verification on. Then create an app
+   password at <https://myaccount.google.com/apppasswords>.
+2. Put `GMAIL_ADDRESS` (the account) and `GMAIL_APP_PASSWORD` (the
+   16-character password; spaces are fine) in `.env`.
+3. Restart the worker. Its startup line says `mail scan ... via IMAP (app
+   password)`.
+
+This uses IMAP to read and archive and SMTP to send. When both are set it
+takes priority over the OAuth route below. Message ids are the Gmail API's
+own on both routes, so switching never reprocesses mail.
+
+Why it's recommended: an OAuth app left in Google's "Testing" mode has its
+refresh tokens expire after 7 days. Publishing the app wants an app domain,
+which this project doesn't have. A dead token stopped mail triage and win
+alerts on 2026-09-29. If a pass fails, the Dashboard and Wins pages now
+show a banner saying so.
+
+### Setup, alternative: OAuth (one-time, needs a human in the loop)
 
 1. In [Google Cloud Console](https://console.cloud.google.com/), create a
    project, enable the **Gmail API**, and create an OAuth **Desktop app**
