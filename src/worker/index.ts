@@ -1,4 +1,5 @@
 import "@/lib/loadEnv";
+import "@/lib/journalPriority";
 import { prisma } from "@/lib/db";
 import { runDiscovery } from "@/lib/discovery/runDiscovery";
 import { runPlatformDiscovery } from "@/lib/scheduler/discoverOnce";
