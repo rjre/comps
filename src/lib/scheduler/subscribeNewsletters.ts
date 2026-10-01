@@ -4,6 +4,7 @@ import { mkdir } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/db";
 import { getNewsletterAdapter } from "@/lib/newsletters/registry";
+import { decideNewsletterAttempt } from "@/lib/newsletters/retry";
 import { createRunLogger } from "@/lib/logger";
 import { acquireLock } from "@/lib/scheduler/lock";
 
@@ -46,7 +47,28 @@ export async function runNewsletterPass() {
       return;
     }
 
-    const candidates = await prisma.newsletterSource.findMany({ where: { status: "PENDING" } });
+    const pending = await prisma.newsletterSource.findMany({
+      where: { status: "PENDING" },
+      include: { attempts: { select: { status: true, attemptedAt: true }, orderBy: { attemptedAt: "desc" }, take: 20 } },
+    });
+    const candidates: typeof pending = [];
+    let waiting = 0;
+    for (const source of pending) {
+      const decision = decideNewsletterAttempt(source.attempts);
+      if (decision.action === "ATTEMPT") candidates.push(source);
+      else if (decision.action === "WAIT") waiting += 1;
+      else {
+        await prisma.newsletterSource.update({
+          where: { id: source.id },
+          data: {
+            status: "FAILED",
+            notes: [source.notes, `Gave up ${new Date().toISOString().slice(0, 10)}: ${decision.reason}.`].filter(Boolean).join("\n"),
+          },
+        });
+        await log.warn(`Giving up on ${source.name}: ${decision.reason}. Set it back to PENDING to retry.`);
+      }
+    }
+    if (waiting > 0) await log.info(`${waiting} pending source(s) backing off after recent failures.`);
     await prisma.run.update({ where: { id: run.id }, data: { candidateCount: candidates.length } });
 
     if (candidates.length === 0) {

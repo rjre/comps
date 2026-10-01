@@ -72,14 +72,24 @@ export const cruiseMummyNewsletterAdapter: NewsletterAdapter = {
 
     const success = page.getByText(/success|thank you|you'?re (in|subscribed)|check your (inbox|email)|confirm your subscription/i);
     const error = page.getByText(/already subscribed|invalid|error|something went wrong|please try again/i);
+    // Since ~2026-09, Kit shows a "One more step" reCAPTCHA modal after
+    // submit (confirmed by screenshot). That's a human check, not something
+    // to get past, so report it as what it is.
+    const captcha = page.getByText(/complete this security check/i);
     try {
       await Promise.race([
         success.first().waitFor({ state: "visible", timeout: 20000 }),
         error.first().waitFor({ state: "visible", timeout: 20000 }),
+        captcha.first().waitFor({ state: "visible", timeout: 20000 }),
       ]);
     } catch {
       await log.warn("Neither a confirmation nor an error appeared within 20s after submit");
       return { status: "FAILED", message: "No confirmation or error appeared after submit — outcome unclear" };
+    }
+
+    if (await captcha.first().isVisible().catch(() => false)) {
+      await log.warn("Kit asked for a reCAPTCHA after submit — needs a human");
+      return { status: "FAILED", message: "Blocked by a reCAPTCHA after submit (needs a human)" };
     }
 
     if (await success.first().isVisible().catch(() => false)) {
