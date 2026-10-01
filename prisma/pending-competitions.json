@@ -831,5 +831,269 @@
     "closesAt": "2026-10-04T22:59:00.000Z",
     "maxEntries": 1,
     "notes": "Another new live instance on the already-tracked Reach plc widget (reachplc-competition adapter, no code changes) — field ids confirmed directly via curl of the embedded JotForm iframe, same as every other instance. A prior session flagged a LEGO Reach plc competition (via Brick Fanatics x Mirror) as a lead without pinning down its exact field ids within that run's budget; this is a fresh live instance verified end-to-end this run. Page's own copy: 'This competition closes on the 4th October.'"
+  },
+  {
+    "name": "Marie Claire Competitions — Win hair thickening essentials from Nanogen",
+    "url": "https://comps.marieclaire.co.uk/competition/hair_thickening_essential_from_nanogen__marieclaire/123273.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win The Complete Super Renewal Set worth £250",
+    "url": "https://comps.marieclaire.co.uk/competition/cornishseaweedbath_the_complete_super_renewal_set_marieclaire/123517.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win over £150 Natural Skincare from Neve's Bees",
+    "url": "https://comps.marieclaire.co.uk/competition/over__natural_skincare_from_neves_bees_marieclaire/120701.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Marie Claire Competitions — Win 1 of 4 Revive Active Menopause Supplement Bundles",
+    "url": "https://comps.marieclaire.co.uk/competition/revive_active_menopause_supplement_bundles_marieclaire/123253.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-28T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.marieclaire.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 28/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a Spa Day and a Japanese Head Spa for Two with Polytar",
+    "url": "https://comps.whatsontv.co.uk/competition/a_spa_day_and_a_japanese_head_spa_for_two_with_polytar_network/123276.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-17T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 17/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win Bearfields 'Better Reset' bundle, worth £500",
+    "url": "https://comps.whatsontv.co.uk/competition/bearfields_better_reset_bundle_worth__network/123193.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a TCL Full HD Fire TV with Neutradol",
+    "url": "https://comps.whatsontv.co.uk/competition/a_tcl_full_hd_fire_tv_with_neutradol_network/123162.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a Hydromol prize kit with 3 skincare products worth £50",
+    "url": "https://comps.whatsontv.co.uk/competition/a_hydromol_prize_kit_with__skincare_products_worth_%C2%A350_network/123204.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-27T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 27/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a family 'Palace & Play Pass' to Blenheim Palace",
+    "url": "https://comps.whatsontv.co.uk/competition/a_family_palace__play_pass_to_blenheim_palace_network/122817.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-13T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 13/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "What's On TV — Win a £100 Love2shop voucher with Utility Warehouse",
+    "url": "https://comps.whatsontv.co.uk/competition/utility_warehouse_voucher_network/122546.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-19T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.whatsontv.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 19/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win Bearfields 'Better Reset' bundle, worth £500",
+    "url": "https://comps.womanmagazine.co.uk/competition/bearfields_better_reset_bundle_worth__network/123194.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win a TCL Full HD Fire TV with Neutradol",
+    "url": "https://comps.womanmagazine.co.uk/competition/a_tcl_full_hd_fire_tv_with_neutradol_network/123163.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win a Hydromol prize kit with 3 skincare products worth £50",
+    "url": "https://comps.womanmagazine.co.uk/competition/a_hydromol_prize_kit_with__skincare_products_worth_%C2%A350_network/123205.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-27T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 27/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win 1 of 4 £125 Jeulia E-Gift Cards",
+    "url": "https://comps.womanmagazine.co.uk/competition/_of___jeulia_egift_cards_network/123186.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-26T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 26/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win a family 'Palace & Play Pass' to Blenheim Palace",
+    "url": "https://comps.womanmagazine.co.uk/competition/a_family_palace__play_pass_to_blenheim_palace_network/122818.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-13T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 13/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win a £100 Love2shop voucher with Utility Warehouse",
+    "url": "https://comps.womanmagazine.co.uk/competition/utility_warehouse_voucher_network/122547.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-19T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 19/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win a spooky signed copy of Kay's Gruesome Games",
+    "url": "https://comps.womanmagazine.co.uk/competition/_a_spooky_signed_copy_of_kays_gruesome_games_network/123132.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-18T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 18/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman Magazine — Win 3 Months of IntimX or VirilX with Aiku",
+    "url": "https://comps.womanmagazine.co.uk/competition/_intimate_pleasure_with_aiku_network/123087.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-11T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womanmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 11/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win Bearfields 'Better Reset' bundle, worth £500",
+    "url": "https://comps.womansownmagazine.co.uk/competition/bearfields_better_reset_bundle_worth__network/123196.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win a TCL Full HD Fire TV with Neutradol",
+    "url": "https://comps.womansownmagazine.co.uk/competition/a_tcl_full_hd_fire_tv_with_neutradol_network/123165.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win a Hydromol prize kit with 3 skincare products worth £50",
+    "url": "https://comps.womansownmagazine.co.uk/competition/a_hydromol_prize_kit_with__skincare_products_worth_%C2%A350_network/123207.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-27T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 27/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win 1 of 4 £125 Jeulia E-Gift Cards",
+    "url": "https://comps.womansownmagazine.co.uk/competition/_of___jeulia_egift_cards_network/123188.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-26T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 26/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win a £100 Love2shop voucher with Utility Warehouse",
+    "url": "https://comps.womansownmagazine.co.uk/competition/utility_warehouse_voucher_network/122549.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-19T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 19/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win a Spa Day and a Japanese Head Spa for Two with Polytar",
+    "url": "https://comps.womansownmagazine.co.uk/competition/a_spa_day_and_a_japanese_head_spa_for_two_with_polytar_network/123279.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-17T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 17/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win a family 'Palace & Play Pass' to Blenheim Palace",
+    "url": "https://comps.womansownmagazine.co.uk/competition/a_family_palace__play_pass_to_blenheim_palace_network/122820.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-13T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 13/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Woman's Own Magazine — Win a spooky signed copy of Kay's Gruesome Games",
+    "url": "https://comps.womansownmagazine.co.uk/competition/_a_spooky_signed_copy_of_kays_gruesome_games_network/123134.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-18T22:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked comps.womansownmagazine.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 18/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win a Magical Sightseeing Tour of London's Christmas Lights",
+    "url": "https://competitions.goodto.com/competition/the-original-tour-win-christmas-lights-tour-tickets-london_goodtoknow/123374.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win A Waterdrop CT01 Dispenser and Waterdrop M6SL RO system",
+    "url": "https://competitions.goodto.com/competition/waterdrop_filter_goodtoknow/123524.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win The Vampire Lestat on Blu-ray",
+    "url": "https://competitions.goodto.com/competition/the_vampire_lestat_bluray_goodtoknow/123285.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "GoodTo — Win Siocolat's Award-Winning Collection worth £60",
+    "url": "https://competitions.goodto.com/competition/_siocolats_awardwinning_collection_worth__goodtoknow/123124.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.goodto.com DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win The Complete Super Renewal Set worth £250",
+    "url": "https://competitions.topsante.co.uk/competition/cornishseaweedbath_the_complete_super_renewal_set_topsante/123518.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 29/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Top Sante Competitions — Win 1 of 2 Revive Active Menopause Supplement Bundles",
+    "url": "https://competitions.topsante.co.uk/competition/_x_revive_active_menopause_supplement_bundles_topsante/123254.php",
+    "adapterKey": "dmri-comps",
+    "closesAt": "2026-10-28T23:59:00.000Z",
+    "maxEntries": 30,
+    "notes": "New live draw found this run on the already-tracked competitions.topsante.co.uk DMRI platform (dmri-comps adapter, no code changes) — confirmed directly via curl (HTTP 200, real H1, \"This competition ends on 28/10/2026\"). No hand-researched trivia answer; relies on the adapter's deriveAnswerFromCopy runtime fallback."
+  },
+  {
+    "name": "Fate & Fortune — Win The Witchcraft Almanac",
+    "url": "https://www.fateandfortunemagazine.co.uk/competitions/latest-competitions/fate-fortune-november/",
+    "adapterKey": "bauer-competition-form",
+    "closesAt": "2026-10-29T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Next month's issue of the already-tracked H Bauer Publishing shared reader-competitions widget (bauer-competition-form adapter, no code changes beyond a new BAUER_ENTRIES record) — same fateandfortunemagazine.co.uk/competitions/latest-competitions/fate-fortune-<month>/ rotating-URL pattern documented on the October issue's own pending-competition entry, confirmed directly this run that the November page is now live (October's own closesAt was today, 1 Oct 2026, so this replaces it going forward). Only The Witchcraft Almanac field (id 114060) states its own answer verbatim in the page's own copy (\"Please answer YES to enter\") — the other bundled competitions on the same form (Prize Sudoku, Skeleton Puzzle, Star Chart, Tarot Reading with Hypnosis) need the physical magazine to solve and are deliberately left blank, same rule as every other Bauer entry in this project. Closing date from the page's own copy: \"Closing date for the November issue is 29th October 2026\" — no exact time stated, 23:59 UK time assumed; UK is on GMT by then (BST ends 25 Oct 2026), so that's 23:59 UTC, not the usual BST-era 22:59 UTC seen on this file's other October entries."
   }
 ]

@@ -54,6 +54,10 @@ const BAUER_ENTRIES: Record<string, { fieldId: string; answer: string }> = {
     fieldId: "114028",
     answer: "ANGEL", // page's own copy: "Please answer ANGEL to enter"
   },
+  "https://www.fateandfortunemagazine.co.uk/competitions/latest-competitions/fate-fortune-november/": {
+    fieldId: "114060",
+    answer: "YES", // page's own copy: "The Witchcraft Almanac - Please answer YES to enter"
+  },
 };
 
 export const bauerCompetitionFormAdapter: CompetitionAdapter = {
