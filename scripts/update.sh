@@ -59,6 +59,7 @@ if [ "$BEFORE" != "$AFTER" ]; then
   # pages — or 500ing, if the build no longer matches the schema. Rebuild
   # before restarting, and restart the web service too, not just the worker.
   stage "build dashboard" npm run build
+  rm -rf .next/cache
 
   echo "=== restarting services (code changed ${BEFORE:0:7} -> ${AFTER:0:7}) ==="
   for unit in comps-worker comps-web; do

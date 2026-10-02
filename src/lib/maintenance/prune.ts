@@ -1,5 +1,5 @@
 import "@/lib/loadEnv";
-import { readdir, stat, unlink } from "fs/promises";
+import { readdir, readFile, rm, stat, unlink, writeFile } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/db";
 
@@ -20,9 +20,9 @@ import { prisma } from "@/lib/db";
 
 const SCREENSHOT_DIR = path.join(process.cwd(), "data", "screenshots");
 
-const SCREENSHOT_MAX_AGE_DAYS = Number(process.env.SCREENSHOT_MAX_AGE_DAYS ?? 14);
-const SCREENSHOT_MAX_TOTAL_MB = Number(process.env.SCREENSHOT_MAX_TOTAL_MB ?? 200);
-const LOG_MAX_AGE_DAYS = Number(process.env.LOG_MAX_AGE_DAYS ?? 30);
+const SCREENSHOT_MAX_AGE_DAYS = Number(process.env.SCREENSHOT_MAX_AGE_DAYS ?? 5);
+const SCREENSHOT_MAX_TOTAL_MB = Number(process.env.SCREENSHOT_MAX_TOTAL_MB ?? 40);
+const LOG_MAX_AGE_DAYS = Number(process.env.LOG_MAX_AGE_DAYS ?? 10);
 
 /**
  * Page-level console/pageerror lines the old runner wrote straight to the
@@ -104,20 +104,60 @@ async function pruneLogLines(): Promise<number> {
  * actually matters. Reclaiming 1.2 million pruned rows took a 396MB file
  * back to 41MB.
  *
- * Only run after a substantial prune: VACUUM rewrites the whole file and
- * takes an exclusive lock, which isn't worth doing six times a day to
- * reclaim a few hundred rows.
+ * VACUUM rewrites the whole file and takes an exclusive lock, so only run
+ * it when the free pages are worth having: judged on what is actually
+ * reclaimable, not on how many rows this one pass deleted (a steady trickle
+ * of deletions never trips a per-pass threshold).
  */
-const VACUUM_AFTER_DELETIONS = 50_000;
+const VACUUM_MIN_FREE_MB = 8;
+
+/** Other files in data/ that grow without bound, trimmed to a tail. */
+const LOG_FILES = ["update.log", "update.log.1", "cycle.log"];
+const LOG_MAX_BYTES = 1024 * 1024;
+
+async function trimLogs(): Promise<void> {
+  for (const name of LOG_FILES) {
+    const full = path.join(process.cwd(), "data", name);
+    try {
+      const info = await stat(full);
+      if (info.size <= LOG_MAX_BYTES) continue;
+      if (name.endsWith(".1")) {
+        await unlink(full);
+      } else {
+        const text = await readFile(full, "utf8");
+        await writeFile(full, text.slice(-LOG_MAX_BYTES / 2));
+      }
+    } catch {
+      // Missing or mid-write; try again next pass.
+    }
+  }
+}
+
+/** Next.js's webpack cache is only useful during a build, and is 150MB+. */
+async function pruneBuildCache(): Promise<void> {
+  await rm(path.join(process.cwd(), ".next", "cache"), { recursive: true, force: true });
+}
 
 export async function runPrune() {
   await pruneScreenshots();
-  const deleted = await pruneLogLines();
-  if (deleted >= VACUUM_AFTER_DELETIONS) {
+  await pruneLogLines();
+  await trimLogs();
+  await pruneBuildCache();
+  const free = await freeMb();
+  if (free >= VACUUM_MIN_FREE_MB) {
     const before = await databaseSizeMb();
     await prisma.$executeRawUnsafe("VACUUM");
-    console.log(`Reclaimed database file space after ${deleted} deletion(s): ${before}MB -> ${await databaseSizeMb()}MB.`);
+    console.log(`Reclaimed database file space: ${before}MB -> ${await databaseSizeMb()}MB.`);
   }
+  // Keep the -wal file from sitting at its high-water mark too.
+  await prisma.$queryRawUnsafe("PRAGMA wal_checkpoint(TRUNCATE)");
+}
+
+async function freeMb(): Promise<number> {
+  const rows = await prisma.$queryRawUnsafe<{ bytes: number }[]>(
+    "select freelist_count * page_size as bytes from pragma_freelist_count(), pragma_page_size()",
+  );
+  return Number(rows[0]?.bytes ?? 0) / 1_048_576;
 }
 
 /** Size of the SQLite file itself, as SQLite reports it. */
