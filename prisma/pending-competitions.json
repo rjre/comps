@@ -1095,5 +1095,13 @@
     "closesAt": "2026-10-29T23:59:00.000Z",
     "maxEntries": 1,
     "notes": "Next month's issue of the already-tracked H Bauer Publishing shared reader-competitions widget (bauer-competition-form adapter, no code changes beyond a new BAUER_ENTRIES record) — same fateandfortunemagazine.co.uk/competitions/latest-competitions/fate-fortune-<month>/ rotating-URL pattern documented on the October issue's own pending-competition entry, confirmed directly this run that the November page is now live (October's own closesAt was today, 1 Oct 2026, so this replaces it going forward). Only The Witchcraft Almanac field (id 114060) states its own answer verbatim in the page's own copy (\"Please answer YES to enter\") — the other bundled competitions on the same form (Prize Sudoku, Skeleton Puzzle, Star Chart, Tarot Reading with Hypnosis) need the physical magazine to solve and are deliberately left blank, same rule as every other Bauer entry in this project. Closing date from the page's own copy: \"Closing date for the November issue is 29th October 2026\" — no exact time stated, 23:59 UK time assumed; UK is on GMT by then (BST ends 25 Oct 2026), so that's 23:59 UTC, not the usual BST-era 22:59 UTC seen on this file's other October entries."
+  },
+  {
+    "name": "Kynren — Win 2 VIP Tickets to Pyromusical",
+    "url": "https://kynren.com/competition/",
+    "adapterKey": "kynren",
+    "closesAt": "2026-10-04T23:59:00.000Z",
+    "maxEntries": 1,
+    "notes": "Kynren (11Arches charity, Bishop Auckland, Co. Durham) runs its own one-off WPForms prize draw for 2 VIP tickets to its Halloween Pyromusical (31 Oct 2026) — confirmed directly via curl of the real static HTML: a plain WPForms form (id 13935, email/full name/postcode, one CSS-hidden honeypot field, one optional marketing checkbox left unticked, one required T&Cs checkbox) with no reCAPTCHA/Turnstile in its own wpforms_settings config. Full 17-point T&Cs rendered on-page confirm free entry, one entry per person, winner picked at random, closes midnight Sunday 4 October 2026 — tight turnaround from today (2 Oct), worth a try regardless. Outside this project's usual Essex/East Anglia/Kent/Cornwall/Devon/Wales focus (County Durham), but a clean pass on every other legitimacy criterion so added anyway."
   }
 ]
