@@ -280,5 +280,41 @@
     "url": "https://www.lilyskitchen.co.uk/pages/email-signup",
     "adapterKey": "lilys-kitchen-newsletter",
     "notes": "Dog-food brand's own dedicated email-signup page, confirmed directly via curl of the real static HTML: a standard Shopify 'customer' marketing form (contact[email]/contact[first_name]/contact[last_name], a hidden contact[tags]=newsletter field, a required pet-type select with Dog/Cat/Both options — Dog selected, matching this project's own standing dog-giveaway focus, not a guessed personal fact). No separate marketing checkbox; the form's own GDPR disclaimer text is the only consent copy, no box to tick. CookieHub CMP is fully client-rendered (no static markup), dismissed by visible 'Deny all/Reject all' text rather than a guessed selector. Found while researching dog-brand competitions for Part A (no live Lily's Kitchen competition currently exists — checked and excluded separately: 'Dog of the Month' is a photo-submission contest, a past Le Shuttle competition and National Trust cottage competition are both now closed/removed)."
+  },
+  {
+    "name": "Barking Heads",
+    "url": "https://barkingheads.co.uk/",
+    "adapterKey": "barking-heads-newsletter",
+    "notes": "Dog-food brand's own footer newsletter widget ('Join the Pack'), confirmed directly via curl of the real static HTML: a `[data-footer-newsletter]` block, single email field, one required consent checkbox whose label IS the newsletter's own privacy disclaimer (no separate marketing checkbox). No action/method on the form (JS-driven, site loads Klaviyo's onsite script) — success read from a static success-message element ('You have successfully subscribed to our mailing list!') toggled visible after submit. Cookiebot CMP, standard reject button id. No CAPTCHA. Found while researching dog-brand newsletters for Part B."
+  },
+  {
+    "name": "Burns Pet Nutrition",
+    "url": "https://burnspet.co.uk/",
+    "adapterKey": "burns-pet-nutrition-newsletter",
+    "notes": "Dog-food brand's own footer newsletter widget, confirmed directly via curl of the real static HTML: Shopify's native 'customer' contact form (form_type=customer, contact[tags]=newsletter), single email field, no marketing checkbox. Plain full-page POST to /contact (Post/Redirect/Get) — no exact confirmation text in the static HTML, so a completed POST with no visible error text afterward is treated as accepted, same convention as theSuffolkCoast.ts/diggerland.ts. No CAPTCHA. Found while researching dog-brand newsletters for Part B."
+  },
+  {
+    "name": "Animology",
+    "url": "https://animology.co.uk/",
+    "adapterKey": "animology-newsletter",
+    "notes": "Dog shampoo/grooming brand's own footer newsletter widget, confirmed directly via curl of the real static HTML: same Shopify native 'customer' contact form family as Burns Pet Nutrition (form_type=customer, contact[tags]=newsletter), single email field, no marketing checkbox. Same full-page POST / 'no visible error = accepted' convention as that sibling. No CAPTCHA. Found while researching dog-brand newsletters for Part B."
+  },
+  {
+    "name": "Ruffwear",
+    "url": "https://www.ruffwear.com/",
+    "adapterKey": "ruffwear-newsletter",
+    "notes": "Dog outdoor-gear brand's own footer newsletter widget ('Join The Pack'), confirmed directly via curl of the real static HTML: same Shopify native 'customer' contact form family as Burns/Animology, single email field (no contact[tags] hidden field on this one, confirmed directly — no second, broader field to worry about), no marketing checkbox. Same full-page POST / 'no visible error = accepted' convention. Osano CMP (dialog rendered client-side only, so dismissed by matching a 'Deny' button by its visible text rather than a guessed class). No CAPTCHA. Note: ruffwear.com is the brand's global store — a UK-specific eu.ruffwear.com/en-gb subdomain could not be resolved from this research environment (DNS/proxy failure), worth a human check if UK-specific pricing/shipping on the global store turns out to be wrong. Found while researching dog-brand newsletters for Part B."
+  },
+  {
+    "name": "KONG",
+    "url": "https://www.kongcompany.com/",
+    "adapterKey": "kong-newsletter",
+    "notes": "Dog toy brand's own footer newsletter widget, confirmed directly via curl of the real static HTML: a Klaviyo-hosted form (#footer-subscribe, posting to a.klaviyo.com/client/subscriptions) with an email field and a region <select> (set to \"UK\" for this profile) — one global store, no separate UK subdomain found. Klaviyo's own onsite script intercepts the submit and toggles .success_message/.error_message elements rather than the form's target=_blank fallback opening a new tab (documented Klaviyo embed behaviour). No marketing checkbox beyond the email itself; no CAPTCHA. Found while researching dog-brand newsletters for Part B."
+  },
+  {
+    "name": "Butternut Box",
+    "url": "https://butternutbox.com/",
+    "adapterKey": "butternut-box-newsletter",
+    "notes": "Dog-food subscription brand's own footer mailing-list signup ('If you like dogs and discounts, you'll love our mailing list'), genuinely separate from their full dog-profile quiz/checkout flow. Confirmed directly via curl of the real static HTML: a React/MUI form ([data-testid=\"footer-capture-form\"]), single email field (matched by its stable `name` attribute rather than MUI's auto-generated id, which can change between builds). Submit button starts disabled and is only enabled client-side once a valid email is typed — waited for rather than assumed. No cookie-consent banner markers found in the static HTML; no CAPTCHA. Exact post-submit confirmation text isn't in the static bundle, so matched broadly by wording. Found while researching dog-brand newsletters for Part B."
   }
 ]
